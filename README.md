@@ -106,6 +106,13 @@ handed off to manufacturing.
       [reliable](http://bec-systems.com/site/1625/why-are-go-applications-so-reliable)_
     - _it is easy to generate standalone binaries for most platforms with no
       dependencies_
+    - _Go is fast_
+    - _Go is easy to read and learn._
+    - _The Go [package ecosystem](https://pkg.go.dev/) is quite extensive.
+      [go-git](https://pkg.go.dev/github.com/go-git/go-git/v5) may be useful for
+      tight integration with Git._
+    - _Program can be started as a command line program, but eventually grow
+      into a full-blown web application._
 
 ## Example #1: populate design BOM with MPN info
 
