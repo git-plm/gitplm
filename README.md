@@ -102,8 +102,8 @@ handed off to manufacturing.
   - _rational: comma is useful in lists, descriptions, etc._
 - Tooling is written in Go.
   - _rational:_
-    - \_Go programs are reasonably
-      [reliable](http://bec-systems.com/site/1625/why-are-go-applications-so-reliable)\_
+    - _Go programs are reasonably
+      [reliable](http://bec-systems.com/site/1625/why-are-go-applications-so-reliable)_
     - _it is easy to generate standalone binaries for most platforms with no
       dependencies_
 
