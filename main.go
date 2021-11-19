@@ -136,7 +136,7 @@ func findFile(name string) (string, error) {
 }
 
 type partmasterLine struct {
-	HPN          string `csv:"ZPN"`
+	HPN          string `csv:"HPN"`
 	Description  string `csv:"Description"`
 	Footprint    string `csv:"Footprint"`
 	Value        string `csv:"Value"`
@@ -157,7 +157,6 @@ func (p *partmaster) findPart(hpn string) (*partmasterLine, error) {
 	return nil, fmt.Errorf("Part not found")
 }
 
-// "Ref";"Qnty";"Value";"Cmp name";"Footprint";"Description";"Vendor";"ZPN";"Datasheet"
 type bomLine struct {
 	Ref          string `csv:"Ref"`
 	Qnty         string `csv:"Qnty"`
@@ -166,7 +165,7 @@ type bomLine struct {
 	Footprint    string `csv:"Footprint"`
 	Description  string `csv:"Description"`
 	Vendor       string `csv:"Vendor"`
-	HPN          string `csv:"ZPN"`
+	HPN          string `csv:"HPN"`
 	Datasheet    string `csv:"Datasheet"`
 	Manufacturer string `csv:"Manufacturer"`
 	MPN          string `csv:"MPN"`
