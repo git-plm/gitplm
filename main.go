@@ -14,24 +14,14 @@ import (
 )
 
 func main() {
-	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
-		r := csv.NewReader(in)
-		r.Comma = ';'
-		return r
-	})
+	initCSV()
 
-	gocsv.SetCSVWriter(func(out io.Writer) *gocsv.SafeCSVWriter {
-		writer := csv.NewWriter(out)
-		writer.Comma = ';'
-		return gocsv.NewSafeCSVWriter(writer)
-	})
-
-	flagMPNLabel := flag.String("mpnLabel", "HPN", "set MPN label if different than HPN")
-	flagKBOM := flag.String("kbom", "", "Update KiCad BOM with MFG info from partmaster for given PCB HPN (ex: PCB-056-006)")
+	flagKBOM := flag.String("kbom", "", "Update KiCad BOM with MFG info from partmaster for given PCB HPN (ex: PCB-056)")
+	flagVersion := flag.String("version", "0000", "Version BOM to write")
 	flag.Parse()
 
 	if *flagKBOM != "" {
-		err := updateKiCadBOM(*flagKBOM, *flagMPNLabel)
+		err := updateKiCadBOM(*flagKBOM, *flagVersion)
 		if err != nil {
 			log.Println("Error updating KiCadBOM: ", err)
 		} else {
@@ -44,16 +34,30 @@ func main() {
 	log.Println("Please specify an action")
 }
 
-func updateKiCadBOM(kbom, mpnLabel string) error {
+func updateKiCadBOM(kbom, version string) error {
 	readFile := kbom + ".csv"
-	writeFile := kbom + "-0000.csv"
+	writeFile := kbom + "-" + version + ".csv"
 
 	readFilePath, err := findFile(readFile)
 	if err != nil {
 		return err
 	}
 
-	writeFilePath := filepath.Join(filepath.Dir(readFilePath), writeFile)
+	writeDir := filepath.Join(filepath.Dir(readFilePath), kbom+"-"+version)
+
+	dirExists, err := exists(writeDir)
+	if err != nil {
+		return err
+	}
+
+	if !dirExists {
+		err = os.Mkdir(writeDir, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	writeFilePath := filepath.Join(writeDir, writeFile)
 
 	b := bom{}
 
@@ -89,7 +93,7 @@ func updateKiCadBOM(kbom, mpnLabel string) error {
 
 // load CSV into target data structure. target is modified
 func loadCSV(fileName string, target interface{}) error {
-	file, err := os.OpenFile(fileName, os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile(fileName, os.O_RDONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -99,7 +103,7 @@ func loadCSV(fileName string, target interface{}) error {
 }
 
 func saveCSV(filename string, data interface{}) error {
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -172,3 +176,28 @@ type bomLine struct {
 }
 
 type bom []*bomLine
+
+func initCSV() {
+	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
+		r := csv.NewReader(in)
+		r.Comma = ';'
+		return r
+	})
+
+	gocsv.SetCSVWriter(func(out io.Writer) *gocsv.SafeCSVWriter {
+		writer := csv.NewWriter(out)
+		writer.Comma = ';'
+		return gocsv.NewSafeCSVWriter(writer)
+	})
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
