@@ -68,9 +68,9 @@ Usage of gitplm:
 
 ## Tool features
 
-- populate development BOMs with MPN by cross-referencing HPN to partmaster
-    and populating BOM with MPN information found in partmaster.
-    
+- populate development BOMs with MPN by cross-referencing HPN to partmaster and
+  populating BOM with MPN information found in partmaster.
+
 See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 ## Implementation
@@ -87,6 +87,8 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
     is beneficial. See
     [this article](https://www.buyplm.com/plm-good-practice/part-numbering-system-software.aspx)
     for a discussion why short part numbers are important._
+  - see [partnumbers.md](partnumbers.md) for more discussion on part number
+    formats.
 - libraries for CAD tools use HPN rather than manufacturing PN (MPN). The reason
   for this is that many parts tend to be used in multiple assemblies. If a
   source for a part changes, then this can be changed in one place (partmaster)
