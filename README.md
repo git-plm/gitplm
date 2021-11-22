@@ -11,6 +11,27 @@ process will output and store manufacturing files in a consistent way, such that
 a program can collect all these information assets into a package that can be
 handed off to manufacturing.
 
+## Installation
+
+You can [download a release](https://github.com/git-plm/gitplm/releases) for
+your favorite platform. This tool is a self-contained binary with no
+dependencies.
+
+Alternatively, you can:
+
+- `go intstall github.com/git-plm/gitplm@latest`
+- download repo and run: `go run main.go`
+
+Type `gitplm` from a shell to see commandline options:
+
+```
+Usage of gitplm:
+  -kbom string
+        Update KiCad BOM with MFG info from partmaster for given PCB HPN (ex: PCB-056)
+  -version int
+        Version BOM to write
+```
+
 ## Requirements
 
 1. support "house" part numbers (HPN)
@@ -119,6 +140,9 @@ handed off to manufacturing.
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
 - `go run ../main.go -kbom PCB-019 -version 23`
+  - this recursively searches current directory and subdirectories for a file
+    named `PCB-019.csv` and then creates a BOM with supplier part information
+    from the part master
 - notice the `cad-design/PCB-019-0023/PCB-019-0023.csv` file now exists with MFG
   information populated.
 
