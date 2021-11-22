@@ -1,4 +1,4 @@
-# Git PLM
+![gitplm logo](gitplm-logo.png)
 
 Product Lifecycle Management (PLM) in Git.
 
