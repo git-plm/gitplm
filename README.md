@@ -20,6 +20,9 @@ dependencies.
 Alternatively, you can:
 
 - `go intstall github.com/git-plm/gitplm@latest`
+
+or
+
 - download repo and run: `go run main.go`
 
 Type `gitplm` from a shell to see commandline options:
