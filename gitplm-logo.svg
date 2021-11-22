@@ -7,11 +7,41 @@
    viewBox="0 0 52.916665 52.91667"
    version="1.1"
    id="svg5"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20, custom)"
+   sodipodi:docname="gitplm-logo.svg"
+   inkscape:export-filename="/scratch/gitplm/gitplm/gitplm-logo.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     width="400px"
+     inkscape:zoom="2.3090909"
+     inkscape:cx="178.85827"
+     inkscape:cy="255.72835"
+     inkscape:window-width="1920"
+     inkscape:window-height="2059"
+     inkscape:window-x="6253"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
   <defs
      id="defs2" />
   <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
      id="layer1">
     <text
        xml:space="preserve"
@@ -19,6 +49,7 @@
        x="26.933617"
        y="25.785316"
        id="text1617"><tspan
+         sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;font-family:'JetBrains Mono';-inkscape-font-specification:'JetBrains Mono';text-align:center;text-anchor:middle;fill:#314cb0;fill-opacity:1;stroke:#314cb0;stroke-width:0.264583;stroke-opacity:1"
          x="26.933617"
          y="25.785316"
@@ -29,6 +60,7 @@
        x="27.349674"
        y="42.722027"
        id="text1617-9"><tspan
+         sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.7556px;font-family:System-ui;-inkscape-font-specification:System-ui;text-align:center;text-anchor:middle;fill:#314cb0;fill-opacity:1;stroke-width:0.264583"
          x="27.349674"
          y="42.722027"
@@ -39,6 +71,7 @@
        x="18.600323"
        y="61.147007"
        id="text12255"><tspan
+         sodipodi:role="line"
          id="tspan12253"
          style="font-size:16.9333px;stroke-width:0.264583"
          x="18.600323"
@@ -49,6 +82,7 @@
        x="47.567303"
        y="45.500759"
        id="text48757"><tspan
+         sodipodi:role="line"
          id="tspan48755"
          style="stroke-width:0.264583"
          x="47.567303"
@@ -59,10 +93,12 @@
        x="66.739815"
        y="32.139099"
        id="text62665"><tspan
+         sodipodi:role="line"
          id="tspan62663"
          style="stroke-width:0.264583"
          x="66.739815"
          y="32.139099"></tspan><tspan
+         sodipodi:role="line"
          style="stroke-width:0.264583"
          id="tspan62667"
          x="66.739815"
