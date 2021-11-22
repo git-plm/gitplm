@@ -10,7 +10,5 @@ gitplm_goreleaser_build() {
 # generate tokens: https://github.com/settings/tokens/new
 # enable repo and workflow sections
 gitplm_goreleaser_release() {
-  #TODO add depend build to goreleaser config
-  siot_build_dependencies --optimize
-  goreleaser release
+  goreleaser --rm-dist release
 }
