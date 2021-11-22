@@ -180,3 +180,18 @@ TODO:
 - https://www.aligni.com/
 - https://kitspace.org/
 - https://www.buyplm.com/plm-good-practice/part-numbering-system-software.aspx
+
+## Support, Community, Contributing, etc.
+
+Pull requests are welcome! Issues are labelled with "help wanted" and "good
+first issue" may be good places to start if you would like to contribute to this
+project.
+
+For support or to discuss this project, use one of the following options:
+
+- [TMPDIR community forum](https://community.tmpdir.org/)
+- open a Github issue
+
+## License
+
+Apache Version 2.0
