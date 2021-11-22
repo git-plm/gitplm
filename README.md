@@ -68,14 +68,10 @@ Usage of gitplm:
 
 ## Tool features
 
-- **Ideas**
-  - generate output files for releases
-  - audit projects to help us know when updated versions of design components
-    are available
-  - sync CAD libraries with latest datasheet links from the partmaster.
-- **Implemented**
-  - populate development BOMs with MPN by cross-referencing HPN to partmaster
+- populate development BOMs with MPN by cross-referencing HPN to partmaster
     and populating BOM with MPN information found in partmaster.
+    
+See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 ## Implementation
 
