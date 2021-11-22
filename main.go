@@ -17,15 +17,16 @@ func main() {
 	initCSV()
 
 	flagKBOM := flag.String("kbom", "", "Update KiCad BOM with MFG info from partmaster for given PCB HPN (ex: PCB-056)")
-	flagVersion := flag.String("version", "0000", "Version BOM to write")
+	flagVersion := flag.Int("version", 0, "Version BOM to write")
 	flag.Parse()
 
 	if *flagKBOM != "" {
-		err := updateKiCadBOM(*flagKBOM, *flagVersion)
+		version := fmt.Sprintf("%04v", *flagVersion)
+		err := updateKiCadBOM(*flagKBOM, version)
 		if err != nil {
 			log.Println("Error updating KiCadBOM: ", err)
 		} else {
-			log.Println("BOM updated")
+			log.Printf("BOM %v-%v updated\n", *flagKBOM, version)
 		}
 
 		return
