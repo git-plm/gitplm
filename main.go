@@ -76,7 +76,7 @@ func updateKiCadBOM(kbom, version string) error {
 	for i, l := range b {
 		pmPart, err := p.findPart(l.HPN)
 		if err != nil {
-			log.Printf("Error finding part (%v:%v) on line bom #%v in pm: %v\n: ", l.CmpName, l.HPN, i+2, err)
+			log.Printf("Error finding part (%v:%v) on line bom #%v in pm: %v\n", l.CmpName, l.HPN, i+2, err)
 			continue
 		}
 		l.Manufacturer = pmPart.Manufacturer
