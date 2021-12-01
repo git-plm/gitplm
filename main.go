@@ -25,12 +25,29 @@ func main() {
 	flag.Parse()
 
 	if *flagKBOM != "" {
+		var bomLog strings.Builder
+		logMsg := func(s string) {
+			_, err := bomLog.Write([]byte(s))
+			if err != nil {
+				log.Println("Error writing to bomLog: ", err)
+			}
+			log.Println(s)
+		}
+
 		version := fmt.Sprintf("%04v", *flagVersion)
-		err := updateKiCadBOM(*flagKBOM, version)
+		kbomFilePath, err := updateKiCadBOM(*flagKBOM, version, &bomLog)
 		if err != nil {
-			log.Println("Error updating KiCadBOM: ", err)
+			logMsg(fmt.Sprintf("Error updating KiCadBOM: %v\n", err))
 		} else {
-			log.Printf("BOM %v-%v updated\n", *flagKBOM, version)
+			logMsg(fmt.Sprintf("BOM %v-%v updated\n", *flagKBOM, version))
+		}
+
+		if kbomFilePath != "" {
+			logFilePath := filepath.Join(filepath.Dir(kbomFilePath), *flagKBOM+".log")
+			err := ioutil.WriteFile(logFilePath, []byte(bomLog.String()), 0644)
+			if err != nil {
+				log.Println("Error writing log file: ", err)
+			}
 		}
 
 		return
@@ -39,26 +56,26 @@ func main() {
 	log.Println("Please specify an action")
 }
 
-func updateKiCadBOM(kbom, version string) error {
+func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, error) {
 	readFile := kbom + ".csv"
 	writeFile := kbom + "-" + version + ".csv"
 
 	readFilePath, err := findFile(readFile)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	writeDir := filepath.Join(filepath.Dir(readFilePath), kbom+"-"+version)
 
 	dirExists, err := exists(writeDir)
 	if err != nil {
-		return err
+		return readFilePath, err
 	}
 
 	if !dirExists {
 		err = os.Mkdir(writeDir, 0755)
 		if err != nil {
-			return err
+			return readFilePath, err
 		}
 	}
 
@@ -68,34 +85,42 @@ func updateKiCadBOM(kbom, version string) error {
 
 	err = loadCSV(readFilePath, &b)
 	if err != nil {
-		return err
+		return readFilePath, err
 	}
 
 	p := partmaster{}
 	err = loadCSV("partmaster.csv", &p)
 	if err != nil {
-		return err
+		return readFilePath, err
 	}
 
 	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), kbom+".yml")
 
 	ymlExists, err := exists(ymlFilePath)
 
+	logErr := func(s string) {
+		_, err := bomLog.Write([]byte(s))
+		if err != nil {
+			log.Println("Error writing to bomLog: ", err)
+		}
+		log.Println(s)
+	}
+
 	if ymlExists {
 		ymlBytes, err := ioutil.ReadFile(ymlFilePath)
 		if err != nil {
-			return fmt.Errorf("Error loading yml file: %v", err)
+			return readFilePath, fmt.Errorf("Error loading yml file: %v", err)
 		}
 
 		bm := bomMod{}
 		err = yaml.Unmarshal(ymlBytes, &bm)
 		if err != nil {
-			return fmt.Errorf("Error parsing yml: %v", err)
+			return readFilePath, fmt.Errorf("Error parsing yml: %v", err)
 		}
 
 		b, err = bm.processBom(b)
 		if err != nil {
-			return fmt.Errorf("Error processing bom with yml file: %v", err)
+			return readFilePath, fmt.Errorf("Error processing bom with yml file: %v", err)
 		}
 	}
 
@@ -105,7 +130,7 @@ func updateKiCadBOM(kbom, version string) error {
 	for i, l := range b {
 		pmPart, err := p.findPart(l.HPN)
 		if err != nil {
-			log.Printf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.HPN, i+2, err)
+			logErr(fmt.Sprintf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.HPN, i+2, err))
 			continue
 		}
 		l.Manufacturer = pmPart.Manufacturer
@@ -115,10 +140,10 @@ func updateKiCadBOM(kbom, version string) error {
 
 	err = saveCSV(writeFilePath, b)
 	if err != nil {
-		return fmt.Errorf("Error writing BOM: %v", err)
+		return readFilePath, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
-	return nil
+	return readFilePath, nil
 }
 
 // load CSV into target data structure. target is modified
