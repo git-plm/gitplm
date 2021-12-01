@@ -11,6 +11,13 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.2] - 2021-11-30](https://github.com/git-plm/gitplm/releases/tag/v0.0.2)
+
+- support for adding/removing KiCad BOM items. See
+  [PCB-019.yml](example/cad-design/PCB-019.yml) for an example of syntax.
+- misc cleanup
+- output BOMs are sorted by HPN
+
 ## [[0.0.1] - 2021-11-22](https://github.com/git-plm/gitplm/releases/tag/v0.0.1)
 
 - initial release that can populate KiCad BOMs with parts from partmaster
