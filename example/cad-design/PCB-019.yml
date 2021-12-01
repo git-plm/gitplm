@@ -1,0 +1,8 @@
+remove:
+  - cmpName: Test point
+  - cmpName: Test point 2
+  - ref: D12
+add:
+  - cmpName: "screw #4,2"
+    ref: S3
+    hpn: SCR-002-0002

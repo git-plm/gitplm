@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/gocarina/gocsv"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -73,10 +77,35 @@ func updateKiCadBOM(kbom, version string) error {
 		return err
 	}
 
+	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), kbom+".yml")
+
+	ymlExists, err := exists(ymlFilePath)
+
+	if ymlExists {
+		ymlBytes, err := ioutil.ReadFile(ymlFilePath)
+		if err != nil {
+			return fmt.Errorf("Error loading yml file: %v", err)
+		}
+
+		bm := bomMod{}
+		err = yaml.Unmarshal(ymlBytes, &bm)
+		if err != nil {
+			return fmt.Errorf("Error parsing yml: %v", err)
+		}
+
+		b, err = bm.processBom(b)
+		if err != nil {
+			return fmt.Errorf("Error processing bom with yml file: %v", err)
+		}
+	}
+
+	// always sort BOM for good measure
+	sort.Sort(b)
+
 	for i, l := range b {
 		pmPart, err := p.findPart(l.HPN)
 		if err != nil {
-			log.Printf("Error finding part (%v:%v) on line bom #%v in pm: %v\n", l.CmpName, l.HPN, i+2, err)
+			log.Printf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.HPN, i+2, err)
 			continue
 		}
 		l.Manufacturer = pmPart.Manufacturer
@@ -163,20 +192,61 @@ func (p *partmaster) findPart(hpn string) (*partmasterLine, error) {
 }
 
 type bomLine struct {
-	Ref          string `csv:"Ref"`
-	Qnty         string `csv:"Qnty"`
-	Value        string `csv:"Value"`
-	CmpName      string `csv:"Cmp name"`
-	Footprint    string `csv:"Footprint"`
-	Description  string `csv:"Description"`
-	Vendor       string `csv:"Vendor"`
-	HPN          string `csv:"HPN"`
-	Datasheet    string `csv:"Datasheet"`
-	Manufacturer string `csv:"Manufacturer"`
-	MPN          string `csv:"MPN"`
+	HPN          string `csv:"HPN" yaml:"hpn"`
+	Ref          string `csv:"Ref" yaml:"ref"`
+	Qnty         int    `csv:"Qnty" yaml:"qnty"`
+	Value        string `csv:"Value" yaml:"value"`
+	CmpName      string `csv:"Cmp name" yaml:"cmpName"`
+	Footprint    string `csv:"Footprint" yaml:"footprint"`
+	Description  string `csv:"Description" yaml:"description"`
+	Vendor       string `csv:"Vendor" yaml:"vendor"`
+	Datasheet    string `csv:"Datasheet" yaml:"datasheet"`
+	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
+	MPN          string `csv:"MPN" yaml:"mpn"`
+}
+
+func (bl *bomLine) String() string {
+	return fmt.Sprintf("%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v",
+		bl.Ref,
+		bl.Qnty,
+		bl.Value,
+		bl.CmpName,
+		bl.Footprint,
+		bl.Description,
+		bl.Vendor,
+		bl.HPN,
+		bl.Datasheet,
+		bl.Manufacturer,
+		bl.MPN)
+}
+
+func (bl *bomLine) removeRef(ref string) {
+	refs := strings.Split(bl.Ref, ",")
+	refsOut := []string{}
+	for _, r := range refs {
+		r = strings.Trim(r, " ")
+		if r != ref && r != "" {
+			refsOut = append(refsOut, r)
+		}
+	}
+	bl.Ref = strings.Join(refsOut, ", ")
+	bl.Qnty = len(refsOut)
 }
 
 type bom []*bomLine
+
+func (b bom) String() string {
+	ret := "\n"
+	for _, l := range b {
+		ret += fmt.Sprintf("%v\n", l)
+	}
+	return ret
+}
+
+// sort methods
+func (b bom) Len() int           { return len(b) }
+func (b bom) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
+func (b bom) Less(i, j int) bool { return strings.Compare(b[i].HPN, b[j].HPN) < 0 }
 
 func initCSV() {
 	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
@@ -201,4 +271,47 @@ func exists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+type bomMod struct {
+	Description string
+	Remove      []bomLine
+	Add         []bomLine
+}
+
+func (bm *bomMod) processBom(b bom) (bom, error) {
+	ret := b
+	for _, r := range bm.Remove {
+		if r.CmpName != "" {
+			retM := bom{}
+			for _, l := range ret {
+				if l.CmpName != r.CmpName {
+					retM = append(retM, l)
+				}
+			}
+			ret = retM
+		}
+
+		if r.Ref != "" {
+			retM := bom{}
+			for _, l := range ret {
+				l.removeRef(r.Ref)
+				retM = append(retM, l)
+			}
+			ret = retM
+		}
+	}
+
+	for _, a := range bm.Add {
+		refs := strings.Split(a.Ref, ",")
+		a.Qnty = len(refs)
+		if a.Qnty < 0 {
+			a.Qnty = 1
+		}
+		ret = append(ret, &a)
+	}
+
+	sort.Sort(ret)
+
+	return ret, nil
 }

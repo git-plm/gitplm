@@ -7,3 +7,4 @@ CAP-000-470R;;Capacitor_SMD:C_0603_1608Metric;470pF_50V;AVX;06035C471JAT2A;https
 CAP-015-1002;10nF/50V;Capacitor_SMD:C_0603_1608Metric;10nF_50V;AVX;06035C103JAT2A;http://datasheets.avx.com/X7RDielectric.pdf;
 DIO-002-0000;;Diode_SMD:D_SOT-23_ANK;MMBZ5245B-7-F;Diodes Incorporated;MMBZ5245B-7-F;https://www.diodes.com/assets/Datasheets/MMBZ5221B-MMBZ5259B.pdf;
 RES-008-220K;*;Resistor_SMD:R_2010_5025Metric;220k_500mW;KOA SPEER Electronics;HV732HTTE2203F;https://www.koaspeer.com/pdfs/HV73.pdf;
+SCR-002-0002;;;screw #4,2;screwsRus;18a02SDF;https://www.screws.com/pdfs/abc.pdf;
