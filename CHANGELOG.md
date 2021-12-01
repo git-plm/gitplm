@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.3] - 2021-12-01](https://github.com/git-plm/gitplm/releases/tag/v0.0.3)
+
+- write log file when processing BOM (see
+  [PCB-019.log](example/cad-design/PCB-019.log)). This ensures any errors are
+  captured in a file that is automatically generated and can be stored in Git.
+
 ## [[0.0.2] - 2021-11-30](https://github.com/git-plm/gitplm/releases/tag/v0.0.2)
 
 - support for adding/removing KiCad BOM items. See
