@@ -53,6 +53,9 @@ func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, erro
 	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), kbom+".yml")
 
 	ymlExists, err := exists(ymlFilePath)
+	if err != nil {
+		return readFilePath, err
+	}
 
 	logErr := func(s string) {
 		_, err := bomLog.Write([]byte(s))
