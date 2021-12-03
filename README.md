@@ -23,7 +23,7 @@ Alternatively, you can:
 
 or
 
-- download repo and run: `go run main.go`
+- download repo and run: `go run .`
 
 Type `gitplm` from a shell to see commandline options:
 
@@ -141,7 +141,7 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
-- `go run ../main.go -kbom PCB-019 -bomVersion 23`
+- `go run ../ -kbom PCB-019 -bomVersion 23`
   - this recursively searches current directory and subdirectories for a file
     named `PCB-019.csv` and then creates a BOM with supplier part information
     from the part master
