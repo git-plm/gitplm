@@ -1,6 +1,6 @@
 ![gitplm logo](gitplm-logo.png)
 
-![Go](https://github.com/git-plm/gitplm/workflows/Go/badge.svg?branch=main)
+[![Go](https://github.com/git-plm/gitplm/workflows/Go/badge.svg?branch=main)](https://github.com/git-plm/gitplm/actions)
 ![code stats](https://tokei.rs/b1/github/git-plm/gitplm?category=code)
 [![Go Report Card](https://goreportcard.com/badge/github.com/git-plm/gitplm)](https://goreportcard.com/report/github.com/git-plm/gitplm)
 
