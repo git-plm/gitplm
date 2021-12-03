@@ -1,4 +1,4 @@
-HPN;Description;Footprint;Value;Manufacturer;MPN;Datasheet;Priority
+IPN;Description;Footprint;Value;Manufacturer;MPN;Datasheet;Priority
 ANA-000-0000;*;Package_TO_SOT_SMD:SOT-23-5;LT1716;Linear Technology;LT1716IS5#TRPBF;https://www.analog.com/media/en/technical-documentation/data-sheets/LT1716.pdf;
 CAP-000-1001;;Capacitor_SMD:C_0805_2012Metric;1nF_50V;AVX;08055C102JAT2A;http://datasheets.avx.com/X7RDielectric.pdf;
 CAP-000-1002;;Capacitor_SMD:C_0805_2012Metric;10nF_50V;AVX;08055C103JAT2A;http://datasheets.avx.com/X7RDielectric.pdf;
