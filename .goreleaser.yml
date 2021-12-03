@@ -9,7 +9,7 @@ before:
 changelog:
   skip: true
 builds:
-  - main: ./main.go
+  - main: .
     id: gitplm
     binary: gitplm
     env:

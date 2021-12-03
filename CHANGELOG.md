@@ -11,8 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.4] - 2021-12-02](https://github.com/git-plm/gitplm/releases/tag/v0.0.4)
+
 - switch from HPN (house part number) to IPN (internal part number) (#11)
 - implement Github CI (runs tests in PRs) (#13)
+- change `-version` commandline switch to print application version
+- add `-bomVersion` to specify BOM version to generate (used to be `-version`)
 
 ## [[0.0.3] - 2021-12-01](https://github.com/git-plm/gitplm/releases/tag/v0.0.3)
 
