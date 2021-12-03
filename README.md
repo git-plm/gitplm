@@ -1,5 +1,9 @@
 ![gitplm logo](gitplm-logo.png)
 
+![Go](https://github.com/git-plm/gitplm/workflows/Go/badge.svg?branch=main)
+![code stats](https://tokei.rs/b1/github/git-plm/gitplm?category=code)
+[![Go Report Card](https://goreportcard.com/badge/github.com/git-plm/gitplm)](https://goreportcard.com/report/github.com/git-plm/gitplm)
+
 Product Lifecycle Management (PLM) in Git.
 
 This repo contains a set of best practices and an application that is used to

@@ -17,6 +17,7 @@ For more details or to discuss releases, please visit the
 - implement Github CI (runs tests in PRs) (#13)
 - change `-version` commandline switch to print application version
 - add `-bomVersion` to specify BOM version to generate (used to be `-version`)
+- add badges in readme
 
 ## [[0.0.3] - 2021-12-01](https://github.com/git-plm/gitplm/releases/tag/v0.0.3)
 
