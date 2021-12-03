@@ -14,6 +14,7 @@ For more details or to discuss releases, please visit the
 ## [[0.0.5] - 2021-12-02](https://github.com/git-plm/gitplm/releases/tag/v0.0.5)
 
 - add badges in readme
+- fix missed error check
 
 ## [[0.0.4] - 2021-12-02](https://github.com/git-plm/gitplm/releases/tag/v0.0.4)
 
