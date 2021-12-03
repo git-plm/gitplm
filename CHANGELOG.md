@@ -11,6 +11,9 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- switch from HPN (house part number) to IPN (internal part number) (#11)
+- implement Github CI (runs tests in PRs) (#13)
+
 ## [[0.0.3] - 2021-12-01](https://github.com/git-plm/gitplm/releases/tag/v0.0.3)
 
 - write log file when processing BOM (see
