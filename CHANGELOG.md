@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.6] - 2021-12-03](https://github.com/git-plm/gitplm/releases/tag/v0.0.6)
+
+- print out version more concisely so it is easier to use in scripts
+
 ## [[0.0.5] - 2021-12-02](https://github.com/git-plm/gitplm/releases/tag/v0.0.5)
 
 - add badges in readme
