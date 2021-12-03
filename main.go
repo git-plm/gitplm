@@ -20,7 +20,7 @@ import (
 func main() {
 	initCSV()
 
-	flagKBOM := flag.String("kbom", "", "Update KiCad BOM with MFG info from partmaster for given PCB HPN (ex: PCB-056)")
+	flagKBOM := flag.String("kbom", "", "Update KiCad BOM with MFG info from partmaster for given PCB IPN (ex: PCB-056)")
 	flagVersion := flag.Int("version", 0, "Version BOM to write")
 	flag.Parse()
 
@@ -128,9 +128,9 @@ func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, erro
 	sort.Sort(b)
 
 	for i, l := range b {
-		pmPart, err := p.findPart(l.HPN)
+		pmPart, err := p.findPart(l.IPN)
 		if err != nil {
-			logErr(fmt.Sprintf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.HPN, i+2, err))
+			logErr(fmt.Sprintf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.IPN, i+2, err))
 			continue
 		}
 		l.Manufacturer = pmPart.Manufacturer
@@ -195,7 +195,7 @@ func findFile(name string) (string, error) {
 }
 
 type partmasterLine struct {
-	HPN          string `csv:"HPN"`
+	IPN          string `csv:"IPN"`
 	Description  string `csv:"Description"`
 	Footprint    string `csv:"Footprint"`
 	Value        string `csv:"Value"`
@@ -206,9 +206,9 @@ type partmasterLine struct {
 
 type partmaster []*partmasterLine
 
-func (p *partmaster) findPart(hpn string) (*partmasterLine, error) {
+func (p *partmaster) findPart(ipn string) (*partmasterLine, error) {
 	for _, l := range *p {
-		if l.HPN == hpn {
+		if l.IPN == ipn {
 			return l, nil
 		}
 	}
@@ -217,7 +217,7 @@ func (p *partmaster) findPart(hpn string) (*partmasterLine, error) {
 }
 
 type bomLine struct {
-	HPN          string `csv:"HPN" yaml:"hpn"`
+	IPN          string `csv:"IPN" yaml:"ipn"`
 	Ref          string `csv:"Ref" yaml:"ref"`
 	Qnty         int    `csv:"Qnty" yaml:"qnty"`
 	Value        string `csv:"Value" yaml:"value"`
@@ -239,7 +239,7 @@ func (bl *bomLine) String() string {
 		bl.Footprint,
 		bl.Description,
 		bl.Vendor,
-		bl.HPN,
+		bl.IPN,
 		bl.Datasheet,
 		bl.Manufacturer,
 		bl.MPN)
@@ -271,7 +271,7 @@ func (b bom) String() string {
 // sort methods
 func (b bom) Len() int           { return len(b) }
 func (b bom) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
-func (b bom) Less(i, j int) bool { return strings.Compare(b[i].HPN, b[j].HPN) < 0 }
+func (b bom) Less(i, j int) bool { return strings.Compare(b[i].IPN, b[j].IPN) < 0 }
 
 func initCSV() {
 	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {

@@ -1,4 +1,4 @@
-"Ref";"Qnty";"Value";"Cmp name";"Footprint";"Description";"Vendor";"HPN";"Datasheet"
+"Ref";"Qnty";"Value";"Cmp name";"Footprint";"Description";"Vendor";"IPN";"Datasheet"
 "U1, U2, U4, U5, U7, U8, U10, U11, ";"8";"LT1716";"LT1716";"Package_TO_SOT_SMD:SOT-23-5";"";"";"ANA-000-0000";"https://www.analog.com/media/en/technical-documentation/data-sheets/LT1716.pdf"
 "D2, D8, D12, D18, D22, D28, D32, D38, ";"8";"MMBZ5245B-7-F";"MMBZ5245B-7-F";"Diode_SMD:D_SOT-23_ANK";"";"";"DIO-002-0000";"https://www.diodes.com/assets/Datasheets/MMBZ5221B-MMBZ5259B.pdf"
 "R1, R15, R29, R43, ";"4";"220k_500mW";"220k_500mW";"Resistor_SMD:R_2010_5025Metric";"";"";"RES-008-220K";"https://www.koaspeer.com/pdfs/HV73.pdf"

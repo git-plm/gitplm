@@ -5,4 +5,4 @@ remove:
 add:
   - cmpName: "screw #4,2"
     ref: S3
-    hpn: SCR-002-0002
+    ipn: SCR-002-0002

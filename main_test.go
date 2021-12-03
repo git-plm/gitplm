@@ -18,18 +18,18 @@ remove:
 add:
  - cmpName: "screw #4,2"
    ref: S3
-   hpn: SCR-002-0002
+   ipn: SCR-002-0002
 `
 
 var bomIn = `
-Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;HPN;Datasheet
+Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;IPN;Datasheet
 TP4, TP5;2;;Test point 2;;;;;
 R1, R2, ;2;;100K_100mw;;;;RES-006-0232;
 D1, D2, D13, D14;4;;diode;;;;DIO-023-0023;
 `
 
 var bomExp = `
-Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;HPN;Datasheet
+Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;IPN;Datasheet
 D1, D2, D14;3;;diode;;;;DIO-023-0023;
 R1, R2;2;;100K_100mw;;;;RES-006-0232;
 S3;1;;screw #4,2;;;;SCR-002-0002;
