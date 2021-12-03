@@ -141,7 +141,7 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
-- `go run ../main.go -kbom PCB-019 -version 23`
+- `go run ../main.go -kbom PCB-019 -bomVersion 23`
   - this recursively searches current directory and subdirectories for a file
     named `PCB-019.csv` and then creates a BOM with supplier part information
     from the part master
