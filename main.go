@@ -31,7 +31,7 @@ func main() {
 		if version == "" {
 			version = "Development"
 		}
-		fmt.Printf("GitPLM %v\n", version)
+		fmt.Printf("GitPLM v%v\n", version)
 		os.Exit(0)
 	}
 
