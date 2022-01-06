@@ -32,6 +32,22 @@ func (p *partmaster) findPart(ipn string) (*partmasterLine, error) {
 	}
 
 	sort.Sort(byPriority(found))
+
+	if len(found) > 1 {
+		// fill in blank fields with values from other items
+		for i := 1; i < len(found); i++ {
+			if found[0].Description == "" && found[i].Description != "" {
+				found[0].Description = found[i].Description
+			}
+			if found[0].Footprint == "" && found[i].Footprint != "" {
+				found[0].Footprint = found[i].Footprint
+			}
+			if found[0].Value == "" && found[i].Value != "" {
+				found[0].Value = found[i].Value
+			}
+		}
+	}
+
 	return found[0], nil
 }
 
@@ -40,4 +56,4 @@ type byPriority []*partmasterLine
 
 func (p byPriority) Len() int           { return len(p) }
 func (p byPriority) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-func (p byPriority) Less(i, j int) bool { return p[j].Priority < p[i].Priority }
+func (p byPriority) Less(i, j int) bool { return p[i].Priority < p[j].Priority }
