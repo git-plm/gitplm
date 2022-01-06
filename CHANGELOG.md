@@ -11,6 +11,14 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.7] - 2022-01-06](https://github.com/git-plm/gitplm/releases/tag/v0.0.7)
+
+- support multiple sources of parts in partmaster -- simply put on separate
+  lines. GitPLM will select the part with lowest priority field value. Other
+  fields like `Description` are merged -- only need to be entered on one line.
+  See `CAP-000-1001` in `examples/partmaster.csv` for an example of how to do
+  this.
+
 ## [[0.0.6] - 2021-12-03](https://github.com/git-plm/gitplm/releases/tag/v0.0.6)
 
 - print out version more concisely so it is easier to use in scripts
