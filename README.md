@@ -82,6 +82,10 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 - a single partmaster is used for the entire organization and contains internal
   part numbers (IPN) for all assets used to build a product.
+  - if multiple sources are available for a part, these can be entered on
+    additional lines with the same IPN, and different Manufacturer/MPN
+    specified. GitPLM will merge other fields like Description, Value, etc so
+    these only need to be specifed on one of the lines.
 - internal part numbers (IPN) use the Basic format: CCC-NNN-VVVV
   - CCC: major category (RES, CAP, DIO, etc)
   - NNN: incrementing sequential number for each part
