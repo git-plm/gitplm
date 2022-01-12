@@ -125,7 +125,7 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 
 	if foundSub {
 		sort.Sort(b)
-		writePath := filepath.Join(writeDir, bomPn+"-purchase.csv")
+		writePath := filepath.Join(writeDir, bomPn+"-all.csv")
 		// write out purchase bom
 		err := saveCSV(writePath, b)
 		if err != nil {
