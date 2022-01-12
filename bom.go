@@ -12,16 +12,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, error) {
-	readFile := kbom + ".csv"
-	writeFile := kbom + "-" + version + ".csv"
+func processBOM(bomName, version string, bomLog *strings.Builder) (string, error) {
+	readFile := bomName + ".csv"
+	writeFile := bomName + "-" + version + ".csv"
 
 	readFilePath, err := findFile(readFile)
 	if err != nil {
 		return "", err
 	}
 
-	writeDir := filepath.Join(filepath.Dir(readFilePath), kbom+"-"+version)
+	writeDir := filepath.Join(filepath.Dir(readFilePath), bomName+"-"+version)
 
 	dirExists, err := exists(writeDir)
 	if err != nil {
@@ -50,7 +50,7 @@ func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, erro
 		return readFilePath, err
 	}
 
-	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), kbom+".yml")
+	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), bomName+".yml")
 
 	ymlExists, err := exists(ymlFilePath)
 	if err != nil {

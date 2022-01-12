@@ -15,8 +15,7 @@ var version = "Development"
 func main() {
 	initCSV()
 
-	flagKBOM := flag.String("kbom", "", "Update KiCad BOM with MFG info from partmaster for given PCB IPN (ex: PCB-056)")
-	flagBomVersion := flag.Int("bomVersion", 0, "Version BOM to write")
+	flagBOM := flag.String("bom", "", "Process BOM for IPN (ex: PCB-056-0005, ASY-002-0000)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
 	flag.Parse()
 
@@ -28,27 +27,32 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *flagKBOM != "" {
-		var bomLog strings.Builder
-		logMsg := func(s string) {
-			_, err := bomLog.Write([]byte(s))
-			if err != nil {
-				log.Println("Error writing to bomLog: ", err)
-			}
-			log.Println(s)
-		}
-
-		version := fmt.Sprintf("%04v", *flagBomVersion)
-		kbomFilePath, err := updateKiCadBOM(*flagKBOM, version, &bomLog)
+	var gLog strings.Builder
+	logMsg := func(s string) {
+		_, err := gLog.Write([]byte(s))
 		if err != nil {
-			logMsg(fmt.Sprintf("Error updating KiCadBOM: %v\n", err))
+			log.Println("Error writing to gLog: ", err)
+		}
+		log.Println(s)
+	}
+
+	if *flagBOM != "" {
+		c, n, v, err := ipn(*flagBOM).parse()
+		if err != nil {
+			log.Fatalf("invalid bom IPN: ", err)
+		}
+		ipnBase := fmt.Sprintf("%v-%03v", c, n)
+		version := fmt.Sprintf("%04v", v)
+		bomFilePath, err := processBOM(ipnBase, version, &gLog)
+		if err != nil {
+			logMsg(fmt.Sprintf("Error processing BOM: %v\n", err))
 		} else {
-			logMsg(fmt.Sprintf("BOM %v-%v updated\n", *flagKBOM, version))
+			logMsg(fmt.Sprintf("BOM %v-%v updated\n", *flagBOM, version))
 		}
 
-		if kbomFilePath != "" {
-			logFilePath := filepath.Join(filepath.Dir(kbomFilePath), *flagKBOM+".log")
-			err := ioutil.WriteFile(logFilePath, []byte(bomLog.String()), 0644)
+		if bomFilePath != "" {
+			logFilePath := filepath.Join(filepath.Dir(bomFilePath), *flagBOM+".log")
+			err := ioutil.WriteFile(logFilePath, []byte(gLog.String()), 0644)
 			if err != nil {
 				log.Println("Error writing log file: ", err)
 			}
@@ -57,5 +61,6 @@ func main() {
 		return
 	}
 
-	log.Println("Please specify an action")
+	fmt.Println("Error, please specify an action")
+	flag.Usage()
 }
