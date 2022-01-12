@@ -12,16 +12,22 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, error) {
-	readFile := kbom + ".csv"
-	writeFile := kbom + "-" + version + ".csv"
+func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
+	c, n, _, err := ipn(bomPn).parse()
+	if err != nil {
+		return "", fmt.Errorf("error parsing bom %v IPN : %v", bomPn, err)
+	}
+
+	bomPnBase := fmt.Sprintf("%v-%03v", c, n)
+
+	readFile := bomPnBase + ".csv"
 
 	readFilePath, err := findFile(readFile)
 	if err != nil {
 		return "", err
 	}
 
-	writeDir := filepath.Join(filepath.Dir(readFilePath), kbom+"-"+version)
+	writeDir := filepath.Join(filepath.Dir(readFilePath), bomPn)
 
 	dirExists, err := exists(writeDir)
 	if err != nil {
@@ -35,7 +41,7 @@ func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, erro
 		}
 	}
 
-	writeFilePath := filepath.Join(writeDir, writeFile)
+	writeFilePath := filepath.Join(writeDir, bomPn+".csv")
 
 	b := bom{}
 
@@ -50,7 +56,7 @@ func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, erro
 		return readFilePath, err
 	}
 
-	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), kbom+".yml")
+	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), bomPnBase+".yml")
 
 	ymlExists, err := exists(ymlFilePath)
 	if err != nil {
@@ -102,11 +108,36 @@ func updateKiCadBOM(kbom, version string, bomLog *strings.Builder) (string, erro
 		return readFilePath, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
+	// create combined BOM with all sub assemblies if we have any PCB or ASY line items
+	foundSub := false
+	for _, l := range b {
+		// clear refs in purchase bom
+		l.Ref = ""
+		isAsy, _ := l.IPN.isSubAsy()
+		if isAsy {
+			foundSub = true
+			err := b.addSubAsy(l.IPN, l.Qnty)
+			if err != nil {
+				return readFilePath, fmt.Errorf("Error proccessing sub %v: %v", l.IPN, err)
+			}
+		}
+	}
+
+	if foundSub {
+		sort.Sort(b)
+		writePath := filepath.Join(writeDir, bomPn+"-purchase.csv")
+		// write out purchase bom
+		err := saveCSV(writePath, b)
+		if err != nil {
+			return readFilePath, fmt.Errorf("Error writing purchase bom %v", err)
+		}
+	}
+
 	return readFilePath, nil
 }
 
 type bomLine struct {
-	IPN          string `csv:"IPN" yaml:"ipn"`
+	IPN          ipn    `csv:"IPN" yaml:"ipn"`
 	Ref          string `csv:"Ref" yaml:"ref"`
 	Qnty         int    `csv:"Qnty" yaml:"qnty"`
 	Value        string `csv:"Value" yaml:"value"`
@@ -157,7 +188,61 @@ func (b bom) String() string {
 	return ret
 }
 
+func (b *bom) copy() bom {
+	ret := make([]*bomLine, len(*b))
+
+	for i, l := range *b {
+		ret[i] = &(*l)
+	}
+
+	return ret
+}
+
+func (b *bom) addSubAsy(pn ipn, qty int) error {
+	log.Println("processing subassembly: ", pn, qty)
+	bomPath, err := findFile(pn.String() + ".csv")
+	if err != nil {
+		return fmt.Errorf("Error finding sub assy BOM: %v", err)
+	}
+
+	subBom := bom{}
+
+	err = loadCSV(bomPath, &subBom)
+	if err != nil {
+		return fmt.Errorf("Error parsing CSV for %v: %v", pn, err)
+	}
+
+	for _, l := range subBom {
+		isSub, _ := l.IPN.isSubAsy()
+		if isSub {
+			err := b.addSubAsy(l.IPN, l.Qnty*qty)
+			if err != nil {
+				return fmt.Errorf("Error processing sub %v: %v", l.IPN, err)
+			}
+		}
+		n := *l
+		n.Qnty *= qty
+		b.addItem(&n)
+	}
+
+	return nil
+}
+
+func (b *bom) addItem(newItem *bomLine) {
+	for i, l := range *b {
+		if newItem.IPN == l.IPN {
+			(*b)[i].Qnty += newItem.Qnty
+			return
+		}
+	}
+
+	n := *newItem
+	// clear refs
+	n.Ref = ""
+	*b = append(*b, &n)
+}
+
 // sort methods
 func (b bom) Len() int           { return len(b) }
 func (b bom) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
-func (b bom) Less(i, j int) bool { return strings.Compare(b[i].IPN, b[j].IPN) < 0 }
+func (b bom) Less(i, j int) bool { return strings.Compare(string(b[i].IPN), string(b[j].IPN)) < 0 }
