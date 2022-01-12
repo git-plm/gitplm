@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.9] - 2022-01-12](https://github.com/git-plm/gitplm/releases/tag/v0.0.9)
+
+- fix bug in log file name -- should sit next to source BOM so we can track
+  changes
+
 ## [[0.0.8] - 2022-01-12](https://github.com/git-plm/gitplm/releases/tag/v0.0.8)
 
 - if BOM includes subassemblies (ASY, or PCB IPNs), also create a purchase BOM
