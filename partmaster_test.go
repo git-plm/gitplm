@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gocarina/gocsv"
@@ -38,8 +37,6 @@ func TestPartmaster(t *testing.T) {
 	if p.Value != "10k" {
 		t.Errorf("Got wrong value for CAP-001-1001: %v", p.Value)
 	}
-
-	fmt.Printf("CLIFF: p: %+v\n", p)
 
 	p, err = pm.findPart("CAP-001-1002")
 	if err != nil {

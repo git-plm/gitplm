@@ -39,7 +39,7 @@ func main() {
 	if *flagBOM != "" {
 		c, n, v, err := ipn(*flagBOM).parse()
 		if err != nil {
-			log.Fatalf("invalid bom IPN: ", err)
+			log.Fatalf("invalid bom IPN: %v", err)
 		}
 		ipnBase := fmt.Sprintf("%v-%03v", c, n)
 		version := fmt.Sprintf("%04v", v)

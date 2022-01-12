@@ -102,6 +102,8 @@ func processBOM(bomName, version string, bomLog *strings.Builder) (string, error
 		return readFilePath, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
+	// create combined BOM if we have
+
 	return readFilePath, nil
 }
 
