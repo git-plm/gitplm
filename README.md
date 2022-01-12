@@ -50,11 +50,11 @@ When you run `gitplm` on a BOM, say `ASY-002-0002`, it does the following:
   subdirectory.
 - looks for a file named `ASY-002.yml` next to `ASY-002.csv`.
 - generates the following in directory `ASY-002.csv` was found in:
-  - `../ASY-002-0002/ASY-002-0002.csv` -- this is an expanded BOM that contains
+  - `.../ASY-002-0002/ASY-002-0002.csv` -- this is an expanded BOM that contains
     MPN/Manufacturer information from the partmaster and modification
     instructions from `ASY-002.yml`.
   - if subassemblies are found in the BOM (IPNs that start with `PCB` or `ASY`),
-    then a `../ASY-002-0002/ASY-002-0002-all.csv` file is generated that
+    then a `.../ASY-002-0002/ASY-002-0002-all.csv` file is generated that
     contains all parts from all subassemblies. This can be used for purchasing
     all parts for a project.
 

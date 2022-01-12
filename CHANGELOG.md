@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.8] - 2022-01-12](https://github.com/git-plm/gitplm/releases/tag/v0.0.8)
+
+- if BOM includes subassemblies (ASY, or PCB IPNs), also create a purchase BOM
+  that is a recursive agregate of all parts used in the design. This BOM is
+  named `CCC-NNN-VVVV-all.csv`
+
 ## [[0.0.7] - 2022-01-06](https://github.com/git-plm/gitplm/releases/tag/v0.0.7)
 
 - support multiple sources of parts in partmaster -- simply put on separate
