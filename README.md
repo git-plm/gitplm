@@ -29,17 +29,54 @@ or
 
 - download repo and run: `go run .`
 
+## Usage
+
 Type `gitplm` from a shell to see commandline options:
 
 ```
 Usage of gitplm:
-  -kbom string
-        Update KiCad BOM with MFG info from partmaster for given PCB IPN (ex: PCB-056)
+  -bom string
+	Process BOM for IPN (ex: PCB-056-0005, ASY-002-0000)
   -version int
-        Version BOM to write
+        display version of this application
 ```
 
-## Requirements
+## Operation/Features
+
+When you run `gitplm` on a BOM, say `ASY-002-0002`, it does the following:
+
+- looks for `partmaster.csv` in the current directory
+- looks for a file named `ASY-002.csv` in the current directory or any
+  subdirectory.
+- looks for a file named `ASY-002.yml` next to `ASY-002.csv`.
+- generates the following in directory `ASY-002.csv` was found in:
+  - `../ASY-002-0002/ASY-002-0002.csv` -- this is an expanded BOM that contains
+    MPN/Manufacturer information from the partmaster and modification
+    instructions from `ASY-002.yml`.
+  - if subassemblies are found in the BOM (IPNs that start with `PCB` or `ASY`),
+    then a `../ASY-002-0002/ASY-002-0002-all.csv` file is generated that
+    contains all parts from all subassemblies. This can be used for purchasing
+    all parts for a project.
+
+See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
+
+### BOM modification YAML file
+
+BOMs can be modified by instructions in a YAML file next to a BOM source file.
+An example is shown below:
+
+```
+remove:
+  - cmpName: Test point
+  - cmpName: Test point 2
+  - ref: D12
+add:
+  - cmpName: "screw #4,2"
+    ref: S3
+    ipn: SCR-002-0002
+```
+
+## Requirements/Vision
 
 1. support "internal" part numbers (IPN)
 1. be able to search where parts are used
@@ -70,14 +107,6 @@ Usage of gitplm:
 - PLM software should not be tied to any one CAD tool, but should be flexible
   enough to work with any CAD output.
 
-## Tool features
-
-- populate development BOMs with MPN by cross-referencing IPN to partmaster and
-  populating BOM with MPN information found in partmaster.
-- add or remove parts from BOM (specified in yaml file next to BOM)
-
-See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
-
 ## Implementation
 
 - a single partmaster is used for the entire organization and contains internal
@@ -107,7 +136,7 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
   This is much more manual and error prone process which cannot be easily
   automated.
 - use CSV files for partmaster and all BOMs.
-  - _rational: can be read/written by excel/libreoffice or by machine_
+  - _rational: can be read and written by excel, libreoffice, or by machine_
   - _rational: easy to get started_
 - Every asset used in manufacturing (PCB, mechanical part, assembly, SW release,
   document, etc.) is defined by a IPN
@@ -149,7 +178,7 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
-- `go run ../ -kbom PCB-019 -bomVersion 23`
+- `go run ../ -bom PCB-019-0023`
   - this recursively searches current directory and subdirectories for a file
     named `PCB-019.csv` and then creates a BOM with supplier part information
     from the part master
