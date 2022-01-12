@@ -45,8 +45,13 @@ func main() {
 		}
 
 		if bomFilePath != "" {
-			logFilePath := filepath.Join(filepath.Dir(bomFilePath), *flagBOM+".log")
-			err := ioutil.WriteFile(logFilePath, []byte(gLog.String()), 0644)
+			c, n, _, err := ipn(*flagBOM).parse()
+			if err != nil {
+				log.Fatal("Error parsing bom IPN: ", err)
+			}
+			fn := fmt.Sprintf("%v-%03v.log", c, n)
+			logFilePath := filepath.Join(filepath.Dir(bomFilePath), fn)
+			err = ioutil.WriteFile(logFilePath, []byte(gLog.String()), 0644)
 			if err != nil {
 				log.Println("Error writing log file: ", err)
 			}
