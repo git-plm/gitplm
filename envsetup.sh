@@ -12,3 +12,11 @@ gitplm_goreleaser_build() {
 gitplm_goreleaser_release() {
   goreleaser release --rm-dist
 }
+
+gitplm_update_examples() {
+  cd example || return
+  for bom in ASY-012-0012 ASY-002-0001 PCB-019-0000 ASY-001-0000; do
+    go run ../ -bom $bom || return
+  done
+  cd ..
+}

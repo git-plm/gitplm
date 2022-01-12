@@ -6,7 +6,7 @@ import (
 )
 
 type partmasterLine struct {
-	IPN          string `csv:"IPN"`
+	IPN          ipn    `csv:"IPN"`
 	Description  string `csv:"Description"`
 	Footprint    string `csv:"Footprint"`
 	Value        string `csv:"Value"`
@@ -19,10 +19,10 @@ type partmasterLine struct {
 type partmaster []*partmasterLine
 
 // findPart returns part with highest priority
-func (p *partmaster) findPart(ipn string) (*partmasterLine, error) {
+func (p *partmaster) findPart(pn ipn) (*partmasterLine, error) {
 	found := []*partmasterLine{}
 	for _, l := range *p {
-		if l.IPN == ipn {
+		if l.IPN == pn {
 			found = append(found, l)
 		}
 	}

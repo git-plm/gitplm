@@ -37,6 +37,10 @@ func newIpnParts(c string, n, v int) (ipn, error) {
 	return ipn(fmt.Sprintf("%v-%03v-%04v", c, n, v)), nil
 }
 
+func (i ipn) String() string {
+	return string(i)
+}
+
 // parse() returns C (category), N (number), V (variation)
 func (i ipn) parse() (string, int, int, error) {
 	groups := reIpn.FindStringSubmatch(string(i))
@@ -70,4 +74,9 @@ func (i ipn) n() (int, error) {
 func (i ipn) v() (int, error) {
 	_, _, v, err := i.parse()
 	return v, err
+}
+
+func (i ipn) isSubAsy() (bool, error) {
+	c, _, _, err := i.parse()
+	return c == "PCB" || c == "ASY", err
 }
