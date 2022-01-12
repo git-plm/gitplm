@@ -37,17 +37,11 @@ func main() {
 	}
 
 	if *flagBOM != "" {
-		c, n, v, err := ipn(*flagBOM).parse()
-		if err != nil {
-			log.Fatalf("invalid bom IPN: %v", err)
-		}
-		ipnBase := fmt.Sprintf("%v-%03v", c, n)
-		version := fmt.Sprintf("%04v", v)
-		bomFilePath, err := processBOM(ipnBase, version, &gLog)
+		bomFilePath, err := processBOM(*flagBOM, &gLog)
 		if err != nil {
 			logMsg(fmt.Sprintf("Error processing BOM: %v\n", err))
 		} else {
-			logMsg(fmt.Sprintf("BOM %v-%v updated\n", *flagBOM, version))
+			logMsg(fmt.Sprintf("BOM %v updated\n", *flagBOM))
 		}
 
 		if bomFilePath != "" {

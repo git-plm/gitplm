@@ -12,16 +12,24 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func processBOM(bomName, version string, bomLog *strings.Builder) (string, error) {
-	readFile := bomName + ".csv"
-	writeFile := bomName + "-" + version + ".csv"
+func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
+	c, n, v, err := ipn(bomPn).parse()
+	if err != nil {
+		log.Fatalf("invalid bom IPN: %v", err)
+	}
+
+	bomPnBase := fmt.Sprintf("%v-%03v", c, n)
+	bomPnVar := fmt.Sprintf("%04v", v)
+
+	readFile := bomPnBase + ".csv"
+	writeFile := bomPnBase + "-" + bomPnVar + ".csv"
 
 	readFilePath, err := findFile(readFile)
 	if err != nil {
 		return "", err
 	}
 
-	writeDir := filepath.Join(filepath.Dir(readFilePath), bomName+"-"+version)
+	writeDir := filepath.Join(filepath.Dir(readFilePath), bomPnBase+"-"+bomPnVar)
 
 	dirExists, err := exists(writeDir)
 	if err != nil {
@@ -50,7 +58,7 @@ func processBOM(bomName, version string, bomLog *strings.Builder) (string, error
 		return readFilePath, err
 	}
 
-	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), bomName+".yml")
+	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), bomPnBase+".yml")
 
 	ymlExists, err := exists(ymlFilePath)
 	if err != nil {
@@ -102,7 +110,7 @@ func processBOM(bomName, version string, bomLog *strings.Builder) (string, error
 		return readFilePath, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
-	// create combined BOM if we have
+	// create combined BOM with all sub assemblies if we have any PCB or ASY line items
 
 	return readFilePath, nil
 }
