@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.10] - 2022-01-13](https://github.com/git-plm/gitplm/releases/tag/v0.0.10)
+
+- allow partmaster.csv to life in any subdirectory instead of having to be at
+  top level. This allows parmaster to live in a Git submodule.
+
 ## [[0.0.9] - 2022-01-12](https://github.com/git-plm/gitplm/releases/tag/v0.0.9)
 
 - fix bug in log file name -- should sit next to source BOM so we can track
