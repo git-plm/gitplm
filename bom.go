@@ -50,8 +50,13 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 		return readFilePath, err
 	}
 
+	partmasterPath, err := findFile("partmaster.csv")
+	if err != nil {
+		return "", fmt.Errorf("Error, partmaster.csv not found in any dir")
+	}
+
 	p := partmaster{}
-	err = loadCSV("partmaster.csv", &p)
+	err = loadCSV(partmasterPath, &p)
 	if err != nil {
 		return readFilePath, err
 	}
