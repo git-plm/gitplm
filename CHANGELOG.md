@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.11] - 2022-01-22](https://github.com/git-plm/gitplm/releases/tag/v0.0.11)
+
+- add support for checked column. This value now gets propogated from the
+  partmaster to all BOMs and can be used for a process where a part information
+  is double checked for accuracy.
+
 ## [[0.0.10] - 2022-01-13](https://github.com/git-plm/gitplm/releases/tag/v0.0.10)
 
 - allow partmaster.csv to life in any subdirectory instead of having to be at
