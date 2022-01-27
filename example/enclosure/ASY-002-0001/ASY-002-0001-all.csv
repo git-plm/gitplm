@@ -1,4 +1,4 @@
-IPN;Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Manufacturer;MPN
-ASY-012-0012;;2;;;;;;;;
-MCH-001-0001;;2;;;;;;https://www.brackets.com/pdfs/21523.pdf;bracketsRus;1051023
-SCR-002-0002;;18;;;;;;https://www.screws.com/pdfs/abc.pdf;screwsRus;18a02SDF
+IPN;Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Manufacturer;MPN;Checked
+ASY-012-0012;;2;;;;;;;;;
+MCH-001-0001;;2;;;;;;https://www.brackets.com/pdfs/21523.pdf;bracketsRus;1051023;Y
+SCR-002-0002;;18;;;;;;https://www.screws.com/pdfs/abc.pdf;screwsRus;18a02SDF;

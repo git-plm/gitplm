@@ -14,6 +14,7 @@ type partmasterLine struct {
 	MPN          string `csv:"MPN"`
 	Datasheet    string `csv:"Datasheet"`
 	Priority     int    `csv:"Priority"`
+	Checked      string `csv:"Checked"`
 }
 
 type partmaster []*partmasterLine
