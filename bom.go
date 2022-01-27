@@ -106,6 +106,7 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 		l.Manufacturer = pmPart.Manufacturer
 		l.MPN = pmPart.MPN
 		l.Datasheet = pmPart.Datasheet
+		l.Checked = pmPart.Checked
 	}
 
 	err = saveCSV(writeFilePath, b)
@@ -153,10 +154,11 @@ type bomLine struct {
 	Datasheet    string `csv:"Datasheet" yaml:"datasheet"`
 	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
 	MPN          string `csv:"MPN" yaml:"mpn"`
+	Checked      string `csv:"Checked" yaml:"checked"`
 }
 
 func (bl *bomLine) String() string {
-	return fmt.Sprintf("%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v",
+	return fmt.Sprintf("%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v",
 		bl.Ref,
 		bl.Qnty,
 		bl.Value,
@@ -167,7 +169,8 @@ func (bl *bomLine) String() string {
 		bl.IPN,
 		bl.Datasheet,
 		bl.Manufacturer,
-		bl.MPN)
+		bl.MPN,
+		bl.Checked)
 }
 
 func (bl *bomLine) removeRef(ref string) {
