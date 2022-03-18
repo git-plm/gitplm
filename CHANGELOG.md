@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.12] - 2022-03-18](https://github.com/git-plm/gitplm/releases/tag/v0.0.12)
+
 ## [[0.0.11] - 2022-01-22](https://github.com/git-plm/gitplm/releases/tag/v0.0.11)
 
 - add support for checked column. This value now gets propogated from the
