@@ -28,7 +28,9 @@ func (bm *bomMod) processBom(b bom) (bom, error) {
 			retM := bom{}
 			for _, l := range ret {
 				l.removeRef(r.Ref)
-				retM = append(retM, l)
+				if l.Qnty > 0 {
+					retM = append(retM, l)
+				}
 			}
 			ret = retM
 		}
