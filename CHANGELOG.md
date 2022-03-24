@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.0.13] - 2022-03-24](https://github.com/git-plm/gitplm/releases/tag/v0.0.13)
+
+- input output BOMs, move MPN and Manufactuer columns left. This makes it easier
+  to import BOMs into distributor web sites like Mouser.
+
 ## [[0.0.12] - 2022-03-18](https://github.com/git-plm/gitplm/releases/tag/v0.0.12)
 
 - fix issue BOM lines with zero qty not being deleted (#28)
