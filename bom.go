@@ -144,16 +144,16 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 
 type bomLine struct {
 	IPN          ipn    `csv:"IPN" yaml:"ipn"`
-	Ref          string `csv:"Ref" yaml:"ref"`
 	Qnty         int    `csv:"Qnty" yaml:"qnty"`
+	MPN          string `csv:"MPN" yaml:"mpn"`
+	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
+	Ref          string `csv:"Ref" yaml:"ref"`
 	Value        string `csv:"Value" yaml:"value"`
 	CmpName      string `csv:"Cmp name" yaml:"cmpName"`
 	Footprint    string `csv:"Footprint" yaml:"footprint"`
 	Description  string `csv:"Description" yaml:"description"`
 	Vendor       string `csv:"Vendor" yaml:"vendor"`
 	Datasheet    string `csv:"Datasheet" yaml:"datasheet"`
-	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
-	MPN          string `csv:"MPN" yaml:"mpn"`
 	Checked      string `csv:"Checked" yaml:"checked"`
 }
 
