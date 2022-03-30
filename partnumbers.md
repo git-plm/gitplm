@@ -8,8 +8,8 @@ Basic format: CCC-NNN-VVVV
   datasheet** (resistance, capacitance, regulator voltage, IC package, etc.).
   VVVV is also used to encode version for manufactured parts or assemblies.
 
-Why use an intelligent PN scheme over a random part number, which is recommended
-by most in the industry? There are several reasons:
+Why use an intelligent PN scheme over a random or simple incrementing part
+number, which is recommended by most in the industry? There are several reasons:
 
 - the NNN increments, so you do have a "Random" part, which gives you any
   flexibility you need.
