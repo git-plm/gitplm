@@ -80,7 +80,7 @@ Usage of gitplm:
 
 When you run `gitplm` on a BOM, say `ASY-002-0002`, it does the following:
 
-- looks for `partmaster.csv` in the current directory
+- looks for `partmaster.csv` in the current or any subdirectory
 - looks for a file named `ASY-002.csv` in the current directory or any
   subdirectory.
 - looks for a file named `ASY-002.yml` next to `ASY-002.csv`.
@@ -91,7 +91,7 @@ When you run `gitplm` on a BOM, say `ASY-002-0002`, it does the following:
   - if subassemblies are found in the BOM (IPNs that start with `PCB` or `ASY`),
     then a `.../ASY-002-0002/ASY-002-0002-all.csv` file is generated that
     contains all parts from all subassemblies. This can be used for purchasing
-    all parts for a project.
+    all parts for an assembly.
 
 See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
@@ -144,8 +144,8 @@ add:
 
 ## Implementation
 
-- a single partmaster is used for the entire organization and contains internal
-  part numbers (IPN) for all assets used to build a product.
+- a single `partmaster.csv` file is used for the entire organization and
+  contains internal part numbers (IPN) for all assets used to build a product.
   - if multiple sources are available for a part, these can be entered on
     additional lines with the same IPN, and different Manufacturer/MPN
     specified. GitPLM will merge other fields like Description, Value, etc so
