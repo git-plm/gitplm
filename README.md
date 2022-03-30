@@ -4,7 +4,7 @@
 ![code stats](https://tokei.rs/b1/github/git-plm/gitplm?category=code)
 [![Go Report Card](https://goreportcard.com/badge/github.com/git-plm/gitplm)](https://goreportcard.com/report/github.com/git-plm/gitplm)
 
-Product Lifecycle Management (PLM) in Git.
+## Product Lifecycle Management (PLM) in Git.
 
 This repo contains a set of best practices and an application that is used to
 manage information needed to manufacture products. This information may consist
@@ -14,6 +14,36 @@ bin), source control documents, documentation, etc. Each development/design
 process will output and store manufacturing files in a consistent way, such that
 a program can collect all these information assets into a package that can be
 handed off to manufacturing.
+
+**The fundamental thing you want to avoid in any workflow is tedious manual
+operations that need to made over and over. You want to do something once, and
+then your tools do it for you from then on. This is the problem that GitPLM
+solves.**
+
+If you are designing a product of any complexity, you need a part database
+(partmaster). This is central list all parts/components that you use. This
+database cross-references internal part numbers (IPN) to manufacturer part
+numbers (MPN). Your CAD tools should generate BOMs with IPNs, which GitPLM
+combines with the partmaster to generate a BOM with MPNs.
+
+<img src="flow1.png" alt="bom with ipn" style="zoom:50%;" />
+
+_Why not just put MPNs in the CAD database?_ The fundamental reason is that a
+single part may be used in 100's of different places and dozens of assemblies.
+If you need to change a supplier for a part, you don't want to manually modify a
+dozen designs, generate new BOMs, etc. This is manual, tedious, and error prone.
+What you want to do is change the manufacturer information in the partmaster and
+then automatically generate new BOMs for all affected products. Because the BOMs
+are stored in Git, it is easy to review what changed.
+
+The other fundamental operation GitPLM does is generated combined purchasing
+BOMs from multilevel BOMs in an assembly.
+
+<img src="flow2.png" alt="bom with ipn" style="zoom:50%;" />
+
+Common parts from all the BOMs in the assembly are merged into one single BOM
+for purchasing and planning. Combined BOMs can be generated at any level in the
+BOM hierarchy.
 
 ## Installation
 
@@ -89,7 +119,7 @@ add:
 
 ## Principles
 
-- manual operations/tweaks to machine generated files is bad. If changes are
+- manual operations/tweaks to machine generated files are bad. If changes are
   made (example a BOM line item add/removed/changed), this needs to be defined
   declaratively and then this change applied by a program. Ideally this
   mechanism is also idempotent, so we describe where we want to end up, not
@@ -154,7 +184,8 @@ add:
 - versions in part numbers are sequential numbers: (0, 1, 2, 3, 4)
   - _rational: easy to use in programs, sorting, etc_
 - CAD BOMs are never manually "scrubbed". If additional parts are needed in the
-  assembly, create a higher level BOM that includes the CAD generated BOM.
+  assembly, create a higher level BOM that includes the CAD generated BOM, or
+  create a `*.yml` file to declaratively describe modifications to the BOM.
   - _rational: since the CAD program generates the BOM in the first place, any
     manual processing of this BOM will only lead to mistakes._
 - Git "protected" branches can be used to control product release processes.
