@@ -25,8 +25,24 @@ by most in the industry? There are several reasons:
   works fine in electronic tools, but not as well for the parts bin in the lab.
   It is much easier to sort parts by CCC-NNN-VVVV than a long description, even
   if the description is somewhat consistent.
+- an argument can be made that if you can't encode all parameters in the PN,
+  then you should not encode any. I don't buy that. CCC/VVVV organization is
+  very useful when dealing with physical bags of parts in the real world. To
+  find commonly used parts, you will quickly memorize the small NNN number.
 
-CCC-NNN-VVVV works really well for electrical parts. It may not be optimal for
+The CCC-NNN-VVVV scheme is a pragmatic compromise between random part numbers
+and extensive descriptions where every last parameter is encoded in the
+description. It is kind of like using colors on the factory floor -- you can't
+encode everything in colors, but what you can encode sure helps with rapid
+processing by humans.
+
+CCC-NNN-VVVV also follows the general to specific naming convention, which is
+generally the best way to name things.
+
+If you are worried about running out of CCC/NNN variations, then make it
+CCCC-NNNN-VVVV. Still very easy to manually parse on the floor.
+
+CCC-NNN-VVVV works really well for electronic parts. It may not be optimal for
 other parts, but there is nothing stopping you from using a different format for
 other classes of parts.
 
