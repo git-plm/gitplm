@@ -5,7 +5,8 @@ Basic format: CCC-NNN-VVVV
 - CCC: major category (RES, CAP, DIO, etc)
 - NNN: incrementing sequential number for each part
 - VVVV: variation to code variations of a parts typically with the **same
-  datasheet** (resistance, capacitance, regulator voltage, IC package, etc.)
+  datasheet** (resistance, capacitance, regulator voltage, IC package, etc.).
+  VVVV is also used to encode version for manufactured parts or assemblies.
 
 Each group of CCC parts is placed in its own schematic symbol library with the
 same name.
@@ -45,11 +46,11 @@ Examples:
 With resistors, capacitors, and connectors, we encode the value and pin count in
 the variation:
 
-- 1K 0805 1%: RES-002-01K0
-- 3.3K 0805 1%: RES-002-03K3
-- 2.2K 0603 5%: RES-003-02K2 (note we bumped NNN to 003, because different
+- 1K 0805 1%: RES-002-1001
+- 3.3K 0805 1%: RES-002-3301
+- 2.2K 0603 5%: RES-003-2201 (note we bumped NNN to 003, because different
   package size)
-- 10.3K high power 0603: RES-004-10K3 (different vendor/datasheet than RES-002,
+- 10.3K high power 0603: RES-004-1032 (different vendor/datasheet than RES-002,
   so we bump NNN)
 - 2x10, 0.1 in header: CON-000-0020
 - 2x12, 0.1 in header: CON-000-0024
@@ -68,7 +69,7 @@ sequentially incrementing variation (we don't try to encode information)
 - STM32H7 in 44 pin package, 1M flash: MCU-001-0000
 - STM32H7 in 44 pin package, 2M flash: MCU-001-0001
 - STM32H7 in 208 pin package, 1M flash: MCU-001-0002
-- STM32H7 in 208 pin package, 2M flash: MCU-001-0002
+- STM32H7 in 208 pin package, 2M flash: MCU-001-0003
 - STM32F3 in 44 pin package: MCU-002-0044 (not different base part, so bump NNN)
 
 Many parts will not have any variations:
@@ -92,23 +93,32 @@ Generally we don't need to create house part numbers for every part variation --
 only the ones we use. Resistors/caps may be an exception where we simply create
 the entire series in the partmaster because it is easiest to just do once.
 
-Resistor variations are encoded using the industry standard resistor variations.
-R, K, and M are used to designate decimal place. Examples:
+### Resistor part numbers
 
-- 10ohm: 010R
-- 10K: 010K
-- 11.3K: 11K3
-- 1.21M: 1M21
+Most resistor variations (at least 1%) are encoded using the E96 4-digit
+industry standard. Examples:
 
-Capacitor variations are specified using 4 numbers: 3 significant digits+number
-of zeros. These numbers are multiplied to get pico fareds.
+- 2500 = 250 x 100 = 250 x 1 = 250 Ω (This is only and only 250Ω not 2500 Ω)
+- 1000 = 100 x 100 = 100x 1 = 100 Ω
+- 7201 = 720 x 101 = 720 x 10 = 7200 Ω or 7.2kΩ
+- 1001 = 100 × 101 =100 x 10 = 1000 Ω or 1kΩ
+- 1004 = 100 × 104 =100 x 10000 = 1,000,000 Ω or 1MΩ
+- R102 = 0.102 Ω (4-digit SMD resistors (E96 series)
+- 0R10 = 0.1 x 100 = 0.1 x 1 = 0.1 Ω (4-digit SMD resistors (E24 series)
+- 25R5 = 25.5Ω (4-digit SMD resistors (E96 series))
 
-The 4th digit signifies the multiplying factor, and letter R is decimal point.
+### Capacitor part numbers
+
+Most capacitors values are encoded in a 3-digit number where the 1st two digits
+are the value and the last digit is the number of zeros in pF. Since we have 4
+digits, the 1st digit is typically not used, but can if precision caps exist
+that need 3 significant places to encode the value. The goal is to match what
+most vendors are doing so we can easily compare IPN and vendor part numbers.
 
 Examples:
 
-- 1002 = `100 x 10^2 = 10,000 pF = 10nF = 0.01uF`
-- 1003 = 0.1uF
+- 103 = 10 \* 10^3 = 10,000pF = 10nF = 0.01uF
+- 104 = 0.1uF
 
 To figure out the extension, you can divide the capitance by 1pF to get the
 number of pF. From this, you can visually tell what the variation should be.
@@ -116,6 +126,6 @@ Example:
 
 `0.022uF = 0.022e-6/1e-12 = 22000`
 
-So the extension would be `2202`
+So the extension would be `223`
 
-To work backwards, we would have `100 * 220 = 22,000pF/1e-6 = 0.022uF`.
+To work backwards, we would have `1000 * 22 = 22,000pF/1e-6 = 0.022uF`.
