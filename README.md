@@ -6,6 +6,11 @@
 
 ## Product Lifecycle Management (PLM) in Git.
 
+Additional documents:
+
+- [Part numbers](partnumbers.md)
+- [Changelog](CHANGELOG.md)
+
 This repo contains a set of best practices and an application that is used to
 manage information needed to manufacture products. This information may consist
 of bill of materials (BOM), PCB manufacturing files (gerbers, drawings),
