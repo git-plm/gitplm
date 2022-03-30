@@ -8,10 +8,30 @@ Basic format: CCC-NNN-VVVV
   datasheet** (resistance, capacitance, regulator voltage, IC package, etc.).
   VVVV is also used to encode version for manufactured parts or assemblies.
 
-Each group of CCC parts is placed in its own schematic symbol library with the
-same name.
+Why use an intelligent PN scheme over a random part number, which is recommended
+by most in the industry? There are several reasons:
 
-The following CCC groups are suggested for electrical parts:
+- the NNN increments, so you do have a "Random" part, which gives you any
+  flexibility you need.
+- the CCC naturally sorts parts for you -- on your BOM, in the warehouse, in the
+  factory, in your lab stock, etc. When physically dealing with 100's of part
+  numbers on a large PCB, any organization is helpful.
+- the VVVV allows you to group variations of the same part together. Again, when
+  I go to my lab stock, if I need a 0603 resistor, I can quickly find it, versus
+  having to look for a random part number. If you need to add additional values
+  later, they are still grouped together vs being located 1000's of numbers
+  later.
+- an argument could be made that the description is adequate. The description
+  works fine in electronic tools, but not as well for the parts bin in the lab.
+  It is much easier to sort parts by CCC-NNN-VVVV than a long description, even
+  if the description is somewhat consistent.
+
+CCC-NNN-VVVV works really well for electrical parts. It may not be optimal for
+other parts, but there is nothing stopping you from using a different format for
+other classes of parts.
+
+Each group of CCC parts is placed in its own schematic symbol library with the
+same name. The following CCC groups are suggested for electrical parts:
 
 - ANA: op-amps, comparators, A/D, D/A
 - CAP: capacitors
