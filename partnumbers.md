@@ -31,6 +31,8 @@ by most in the industry? There are several reasons:
   then you should not encode any. I don't buy that. CCC/VVVV organization is
   very useful when dealing with physical bags of parts in the real world. To
   find commonly used parts, you will quickly memorize the small NNN number.
+- we group schematic parts into symbol libraries in our CAD tools. If that level
+  of organization is useful, why not apply the same concept to the PN?
 
 The CCC-NNN-VVVV scheme is a pragmatic compromise between random part numbers
 and extensive descriptions where every last parameter is encoded in the
