@@ -73,6 +73,7 @@ The following CCC groups are suggested for other parts:
 - FST: fasteners (screws, bolts, nuts, etc)
 - CBL: cables, etc
 - ENC: enclosures
+- PKG: packaging
 
 The following CCC groups are suggested for things you produce:
 
