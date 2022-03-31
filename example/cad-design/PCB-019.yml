@@ -1,3 +1,4 @@
+# this file is used by GitPLM to describe modifications to a BOM before the output is generated.
 remove:
   - cmpName: Test point
   - cmpName: Test point 2
