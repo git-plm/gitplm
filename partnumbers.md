@@ -68,11 +68,25 @@ same name. The following CCC groups are suggested for electrical parts:
 - TXT: test points/pads
 - XTL: crystals
 
-The following CCC groups are suggested for high level assemblies:
+The following CCC groups are suggested for other parts:
 
-- PCB: Printed Circuit board
-- ASY: Assembly (can be top level or subassembly -- typically represented by BOM
-  and documentation)
+- FST: fasteners (screws, bolts, nuts, etc)
+- CBL: cables, etc
+- ENC: enclosures
+
+The following CCC groups are suggested for things you produce:
+
+- PCA: Printed Circuit Assembly. The variation is incremented any time the BOM
+  for the assembly changes.
+- PCB: Printed Circuit board. The variation is the version of the PCB layout.
+- ASY: Assembly (can be mechanical or top level subassembly -- typically
+  represented by BOM and documentation). Again, the variation is incremented any
+  time a BOM line item changes.
+- DOC: standalone documents
+- FIR: firmware to be loaded on MCUs, etc
+- SFT: software (images for embedded Linux systems, applications, programming
+  utilities, etc)
+- FIX: manufacturing fixtures
 
 Some additional guidelines:
 
