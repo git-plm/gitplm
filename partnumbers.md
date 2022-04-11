@@ -23,7 +23,8 @@ name at birth -- it's hard to change later -- especially the format. Thus, it is
 good to think through this -- what are your goals, who uses IPNs, how are they
 used, how is material handled, etc. IPNs seem trivial -- just a few
 characters/digits -- why does it matter? What is this in relation to the
-complexity of the design, software, etc?
+complexity of the design, software, etc? But it is the most basic, simple things
+that matter the most.
 
 As Phil Karlton said:
 
@@ -39,7 +40,7 @@ can support, or what is best for one department -- make sure it's great for the
 entire organization. An optimized IPN strategy can **improve your organization's
 efficiencies**, and **reduce mistakes.**
 
-## Requirements
+## IPN Requirements
 
 - short enough to remember for commonly used parts
 - easy to identify, compare, and process by humans
@@ -115,6 +116,9 @@ variations.
 
 ### Suggested part categories
 
+The following is just an example -- will likely need tweaked for different
+industries.
+
 The number of categories should be kept reasonably small to minimize the
 difficulty of assigning new part numbers.
 
@@ -149,9 +153,9 @@ The following CCC groups are suggested for other parts (preliminary):
 The following CCC groups are suggested for things you produce:
 
 - PCS: Printed Circuit Schematic.
-- PCA: Printed Circuit Assembly. The variation is incremented any time the BOM
-  for the assembly changes.
-- PCB: Printed Circuit board. The variation is the version of the PCB layout.
+- PCA: Printed Circuit Assembly. The version is incremented any time the BOM for
+  the assembly changes.
+- PCB: Printed Circuit board. This category identifies the bare PCB board.
 - ASY: Assembly (can be mechanical or top level subassembly -- typically
   represented by BOM and documentation). Again, the variation is incremented any
   time a BOM line item changes. You can also use product specific prefixes such
@@ -163,7 +167,7 @@ The following CCC groups are suggested for things you produce:
 - DCL: data -- calibration data for a design
 - FIX: manufacturing fixtures
 
-Conventions can be used such that the PCS, PCA, and PCB NNN should be a matched
+Conventions can be used such that the PCS, PCA, and PCB NNN can be a matched
 set:
 
 | IPN          | Description                                    | Version |
@@ -257,8 +261,8 @@ Some trade-offs to consider:
     are easy for humans to remember and recognize. Why not follow a similar
     format in IPNs?
   - We often group schematic parts into symbol libraries in our CAD tools. If
-    that level of organization is useful, why not leverage that same
-    organization throughout the company?
+    that level of organization is useful for designers, why not leverage that
+    same organization throughout the company?
   - humans read and compare IPNs many more times than we create or write them.
     Thus IPNs **should be optimized for reading and comparison by humans.**
   - a semi-structured part number is conducive to simple automation and
@@ -266,6 +270,8 @@ Some trade-offs to consider:
     example of this). CCC values can trigger different types of workflow. This
     helps a lot when you are starting out and can't afford $2M for a full blown
     MRP/PLM/... system.
+  - a semi-structured part number is simple to implement -- any company, no
+    matter how small, can implement this now and gain benefits.
 
 An argument can be made that we don't need semi-structured IPNs and a simple
 incrementing number and expressive descriptions/parameters in a database is
@@ -303,8 +309,8 @@ identify people by `<firstname> <lastname>`. Names are useful!
 The CCC-NNN-VVVV scheme is a pragmatic compromise between random part numbers
 and extensive descriptions where every last parameter is encoded in the
 description. It is kind of like using colors on the factory floor -- you can't
-encode everything in colors, but what you can encode sure helps with rapid
-processing by humans.
+encode everything in colors, but what you can encode sure helps with rapid,
+accurate processing by humans.
 
 Three letters for CCC has the following attributes:
 
@@ -317,7 +323,7 @@ Three letters for CCC has the following attributes:
   number assignment.
 
 CCC-NNN-VVVV also follows the general to specific naming convention, which is
-generally the best way to name things.
+generally a good way to name things.
 
 If you are worried about running out of CCC/NNN variations, then make it
 CCCC-NNNN-VVVV. Still very easy to manually parse on the floor. However, the
@@ -325,26 +331,28 @@ original NNN size gives you 1000 values, which is a lot. If your company is
 successful to the point that you need more than 1000 values in a category, then
 it's time to celebrate, and you'll certainly have the resources to handle the
 next phase of expanding it to NNNN, more categories, etc. However, **you first
-need to get there, so optimize for "getting to success" phase now.** All the
+need to get there, so optimize for the "getting to success" phase now.** All the
 microseconds and mistakes you'll save with the shorter NNN vs the longer NNNN
 will pay off. And there is no reason why NNN and NNNN can't live in the same
 database post success -- you now have an additional piece of information which
 groups parts in time.
 
 The CCC-NNN-VVVV format presented here is optimized for a small/mid-sized
-company making electronic products. It is likely not optimal for other
-industries.
+company making electronic products. It may not be optimal for other industries.
 
 If you do a google search on this topic, the seemingly prevailing opinion is
 against structured part numbers. However, it appears most of these articles are
 written by PLM tool vendors. Perhaps their criticisms are valid for fully
 structured part numbers, but we're already demonstrated that semi-structured
 part numbers can be designed to avoid most drawbacks, other than a little more
-work up-front to create. But the efficiencies gained downstream should more than
-pay back this effort. It appears that most automotive manufacturers use
-semi-structured part numbers. With some, you can tell where a part goes on an
-automobile from its PN. McMaster-Carr uses semi-structured PNs. Maybe you should
-too ...
+work up-front to create. The efficiencies gained downstream should pay back this
+effort many times. It appears that most automotive manufacturers use
+semi-structured part numbers. I don't have direct experience, but I've heard you
+can tell where a part goes on an automobile from its PN. Yes, it takes more work
+up front to figure out these part numbers, but having this simple check during
+manufacturing is a a simple and effective check against errors and improves
+efficiency. McMaster-Carr also uses semi-structured PNs. Maybe you should too
+...
 
 ## Examples
 
@@ -438,8 +446,8 @@ To work backwards, we would have `1000 * 22 = 22,000pF/1e-6 = 0.022uF`.
 
 ## Implementation
 
-Defining a part number structure is only part of the battle -- implementation is
-also critical. IPNs function as a common reference to an object across an
+Defining a part number structure is only part of the story -- implementation is
+also critical. IPNs function as a _common_ reference to an object across an
 organization. Thus, the implementation needs to be common across the
 organization. Engineers should be able to pull new PN's and specify requirements
 in the same database as manufacturing uses for planning and purchasing -- this
@@ -448,7 +456,8 @@ is the only configuration that will scale.
 ## Reference
 
 The above information was compiled from the following discussions, articles, and
-direct discussions with various people. All input is greatly appreciated.
+direct discussions with various people. All input, especially criticisms, has
+been very valuable in clarifying the thinking on this topic.
 
 - [Extensive discussion on the KiCad forum](https://forum.kicad.info/t/internal-house-part-number-formats/34958)
 - [PLM good practice](https://forum.kicad.info/t/internal-house-part-number-formats/34958)
