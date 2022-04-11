@@ -1,5 +1,47 @@
 # Part number guidelines
 
+## Why have internal part numbers (IPNs)
+
+Companies that manufacture products typically need internal part numbers for the
+following reasons:
+
+- they need to be able to identify parts/products they manufacture
+- it is useful to assign IPNs to purchased parts as well so you can easily
+  change sources, have multiple sources, etc.
+- any time physical materials are handled, they need to be labeled in a way that
+  is consistent so that it is easy to recognize and process by humans.
+
+## Structured or Unstructured?
+
+One of the fundamental questions regarding part numbers is whether to use
+structured or unstructured part numbers. An unstructured part number is a number
+that starts at say 1000000, and simply increments for each new part.
+
+A fully structured part number might try to encode every parameter in the part
+number -- for example:
+
+`RES-0603-0.1W-1%-20ppm-10K`
+
+Many companies use a semi-structured part number format that consists of the
+following components:
+
+- **category** - a broad category for the part
+- **incrementing number** - this is a simple incrementing number within a
+  category that gives semi-structured part numbers all the same flexibility that
+  unstructured part numbers have.
+- **variation** - this field is used to differentiate similar parts and can
+  encode the differentiating paramer (resistance, length, size, etc) or can be a
+  simple incrementing number.
+
+There are many arguments for and against structure in part numbers, and
+different organizations have different needs, so there is no one-size-fits-all.
+However,
+
+- **structure cons**
+- **structure pros**
+
+## Suggested part number format
+
 Basic format: CCC-NNN-VVVV
 
 - CCC: major category (RES, CAP, DIO, etc)
@@ -50,8 +92,9 @@ CCC-NNN-VVVV works really well for electronic parts. It may not be optimal for
 other parts, but there is nothing stopping you from using a different format for
 other classes of parts.
 
-Each group of CCC parts is placed in its own schematic symbol library with the
-same name. The following CCC groups are suggested for electrical parts:
+## Suggested part categories
+
+The following CCC groups are suggested for electrical parts:
 
 - ANA: op-amps, comparators, A/D, D/A
 - CAP: capacitors
@@ -67,6 +110,9 @@ same name. The following CCC groups are suggested for electrical parts:
 - TRA: transistors, FETs
 - TXT: test points/pads
 - XTL: crystals
+
+Each group of CCC parts is placed in its own schematic symbol library with the
+same name.
 
 The following CCC groups are suggested for other parts:
 
@@ -96,7 +142,7 @@ Some additional guidelines:
 - Character set is restricted to capital letters, digits, and hyphen.
 - Avoid punctuation characters such as %, !, (, ., etc.
 
-Examples:
+## Examples
 
 With resistors, capacitors, and connectors, we encode the value and pin count in
 the variation:
