@@ -1,5 +1,23 @@
 # Internal Part number guidelines
 
+<!-- vim-markdown-toc GFM -->
+
+- [Why have internal part numbers (IPNs)](#why-have-internal-part-numbers-ipns)
+- [IPN Requirements](#ipn-requirements)
+- [Who uses IPNs and how are they used?](#who-uses-ipns-and-how-are-they-used)
+- [Suggested part number format](#suggested-part-number-format)
+  - [Encoding Product Version and Variations](#encoding-product-version-and-variations)
+  - [Suggested part categories](#suggested-part-categories)
+  - [Why use the same format for IPN and external model number?](#why-use-the-same-format-for-ipn-and-external-model-number)
+  - [Examples](#examples)
+    - [Resistor part numbers](#resistor-part-numbers)
+    - [Capacitor part numbers](#capacitor-part-numbers)
+- [Implementation](#implementation)
+- [Structured or Unstructured?](#structured-or-unstructured)
+- [Reference](#reference)
+
+<!-- vim-markdown-toc -->
+
 ## Why have internal part numbers (IPNs)
 
 An Internal Part Numbers (IPNs) (also call stock codes, unique identifier codes,
@@ -24,7 +42,7 @@ good to think through this -- what are your goals, who uses IPNs, how are they
 used, how is material handled, etc. IPNs seem trivial -- just a few
 characters/digits -- why does it matter? What is this in relation to the
 complexity of the design, software, etc? But it is the most basic, simple things
-that matter the most.
+that matter the most, especially if you want to scale.
 
 As Phil Karlton said:
 
@@ -69,8 +87,8 @@ Basic format: CCC-NNN-VVVV
 - NNN: incrementing sequential number for each part. This gives this format
   flexibility.
 - VVVV: use to code variations of similar parts typically with the **same
-  datasheet** (resistance, capacitance, regulator voltage, IC package, screw
-  type, etc.). VVVV is also used to encode version and variations for
+  datasheet or family** (resistance, capacitance, regulator voltage, IC package,
+  screw type, etc.). VVVV is also used to encode version and variations for
   manufactured parts or assemblies.
 
 This PN format can be used to track a wide range of items:
@@ -93,8 +111,7 @@ following reasons:
 Manufactured products often are sold as a family of related products. For
 example, you might manufacture a gateway with different RAM and Flash
 configurations. It is useful to group these product IPNs together as
-_variations_ of a product. Products also under go changes over time
-(_versions_).
+_variations_ of a product. Products also undergo changes over time (_versions_).
 
 The 4 digit variation field can be used to encode both of these. The first two
 digits can be used to encode the variation, and the second two digits the
@@ -167,8 +184,7 @@ The following CCC groups are suggested for things you produce:
 - DCL: data -- calibration data for a design
 - FIX: manufacturing fixtures
 
-Conventions can be used such that the PCS, PCA, and PCB NNN can be a matched
-set:
+Conventions can be used such that the PCS, PCA, and PCB NNN are a matched set:
 
 | IPN          | Description                                    | Version |
 | ------------ | ---------------------------------------------- | ------- |
@@ -200,6 +216,105 @@ benefits:
 - customers may need to order service parts that are also used in manufacturing.
   If the internal and external numbers are the same, handling/stocking these
   parts is simpler.
+
+### Examples
+
+With resistors, capacitors, and connectors, we encode the value and pin count in
+the variation:
+
+- 1K 0805 1%: RES-002-1001
+- 3.3K 0805 1%: RES-002-3301
+- 2.2K 0603 5%: RES-003-2201 (note we bumped NNN to 003, because different
+  package size)
+- 10.3K high power 0603: RES-004-1032 (different vendor/datasheet than RES-002,
+  so we bump NNN)
+- 2x10, 0.1 in header: CON-000-0020
+- 2x12, 0.1 in header: CON-000-0024
+- 1x10, 0.1 in header: CON-001-0010
+- 1x20, 0.1 in header: CON-001-0020
+
+With most ICs we simply enumerate all the variations of a particular IC in a
+sequentially incrementing variation (we don't try to encode information)
+
+- LM78xx SOT223 5V: REG-089-0000
+- LM78xx DIP 5V: REG-089-0001
+- LM78xx SOT223 3.3V: REG-089-0002
+- LM78xx DIP 3.3V: REG-089-0003
+- 3.3v switching reg, SSOP8: REG-002-0000
+- 3.3v switching reg, S08: REG-002-0001
+- STM32H7 in 44 pin package, 1M flash: MCU-001-0000
+- STM32H7 in 44 pin package, 2M flash: MCU-001-0001
+- STM32H7 in 208 pin package, 1M flash: MCU-001-0002
+- STM32H7 in 208 pin package, 2M flash: MCU-001-0003
+- STM32F3 in 44 pin package: MCU-002-0000 (note different base part, so bump
+  NNN)
+
+Many parts will not have any variations:
+
+- 2N4401 DIODE: DIO-000-0000 (no variation information, that is fine)
+- 2N2222 transistor: TRA-000-0000 (again, no variation info)
+
+The variation section is only used in cases where a part with a single datasheet
+has multiple variations. Variations are generally used to encode one parameter
+with the most different variations -- for instance resistance with resistors. A
+single datasheet may include 0603, 0805, and 1206 options, but take out separate
+NNN part numbers for different package sizes because with resistors, it makes
+the most sense to encode the resistance in the variation (because there are lots
+of resistance values), not the package size. There are relatively few package
+sizes for resistors so it makes sense to take out new NNN numbers for different
+packages. However, for voltage regulators, it may make sense to encode both the
+regulated voltage and the package in the variation, because there is a
+relatively small number of combinations.
+
+Generally we don't need to create house part numbers for every part variation --
+only the ones we use. Resistors/caps may be an exception where we simply create
+the entire series in the partmaster because it is easiest to just do once.
+
+#### Resistor part numbers
+
+Most resistor variations (at least 1%) are encoded using the E96 4-digit
+industry standard. Examples:
+
+- 2500 = 250 x 100 = 250 x 1 = 250 Ω (This is only and only 250Ω not 2500 Ω)
+- 1000 = 100 x 100 = 100x 1 = 100 Ω
+- 7201 = 720 x 101 = 720 x 10 = 7200 Ω or 7.2kΩ
+- 1001 = 100 × 101 =100 x 10 = 1000 Ω or 1kΩ
+- 1004 = 100 × 104 =100 x 10000 = 1,000,000 Ω or 1MΩ
+- R102 = 0.102 Ω (4-digit SMD resistors (E96 series)
+- 0R10 = 0.1 x 100 = 0.1 x 1 = 0.1 Ω (4-digit SMD resistors (E24 series)
+- 25R5 = 25.5Ω (4-digit SMD resistors (E96 series))
+
+#### Capacitor part numbers
+
+Most capacitors values are encoded in a 3-digit number where the 1st two digits
+are the value and the last digit is the number of zeros in pF. Since we have 4
+digits, the 1st digit is typically not used, but can if precision caps exist
+that need 3 significant places to encode the value. The goal is to match what
+most vendors are doing so we can easily compare IPN and vendor part numbers.
+
+Examples:
+
+- 103 = 10 \* 10^3 = 10,000pF = 10nF = 0.01uF
+- 104 = 0.1uF
+
+To figure out the extension, you can divide the capitance by 1pF to get the
+number of pF. From this, you can visually tell what the variation should be.
+Example:
+
+`0.022uF = 0.022e-6/1e-12 = 22000`
+
+So the extension would be `223`
+
+To work backwards, we would have `1000 * 22 = 22,000pF/1e-6 = 0.022uF`.
+
+## Implementation
+
+Defining a part number structure is only part of the story -- implementation is
+also critical. IPNs function as a _common_ reference to an object across an
+organization. Thus, the implementation needs to be common across the
+organization. Engineers should be able to pull new PN's and specify requirements
+in the same database as manufacturing uses for planning and purchasing -- this
+is the only configuration that will scale.
 
 ## Structured or Unstructured?
 
@@ -348,110 +463,11 @@ part numbers can be designed to avoid most drawbacks, other than a little more
 work up-front to create. The efficiencies gained downstream should pay back this
 effort many times. It appears that most automotive manufacturers use
 semi-structured part numbers. I don't have direct experience, but I've heard you
-can tell where a part goes on an automobile from its PN. Yes, it takes more work
-up front to figure out these part numbers, but having this simple check during
+can tell where a part goes on an automobile from its PN. It takes more work up
+front to figure out these part numbers, but having this simple check during
 manufacturing is a a simple and effective check against errors and improves
 efficiency. McMaster-Carr also uses semi-structured PNs. Maybe you should too
 ...
-
-## Examples
-
-With resistors, capacitors, and connectors, we encode the value and pin count in
-the variation:
-
-- 1K 0805 1%: RES-002-1001
-- 3.3K 0805 1%: RES-002-3301
-- 2.2K 0603 5%: RES-003-2201 (note we bumped NNN to 003, because different
-  package size)
-- 10.3K high power 0603: RES-004-1032 (different vendor/datasheet than RES-002,
-  so we bump NNN)
-- 2x10, 0.1 in header: CON-000-0020
-- 2x12, 0.1 in header: CON-000-0024
-- 1x10, 0.1 in header: CON-001-0010
-- 1x20, 0.1 in header: CON-001-0020
-
-With most ICs we simply enumerate all the variations of a particular IC in a
-sequentially incrementing variation (we don't try to encode information)
-
-- LM78xx SOT223 5V: REG-089-0000
-- LM78xx DIP 5V: REG-089-0001
-- LM78xx SOT223 3.3V: REG-089-0002
-- LM78xx DIP 3.3V: REG-089-0003
-- 3.3v switching reg, SSOP8: REG-002-0000
-- 3.3v switching reg, S08: REG-002-0001
-- STM32H7 in 44 pin package, 1M flash: MCU-001-0000
-- STM32H7 in 44 pin package, 2M flash: MCU-001-0001
-- STM32H7 in 208 pin package, 1M flash: MCU-001-0002
-- STM32H7 in 208 pin package, 2M flash: MCU-001-0003
-- STM32F3 in 44 pin package: MCU-002-0000 (note different base part, so bump
-  NNN)
-
-Many parts will not have any variations:
-
-- 2N4401 DIODE: DIO-000-0000 (no variation information, that is fine)
-- 2N2222 transistor: TRA-000-0000 (again, no variation info)
-
-The variation section is only used in cases where a part with a single datasheet
-has multiple variations. Variations are generally used to encode one parameter
-with the most different variations -- for instance resistance with resistors. A
-single datasheet may include 0603, 0805, and 1206 options, but take out separate
-NNN part numbers for different package sizes because with resistors, it makes
-the most sense to encode the resistance in the variation (because there are lots
-of resistance values), not the package size. There are relatively few package
-sizes for resistors so it makes sense to take out new NNN numbers for different
-packages. However, for voltage regulators, it may make sense to encode both the
-regulated voltage and the package in the variation, because there is a
-relatively small number of combinations.
-
-Generally we don't need to create house part numbers for every part variation --
-only the ones we use. Resistors/caps may be an exception where we simply create
-the entire series in the partmaster because it is easiest to just do once.
-
-### Resistor part numbers
-
-Most resistor variations (at least 1%) are encoded using the E96 4-digit
-industry standard. Examples:
-
-- 2500 = 250 x 100 = 250 x 1 = 250 Ω (This is only and only 250Ω not 2500 Ω)
-- 1000 = 100 x 100 = 100x 1 = 100 Ω
-- 7201 = 720 x 101 = 720 x 10 = 7200 Ω or 7.2kΩ
-- 1001 = 100 × 101 =100 x 10 = 1000 Ω or 1kΩ
-- 1004 = 100 × 104 =100 x 10000 = 1,000,000 Ω or 1MΩ
-- R102 = 0.102 Ω (4-digit SMD resistors (E96 series)
-- 0R10 = 0.1 x 100 = 0.1 x 1 = 0.1 Ω (4-digit SMD resistors (E24 series)
-- 25R5 = 25.5Ω (4-digit SMD resistors (E96 series))
-
-### Capacitor part numbers
-
-Most capacitors values are encoded in a 3-digit number where the 1st two digits
-are the value and the last digit is the number of zeros in pF. Since we have 4
-digits, the 1st digit is typically not used, but can if precision caps exist
-that need 3 significant places to encode the value. The goal is to match what
-most vendors are doing so we can easily compare IPN and vendor part numbers.
-
-Examples:
-
-- 103 = 10 \* 10^3 = 10,000pF = 10nF = 0.01uF
-- 104 = 0.1uF
-
-To figure out the extension, you can divide the capitance by 1pF to get the
-number of pF. From this, you can visually tell what the variation should be.
-Example:
-
-`0.022uF = 0.022e-6/1e-12 = 22000`
-
-So the extension would be `223`
-
-To work backwards, we would have `1000 * 22 = 22,000pF/1e-6 = 0.022uF`.
-
-## Implementation
-
-Defining a part number structure is only part of the story -- implementation is
-also critical. IPNs function as a _common_ reference to an object across an
-organization. Thus, the implementation needs to be common across the
-organization. Engineers should be able to pull new PN's and specify requirements
-in the same database as manufacturing uses for planning and purchasing -- this
-is the only configuration that will scale.
 
 ## Reference
 
