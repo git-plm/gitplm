@@ -476,14 +476,9 @@ direct discussions with various people. All input, especially criticisms, has
 been very valuable in clarifying the thinking on this topic.
 
 - [Extensive discussion on the KiCad forum](https://forum.kicad.info/t/internal-house-part-number-formats/34958)
-- [PLM good practice](https://forum.kicad.info/t/internal-house-part-number-formats/34958)
-- [Why to use intelligent PNs in the 21st century](https://beyondplm.com/2015/09/18/why-to-use-intelligent-part-numbers-in-21st-century/)
-- [Part Numbers are hard. How to think about data first?](https://beyondplm.com/2014/07/28/part-numbers-are-hard-how-to-think-about-data-first/)
-  - > Product data is one of the most expensive assets in manufacturing
-    > companies. It represents your company IP and it is a real foundation of
-    > every manufacturing business. Think about data first. It will help you to
-    > develop strategy that organize data for longer lifecycle and minimize the
-    > cost of bringing new systems and manage changes in existing systems.
+- PLM good practice (PDexpert)
+  - [Part numbering system design](https://www.buyplm.com/plm-good-practice/part-numbering-system-software.aspx)
+  - [Intelligent part numbers: The cost of being too smart](https://www.buyplm.com/plm-good-practice/intelligent-part-number-scheme.aspx)
 - [Intelligent Numbering: What’s the Great Part Number Debate?](https://blog.grabcad.com/blog/2014/07/24/intelligent-numbering-debate/)
   - 4 perspectives to consider:
     - Creation and Data Entry
@@ -493,3 +488,14 @@ been very valuable in clarifying the thinking on this topic.
     - Interpretation
   - This is a great article that explains the challenge of balancing all these
     factors.
+- Oleg Shilovitsky
+  - [Why to use intelligent PNs in the 21st century](https://beyondplm.com/2015/09/18/why-to-use-intelligent-part-numbers-in-21st-century/)
+  - [Part Numbers are hard. How to think about data first?](https://beyondplm.com/2014/07/28/part-numbers-are-hard-how-to-think-about-data-first/)
+    - > Product data is one of the most expensive assets in manufacturing
+      > companies. It represents your company IP and it is a real foundation of
+      > every manufacturing business. Think about data first. It will help you
+      > to develop strategy that organize data for longer lifecycle and minimize
+      > the cost of bringing new systems and manage changes in existing systems.
+  - [The future of Part Numbers and Unique Identification?](https://beyondplm.com/2013/12/12/the-future-of-part-numbers-and-unique-identification/)
+    - discusses schemes that large companies are using to accomplish global
+      product IDs
