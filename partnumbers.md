@@ -400,7 +400,7 @@ mistakes**.
 The case can be made that inventory and PLM software does care about structure
 in PNs. This may be true, but you still need to solve the following problems:
 
-- humans move parts around -- smart names helps minimize errors and improve
+- humans move parts around -- smart naming helps minimize errors and improve
   processing/recognition/comparison
 - how are you going to organize/find parts/products in your back room before you
   are big enough to justify an inventory management system? If you have a
@@ -464,8 +464,8 @@ work up-front to create. The efficiencies gained downstream should pay back this
 effort many times. It appears that most automotive manufacturers use
 semi-structured part numbers. I don't have direct experience, but I've heard you
 can tell where a part goes on an automobile from its PN. It takes more work up
-front to figure out these part numbers, but having this simple check during
-manufacturing is a a simple and effective check against errors and improves
+front to figure out these part numbers, but having this bit of information
+during manufacturing is a simple and effective check against errors and improves
 efficiency. McMaster-Carr also uses semi-structured PNs. Maybe you should too
 ...
 
@@ -478,3 +478,9 @@ been very valuable in clarifying the thinking on this topic.
 - [Extensive discussion on the KiCad forum](https://forum.kicad.info/t/internal-house-part-number-formats/34958)
 - [PLM good practice](https://forum.kicad.info/t/internal-house-part-number-formats/34958)
 - [Why to use intelligent PNs in the 21st century](https://beyondplm.com/2015/09/18/why-to-use-intelligent-part-numbers-in-21st-century/)
+- [Part Numbers are hard. How to think about data first?](https://beyondplm.com/2014/07/28/part-numbers-are-hard-how-to-think-about-data-first/)
+  - > Product data is one of the most expensive assets in manufacturing
+    > companies. It represents your company IP and it is a real foundation of
+    > every manufacturing business. Think about data first. It will help you to
+    > develop strategy that organize data for longer lifecycle and minimize the
+    > cost of bringing new systems and manage changes in existing systems.
