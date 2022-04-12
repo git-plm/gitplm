@@ -484,3 +484,12 @@ been very valuable in clarifying the thinking on this topic.
     > every manufacturing business. Think about data first. It will help you to
     > develop strategy that organize data for longer lifecycle and minimize the
     > cost of bringing new systems and manage changes in existing systems.
+- [Intelligent Numbering: What’s the Great Part Number Debate?](https://blog.grabcad.com/blog/2014/07/24/intelligent-numbering-debate/)
+  - 4 perspectives to consider:
+    - Creation and Data Entry
+    - Longevity and Legacies
+    - Readability
+    - Uniqueness
+    - Interpretation
+  - This is a great article that explains the challenge of balancing all these
+    factors.
