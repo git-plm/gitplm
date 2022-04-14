@@ -7,7 +7,9 @@
 - [Who uses IPNs and how are they used?](#who-uses-ipns-and-how-are-they-used)
 - [Suggested part number format](#suggested-part-number-format)
   - [Encoding Product Version and Variations](#encoding-product-version-and-variations)
-  - [Suggested part categories](#suggested-part-categories)
+  - [Three letter category code](#three-letter-category-code)
+  - [Three number category code](#three-number-category-code)
+  - [Two letter category code](#two-letter-category-code)
   - [Why use the same format for IPN and external model number?](#why-use-the-same-format-for-ipn-and-external-model-number)
   - [Examples](#examples)
     - [Resistor part numbers](#resistor-part-numbers)
@@ -83,7 +85,8 @@ efficiencies**, and **reduce mistakes.**
 
 Basic format: CCC-NNN-VVVV
 
-- CCC: three letters to identify major category (RES, CAP, DIO, etc).
+- CCC: one to three letters or numbers to identify major category (RES, CAP,
+  DIO, E (electrical), M (mechanical), etc).
 - NNN: incrementing sequential number for each part. This gives this format
   flexibility.
 - VVVV: use to code variations of similar parts typically with the **same
@@ -131,7 +134,7 @@ limits, then celebrate that you are wildly successful!!!! Your product has been
 in production for a long time or has enough volume to justify a large number of
 variations.
 
-### Suggested part categories
+### Three letter category code
 
 The following is just an example -- will likely need tweaked for different
 industries.
@@ -141,20 +144,22 @@ difficulty of assigning new part numbers.
 
 The following CCC groups are suggested for electrical parts:
 
-- ANA: op-amps, comparators, A/D, D/A
-- CAP: capacitors
-- CON: connectors
-- DIO: diodes
-- IND: inductors
-- ICS: integrated circuits, mcus, etc
-- OSC: oscillators
-- PWR: relays, etc
-- REG: regulators
-- RES: resistors
-- SWI: switch
-- TRA: transistors, FETs
-- TXT: test points/pads
-- XTL: crystals
+| Code | Description                    |
+| ---- | ------------------------------ |
+| ANA  | op-amps, comparators, A/D, D/A |
+| CAP  | capacitors                     |
+| CON  | connectors                     |
+| DIO  | diodes                         |
+| IND  | inductors                      |
+| ICS  | integrated circuits, mcus, etc |
+| OSC  | oscillators                    |
+| PWR  | relays, etc                    |
+| REG  | regulators                     |
+| RES  | resistors                      |
+| SWI  | switch                         |
+| TRA  | transistors, FETs              |
+| TXT  | test points/pads               |
+| XTL  | crystals                       |
 
 Each group of CCC parts is placed in its own schematic symbol library with the
 same name. Keeping the CCC and CAD library names the same introduces
@@ -162,27 +167,32 @@ consistency, which brings efficiency.
 
 The following CCC groups are suggested for other parts (preliminary):
 
-- FST: fasteners (screws, bolts, nuts, etc)
-- CBL: cables, etc
-- ENC: enclosures
-- PKG: packaging
+| Code | Description                                                                                                                                          |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FST  | fasteners (screws, bolts, nuts, etc)                                                                                                                 |
+| CBL  | cables, etc                                                                                                                                          |
+| ENC  | enclosures                                                                                                                                           |
+| PKG  | packaging                                                                                                                                            |
+| OPT  | Optics: Windows, Lens, light pipes, etc.                                                                                                             |
+| FLD  | Fluids: Lubricants, oil, valve, check, divertor, reducer, tubes, pipes, hoses, seals, gaskets, sealants, diaphragms, bellows, pistons, cylinders     |
+| MRK  | Markings: Coatings, labels, Pain, Dye, Ink, etc                                                                                                      |
+| DRV  | Drive: Bearings/ Bushings, Gears and sprockets, Chains, Rollers, Motors, actuators                                                                   |
+| STC  | Structural: connection hardware, lever arms, springs, beams, bars, plates, guide rods, ways, saddles, clamps, brackets, flanges, standoffs, castings |
+| TMP  | Heat exchangers, sinks                                                                                                                               |
 
 The following CCC groups are suggested for things you produce:
 
-- PCS: Printed Circuit Schematic.
-- PCA: Printed Circuit Assembly. The version is incremented any time the BOM for
-  the assembly changes.
-- PCB: Printed Circuit board. This category identifies the bare PCB board.
-- ASY: Assembly (can be mechanical or top level subassembly -- typically
-  represented by BOM and documentation). Again, the variation is incremented any
-  time a BOM line item changes. You can also use product specific prefixes such
-  as GTW (gateway).
-- DOC: standalone documents
-- DFW: data -- firmware to be loaded on MCUs, etc
-- DSW: data -- software (images for embedded Linux systems, applications,
-  programming utilities, etc)
-- DCL: data -- calibration data for a design
-- FIX: manufacturing fixtures
+| Code | Description                                                                                                                                                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PCS  | Printed Circuit Schematic.                                                                                                                                                                                                                       |
+| PCA  | Printed Circuit Assembly. The version is incremented any time the BOM for the assembly changes.                                                                                                                                                  |
+| PCB  | Printed Circuit board. This category identifies the bare PCB board.                                                                                                                                                                              |
+| ASY  | Assembly (can be mechanical or top level subassembly -- typically represented by BOM and documentation). Again, the variation is incremented any time a BOM line item changes. You can also use product specific prefixes such as GTW (gateway). |
+| DOC  | standalone documents                                                                                                                                                                                                                             |
+| DFW  | data -- firmware to be loaded on MCUs, etc                                                                                                                                                                                                       |
+| DSW  | data -- software (images for embedded Linux systems, applications, programming utilities, etc)                                                                                                                                                   |
+| DCL  | data -- calibration data for a design                                                                                                                                                                                                            |
+| FIX  | manufacturing fixtures                                                                                                                                                                                                                           |
 
 Conventions can be used such that the PCS, PCA, and PCB NNN are a matched set:
 
@@ -193,7 +203,7 @@ Conventions can be used such that the PCS, PCA, and PCB NNN are a matched set:
 | PCB-055-0005 | Bare PCB used in above assemblies              | 5       |
 | PCS-055-0006 | Schematic documentation for above PCB/assembly | 6       |
 
-In the above, the common `055` ties all the IPNs together. We can quickly find
+In the above, the common `055` ties all the IPNs together. We can quickly find
 the schematic, bare PCB, or BOM if we know one of the IPNs -- whether it's a
 file on disk, paper printout in the lab, documentation in the factory, field
 service kit, etc.
@@ -204,6 +214,42 @@ Some additional guidelines:
   sorting/comparison/entry simpler with less chance of error.
 - Character set is restricted to capital letters, digits, and hyphen.
 - Avoid punctuation characters such as %, !, (, ., etc.
+
+### Three number category code
+
+The following
+[was suggested by a user](https://forum.kicad.info/t/internal-house-part-number-formats/34958/12?u=cliff_brake)
+on the KiCad form.
+
+The part category is a 3-position numeric field which designates the _type_ of
+item. A summary of part categories is shown in Table 3 with the full list in
+Appendix A.
+
+| **Category** | **Description**                                   |
+| ------------ | ------------------------------------------------- |
+| **0xx-**     | Not used                                          |
+| **1xx-**     | Assemblies                                        |
+| **2xx-**     | Kits, Cables, Packages, PCB Fab, Mechanical Parts |
+| **3xx-**     | Optical Components                                |
+| **4xx-**     | Active Electrical Components                      |
+| **5xx-**     | Passive Electrical Components                     |
+| **6xx-**     | Standard Hardware Components                      |
+| **7xx-**     | Misc. As Required Items                           |
+| **8xx-**     | Software                                          |
+| **9xx-**     | Documentation & Test                              |
+
+### Two letter category code
+
+| Code | Description   |
+| ---- | ------------- |
+| Ex   | Electrical    |
+| Mx   | Mechanical    |
+| Sx   | Software      |
+| Px   | Prodcuct      |
+| Dx   | Documentation |
+
+x could be expanded to a number of sub categories -- perhaps sequentially
+assigned.
 
 ### Why use the same format for IPN and external model number?
 
