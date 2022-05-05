@@ -150,7 +150,7 @@ The following CCC groups are suggested for electrical parts:
 | CAP  | capacitors                     |
 | CON  | connectors                     |
 | DIO  | diodes                         |
-| IND  | inductors                      |
+| IND  | inductors, transformers        |
 | ICS  | integrated circuits, mcus, etc |
 | OSC  | oscillators                    |
 | PWR  | relays, etc                    |
