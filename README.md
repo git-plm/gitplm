@@ -296,3 +296,7 @@ For support or to discuss this project, use one of the following options:
 ## License
 
 Apache Version 2.0
+
+## Related projects
+
+- https://github.com/aspdigital/kibomgen
