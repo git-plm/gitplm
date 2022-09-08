@@ -1,6 +1,0 @@
-IPN;Ref;Qnty;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Manufacturer;MPN;Checked
-ANA-000-0000;U1, U2, U4, U5, U7, U8, U10, U11;8;LT1716;LT1716;Package_TO_SOT_SMD:SOT-23-5;;;https://www.analog.com/media/en/technical-documentation/data-sheets/LT1716.pdf;Linear Technology;LT1716IS5#TRPBF;
-CAP-000-1001;C2, C7, C8, C13, C16, C21, C22, C27, C31, C36, C37, C42, C45, C50, C51, C56, C86, C91;18;10nF_50V;10nF_50V;Capacitor_SMD:C_0603_1608Metric;;;http://datasheets.avx.com/X7RDielectric.pdf;AVX;08055C102JAT2A;Y
-DIO-002-0000;D2, D8, D18, D22, D28, D32, D38;7;MMBZ5245B-7-F;MMBZ5245B-7-F;Diode_SMD:D_SOT-23_ANK;;;https://www.diodes.com/assets/Datasheets/MMBZ5221B-MMBZ5259B.pdf;Diodes Incorporated;MMBZ5245B-7-F;Y
-RES-008-220K;R1, R15, R29, R43;4;220k_500mW;220k_500mW;Resistor_SMD:R_2010_5025Metric;;;https://www.koaspeer.com/pdfs/HV73.pdf;KOA SPEER Electronics;HV732HTTE2203F;
-SCR-002-0002;S3;1;;screw #4,2;;;;https://www.screws.com/pdfs/abc.pdf;screwsRus;18a02SDF;

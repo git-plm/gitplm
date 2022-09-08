@@ -14,7 +14,7 @@ gitplm_goreleaser_release() {
 }
 
 gitplm_update_examples() {
-  for bom in ASY-012-0012 ASY-002-0001 PCB-019-0000 ASY-001-0000; do
+  for bom in ASY-012-0012 ASY-002-0001 PCA-019-0000 ASY-001-0000; do
     go run . -bom $bom || return
   done
 }
