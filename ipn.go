@@ -78,5 +78,5 @@ func (i ipn) v() (int, error) {
 
 func (i ipn) isSubAsy() (bool, error) {
 	c, _, _, err := i.parse()
-	return c == "PCB" || c == "ASY", err
+	return c == "PCB" || c == "ASY" || c == "PCA", err
 }
