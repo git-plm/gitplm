@@ -95,6 +95,14 @@ When you run `gitplm` on a BOM, say `ASY-002-0002`, it does the following:
 
 See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
+### Multiple sources
+
+GitPLM can support multiple sources in the partmaster by adding multiple lines
+for each IPN. The Priority column can be used to specify priority. The lower
+number wins. Currently, GitPLM picks the highest priority part and populates
+that in the output BOM. In the future, we could add additional columns for
+multiple sources.
+
 ### BOM modification YAML file
 
 BOMs can be modified by instructions in a YAML file next to a BOM source file.
