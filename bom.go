@@ -251,7 +251,7 @@ func (b *bom) processOurIPN(pn ipn, qty int) error {
 	}
 
 	for _, l := range subBom {
-		isSub, _ := l.IPN.isOurIPN()
+		isSub, _ := l.IPN.hasBOM()
 		if isSub {
 			err := b.processOurIPN(l.IPN, l.Qnty*qty)
 			if err != nil {
