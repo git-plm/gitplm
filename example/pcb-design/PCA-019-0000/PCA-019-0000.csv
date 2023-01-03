@@ -2,6 +2,6 @@ IPN;Qnty;MPN;Manufacturer;Ref;Value;Cmp name;Footprint;Description;Vendor;Datash
 ANA-000-0000;8;LT1716IS5#TRPBF;Linear Technology;U1, U2, U4, U5, U7, U8, U10, U11;LT1716;LT1716;Package_TO_SOT_SMD:SOT-23-5;;;https://www.analog.com/media/en/technical-documentation/data-sheets/LT1716.pdf;
 CAP-000-1001;18;08055C102JAT2A;AVX;C2, C7, C8, C13, C16, C21, C22, C27, C31, C36, C37, C42, C45, C50, C51, C56, C86, C91;10nF_50V;10nF_50V;Capacitor_SMD:C_0603_1608Metric;;;http://datasheets.avx.com/X7RDielectric.pdf;Y
 DIO-002-0000;7;MMBZ5245B-7-F;Diodes Incorporated;D2, D8, D18, D22, D28, D32, D38;MMBZ5245B-7-F;MMBZ5245B-7-F;Diode_SMD:D_SOT-23_ANK;;;https://www.diodes.com/assets/Datasheets/MMBZ5221B-MMBZ5259B.pdf;Y
-PCB-019-0001;1;;;S3;;Design XYZ PCB;;;;;
-PCB-019-0001;1;;;S3;;Design XYZ PCB;;;;;
+PCB-019-0001;1;;;;;Design XYZ PCB;;;;;
 RES-008-220K;4;HV732HTTE2203F;KOA SPEER Electronics;R1, R15, R29, R43;220k_500mW;220k_500mW;Resistor_SMD:R_2010_5025Metric;;;https://www.koaspeer.com/pdfs/HV73.pdf;
+SCR-002-0002;1;18a02SDF;screwsRus;S3;;screw #4,2;;;;https://www.screws.com/pdfs/abc.pdf;
