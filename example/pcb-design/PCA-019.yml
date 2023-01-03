@@ -7,3 +7,5 @@ add:
   - cmpName: "screw #4,2"
     ref: S3
     ipn: SCR-002-0002
+  - cmpName: "Design XYZ PCB"
+    ipn: PCB-019-0001

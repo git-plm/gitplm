@@ -31,9 +31,38 @@ func saveCSV(filename string, data interface{}) error {
 	return gocsv.MarshalFile(data, file)
 }
 
+// findDir recursively searches the directory tree for a directory name. This skips soft links.
+func findDir(name string) (string, error) {
+	retPath := ""
+	// WalkDir does not follown symbolic links
+	err := fs.WalkDir(os.DirFS("./"), ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			if name == d.Name() {
+				// found it
+				retPath = path
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if retPath == "" {
+		return retPath, fmt.Errorf("Dir not found: %v", name)
+	}
+
+	return retPath, nil
+}
+
 // findFile recursively searches the directory tree to find a file and returns the path
 func findFile(name string) (string, error) {
 	retPath := ""
+	// WalkDir does not follown symbolic links
 	err := fs.WalkDir(os.DirFS("./"), ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

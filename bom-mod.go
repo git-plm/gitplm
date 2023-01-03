@@ -42,7 +42,10 @@ func (bm *bomMod) processBom(b bom) (bom, error) {
 		if a.Qnty < 0 {
 			a.Qnty = 1
 		}
-		ret = append(ret, &a)
+		// for some reason we need to make a copy or it
+		// will alias the last one
+		c := a
+		ret = append(ret, &c)
 	}
 
 	sort.Sort(ret)

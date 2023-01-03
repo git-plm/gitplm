@@ -11,6 +11,14 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.1.1] - 2023-01-03](https://github.com/git-plm/gitplm/releases/tag/v0.1.1)
+
+- merge partmaster into combined BOM and add description from partmaster
+
+## [[0.1.0] - 2023-01-03](https://github.com/git-plm/gitplm/releases/tag/v0.1.0)
+
+- gather up manufacturing assets for all parts we produce.
+
 ## [[0.0.14] - 2022-09-08](https://github.com/git-plm/gitplm/releases/tag/v0.0.14)
 
 - support PCA assemblies

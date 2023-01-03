@@ -88,10 +88,12 @@ When you run `gitplm` on a BOM, say `ASY-002-0002`, it does the following:
   - `.../ASY-002-0002/ASY-002-0002.csv` -- this is an expanded BOM that contains
     MPN/Manufacturer information from the partmaster and modification
     instructions from `ASY-002.yml`.
-  - if subassemblies are found in the BOM (IPNs that start with `PCB` or `ASY`),
+  - if subassemblies are found in the BOM (IPNs that start with `PCA` or `ASY`),
     then a `.../ASY-002-0002/ASY-002-0002-all.csv` file is generated that
     contains all parts from all subassemblies. This can be used for purchasing
     all parts for an assembly.
+  - a directory is included for each subassembly or custom part that contains
+    the release information required for manufacturing that part.
 
 See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
@@ -99,9 +101,10 @@ See [issues](https://github.com/git-plm/gitplm/issues) for future ideas.
 
 GitPLM can support multiple sources in the partmaster by adding multiple lines
 for each IPN. The Priority column can be used to specify priority. The lower
-number wins. Currently, GitPLM picks the highest priority part and populates
-that in the output BOM. In the future, we could add additional columns for
-multiple sources.
+number wins. If no Priority is set, then priority for that row defaults to 0,
+which is the highest priority. Currently, GitPLM picks the highest priority part
+and populates that in the output BOM. In the future, we could add additional
+columns for multiple sources.
 
 ### BOM modification YAML file
 
@@ -118,6 +121,34 @@ add:
     ref: S3
     ipn: SCR-002-0002
 ```
+
+### Special Part Numbers
+
+The following part numbers have special meaning to GitPLM:
+
+| Code | Description                                                                                                                                                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PCA  | Printed Circuit Assembly. The version is incremented any time the BOM for the assembly changes.                                                                                                                                                  |
+| PCB  | Printed Circuit board. This category identifies the bare PCB board.                                                                                                                                                                              |
+| ASY  | Assembly (can be mechanical or top level subassembly -- typically represented by BOM and documentation). Again, the variation is incremented any time a BOM line item changes. You can also use product specific prefixes such as GTW (gateway). |
+| DOC  | standalone documents                                                                                                                                                                                                                             |
+| DFW  | data -- firmware to be loaded on MCUs, etc                                                                                                                                                                                                       |
+| DSW  | data -- software (images for embedded Linux systems, applications, programming utilities, etc)                                                                                                                                                   |
+| DCL  | data -- calibration data for a design                                                                                                                                                                                                            |
+| FIX  | manufacturing fixtures                                                                                                                                                                                                                           |
+
+The above are all parts that the company produces, and thus should all have
+manufacturing assets included with them (drawings, BOMs, gerbers, 3d models,
+assembly procedures, software/firmware, etc). If these parts are encountered in
+a BOM, GitPLM looks for a directory that matches the IPN and then creates a soft
+link to this directory. In this way, we can easily build up a complete
+manufacturing package.
+
+## KiCad Integration
+
+There is a KiCad BOM generation script in
+`[tools/gitplm_bom.py](tools/gitplm_bom.py)` that can be used to generate a
+KiCad BOM that is compatible with GitPLM.
 
 ## Requirements/Vision
 
@@ -189,7 +220,7 @@ add:
 - development/design repos store manufacturing output files in directories where
   the directory name is the IPN for that part. A design directory will have an
   output directory for each version. (Ex:
-  `PCB-0023-0001, PCB-0023-0002, PCB-0023-0003`)
+  `PCB-0023-0001, PCA-0023-0002, PCA-0023-0003`)
 - product/manufacturing metadata lives in a `manufacturing` repo that pulls in
   all the development repo as Git submodules. These development repos contain
   release directories.
@@ -222,21 +253,22 @@ add:
 
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
-- `go run ../ -bom PCB-019-0023`
+- `go run ../ -bom PCA-019-0023`
   - this recursively searches current directory and subdirectories for a file
-    named `PCB-019.csv` and then creates a BOM with supplier part information
+    named `PCA-019.csv` and then creates a BOM with supplier part information
     from the part master
-- notice the `cad-design/PCB-019-0023/PCB-019-0023.csv` file now exists with MFG
+- notice the `cad-design/PCA-019-0023/PCA-019-0023.csv` file now exists with MFG
   information populated.
 
 Directory structure:
 
 - `partmaster.csv` (CSV file that contains all parts used by the organization)
 - `cad-design` (design directory for PCB design)
-  - `PCB-019.csv` (BOM file generated by CAD tool with IPN, but not MPN)
-  - `PCB-019.yml` (File of parts that are added or removed from BOM)
-  - `PCB-019-0023/` (v23 output directory)
-    - `PCB-020-0023.csv` (BOM generated by extracting MPN from partmaster)
+  - `PCA-019.csv` (BOM file generated by CAD tool with IPN, but not MPN)
+    - see [KiCad BOM Script](tools/gitplm_bom.py)
+  - `PCA-019.yml` (File of parts that are added or removed from BOM)
+  - `PCA-019-0023/` (v23 output directory)
+    - `PCA-020-0023.csv` (BOM generated by extracting MPN from partmaster)
     - `gerbers.zip` (other output files generated by the release process)
     - `assy-drawing.pdf` (other output files generated by the release process)
 
@@ -260,9 +292,9 @@ The output directory structure may look something like:
     - CHANGELOG.md (changes in this release)
     - `ASY-001-0002.csv` (Bom that contains screws, wire, etc and below sub
       assemblies)
-    - `PCB-020-0004/` (v4 of the controller board)
-      - `CHANGELOG.md` (PCB changes)
-      - `PCB-0020-0004.csv`
+    - `PCA-020-0004/` (v4 of the controller board)
+      - `CHANGELOG.md` (PCA changes)
+      - `PCA-0020-0004.csv`
       - `gerber.zip`
       - `assembly-drawing.pdf`
     - `MEC-023-0004/` (3d printed plastic part)
@@ -289,6 +321,7 @@ TODO:
 - https://www.aligni.com/
 - https://kitspace.org/
 - https://www.buyplm.com/plm-good-practice/part-numbering-system-software.aspx
+- https://github.com/Gasman2014/KC2PK
 
 ## Support, Community, Contributing, etc.
 
