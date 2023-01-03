@@ -99,18 +99,8 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 	// always sort BOM for good measure
 	sort.Sort(b)
 
-	// populate MPN info in our BOM
-	for i, l := range b {
-		pmPart, err := p.findPart(l.IPN)
-		if err != nil {
-			logErr(fmt.Sprintf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.IPN, i+2, err))
-			continue
-		}
-		l.Manufacturer = pmPart.Manufacturer
-		l.MPN = pmPart.MPN
-		l.Datasheet = pmPart.Datasheet
-		l.Checked = pmPart.Checked
-	}
+	// merge in partmaster info into BOM
+	b.mergePartmaster(p, logErr)
 
 	err = saveCSV(writeFilePath, b)
 	if err != nil {
@@ -157,6 +147,8 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 	}
 
 	if foundSub {
+		// merge in partmaster info into BOM
+		b.mergePartmaster(p, logErr)
 		// write out combined BOM
 		sort.Sort(b)
 		writePath := filepath.Join(writeDir, bomPn+"-all.csv")
@@ -222,6 +214,23 @@ func (b bom) String() string {
 		ret += fmt.Sprintf("%v\n", l)
 	}
 	return ret
+}
+
+// merge can be used to merge partmaster attributes into a BOM
+func (b *bom) mergePartmaster(p partmaster, logErr func(string)) {
+	// populate MPN info in our BOM
+	for i, l := range *b {
+		pmPart, err := p.findPart(l.IPN)
+		if err != nil {
+			logErr(fmt.Sprintf("Error finding part (%v:%v) on bom line #%v in pm: %v\n", l.CmpName, l.IPN, i+2, err))
+			continue
+		}
+		l.Manufacturer = pmPart.Manufacturer
+		l.MPN = pmPart.MPN
+		l.Datasheet = pmPart.Datasheet
+		l.Checked = pmPart.Checked
+		l.Description = pmPart.Description
+	}
 }
 
 func (b *bom) copy() bom {
