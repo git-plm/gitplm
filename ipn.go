@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+
+	"github.com/samber/lo"
 )
 
 type ipn string
@@ -76,7 +78,22 @@ func (i ipn) v() (int, error) {
 	return v, err
 }
 
-func (i ipn) isSubAsy() (bool, error) {
+var ourIPNs = []string{"PCA", "PCB", "ASY", "DOC", "DFW", "DSW", "DCL", "FIX"}
+
+func (i ipn) isOurIPN() (bool, error) {
 	c, _, _, err := i.parse()
-	return c == "PCB" || c == "ASY" || c == "PCA", err
+	if err != nil {
+		return false, err
+	}
+	return lo.Contains(ourIPNs, c), nil
+}
+
+var boms = []string{"PCA", "ASY"}
+
+func (i ipn) hasBOM() (bool, error) {
+	c, _, _, err := i.parse()
+	if err != nil {
+		return false, err
+	}
+	return lo.Contains(boms, c), nil
 }

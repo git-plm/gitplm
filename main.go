@@ -45,6 +45,7 @@ func main() {
 		}
 
 		if bomFilePath != "" {
+			// write out log file
 			c, n, _, err := ipn(*flagBOM).parse()
 			if err != nil {
 				log.Fatal("Error parsing bom IPN: ", err)

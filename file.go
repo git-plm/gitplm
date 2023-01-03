@@ -33,7 +33,6 @@ func saveCSV(filename string, data interface{}) error {
 
 // findDir recursively searches the directory tree for a directory name. This skips soft links.
 func findDir(name string) (string, error) {
-	fmt.Println("CLIFF: looking for dir: ", name)
 	retPath := ""
 	// WalkDir does not follown symbolic links
 	err := fs.WalkDir(os.DirFS("./"), ".", func(path string, d fs.DirEntry, err error) error {

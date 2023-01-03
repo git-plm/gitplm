@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -20,24 +21,25 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 
 	bomPnBase := fmt.Sprintf("%v-%03v", c, n)
 
-	readFile := bomPnBase + ".csv"
+	bomFile := bomPnBase + ".csv"
 
-	readFilePath, err := findFile(readFile)
+	// First find the location of the BOM
+	bomFilePath, err := findFile(bomFile)
 	if err != nil {
 		return "", err
 	}
 
-	writeDir := filepath.Join(filepath.Dir(readFilePath), bomPn)
+	writeDir := filepath.Join(filepath.Dir(bomFilePath), bomPn)
 
 	dirExists, err := exists(writeDir)
 	if err != nil {
-		return readFilePath, err
+		return bomFilePath, err
 	}
 
 	if !dirExists {
 		err = os.Mkdir(writeDir, 0755)
 		if err != nil {
-			return readFilePath, err
+			return bomFilePath, err
 		}
 	}
 
@@ -45,9 +47,9 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 
 	b := bom{}
 
-	err = loadCSV(readFilePath, &b)
+	err = loadCSV(bomFilePath, &b)
 	if err != nil {
-		return readFilePath, err
+		return bomFilePath, err
 	}
 
 	partmasterPath, err := findFile("partmaster.csv")
@@ -58,14 +60,14 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 	p := partmaster{}
 	err = loadCSV(partmasterPath, &p)
 	if err != nil {
-		return readFilePath, err
+		return bomFilePath, err
 	}
 
-	ymlFilePath := filepath.Join(filepath.Dir(readFilePath), bomPnBase+".yml")
+	ymlFilePath := filepath.Join(filepath.Dir(bomFilePath), bomPnBase+".yml")
 
 	ymlExists, err := exists(ymlFilePath)
 	if err != nil {
-		return readFilePath, err
+		return bomFilePath, err
 	}
 
 	logErr := func(s string) {
@@ -79,24 +81,25 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 	if ymlExists {
 		ymlBytes, err := ioutil.ReadFile(ymlFilePath)
 		if err != nil {
-			return readFilePath, fmt.Errorf("Error loading yml file: %v", err)
+			return bomFilePath, fmt.Errorf("Error loading yml file: %v", err)
 		}
 
 		bm := bomMod{}
 		err = yaml.Unmarshal(ymlBytes, &bm)
 		if err != nil {
-			return readFilePath, fmt.Errorf("Error parsing yml: %v", err)
+			return bomFilePath, fmt.Errorf("Error parsing yml: %v", err)
 		}
 
 		b, err = bm.processBom(b)
 		if err != nil {
-			return readFilePath, fmt.Errorf("Error processing bom with yml file: %v", err)
+			return bomFilePath, fmt.Errorf("Error processing bom with yml file: %v", err)
 		}
 	}
 
 	// always sort BOM for good measure
 	sort.Sort(b)
 
+	// populate MPN info in our BOM
 	for i, l := range b {
 		pmPart, err := p.findPart(l.IPN)
 		if err != nil {
@@ -111,35 +114,60 @@ func processBOM(bomPn string, bomLog *strings.Builder) (string, error) {
 
 	err = saveCSV(writeFilePath, b)
 	if err != nil {
-		return readFilePath, fmt.Errorf("Error writing BOM: %v", err)
+		return bomFilePath, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
 	// create combined BOM with all sub assemblies if we have any PCB or ASY line items
+	// process all special IPNS
+	// if BOM is found, then include in roll-up BOM
+	// create soft link to release directory
 	foundSub := false
 	for _, l := range b {
 		// clear refs in purchase bom
 		l.Ref = ""
-		isAsy, _ := l.IPN.isSubAsy()
-		if isAsy {
-			foundSub = true
-			err := b.addSubAsy(l.IPN, l.Qnty)
+		isOurs, _ := l.IPN.isOurIPN()
+		if isOurs {
+			// look for release package
+			dir, err := findDir(l.IPN.String())
 			if err != nil {
-				return readFilePath, fmt.Errorf("Error proccessing sub %v: %v", l.IPN, err)
+				return "", fmt.Errorf("Missing release package: %v", err)
+			}
+			// soft link to that package
+			dirRel, err := filepath.Rel(writeDir, dir)
+			if err != nil {
+				return "", fmt.Errorf("Error creating rel path for %v: %v",
+					dir, err)
+			}
+			linkPath := path.Join(writeDir, l.IPN.String())
+			os.Remove(linkPath)
+			err = os.Symlink(dirRel, linkPath)
+			if err != nil {
+				return "", fmt.Errorf("Error creating symlink %v: %v",
+					dir, err)
+			}
+			hasBOM, _ := l.IPN.hasBOM()
+			if hasBOM {
+				foundSub = true
+				err = b.processOurIPN(l.IPN, l.Qnty)
+				if err != nil {
+					return bomFilePath, fmt.Errorf("Error proccessing sub %v: %v", l.IPN, err)
+				}
 			}
 		}
 	}
 
 	if foundSub {
+		// write out combined BOM
 		sort.Sort(b)
 		writePath := filepath.Join(writeDir, bomPn+"-all.csv")
 		// write out purchase bom
 		err := saveCSV(writePath, b)
 		if err != nil {
-			return readFilePath, fmt.Errorf("Error writing purchase bom %v", err)
+			return bomFilePath, fmt.Errorf("Error writing purchase bom %v", err)
 		}
 	}
 
-	return readFilePath, nil
+	return bomFilePath, nil
 }
 
 type bomLine struct {
@@ -206,8 +234,10 @@ func (b *bom) copy() bom {
 	return ret
 }
 
-func (b *bom) addSubAsy(pn ipn, qty int) error {
-	log.Println("processing subassembly: ", pn, qty)
+func (b *bom) processOurIPN(pn ipn, qty int) error {
+	log.Println("processing our IPN: ", pn, qty)
+
+	// check if BOM exists
 	bomPath, err := findFile(pn.String() + ".csv")
 	if err != nil {
 		return fmt.Errorf("Error finding sub assy BOM: %v", err)
@@ -221,9 +251,9 @@ func (b *bom) addSubAsy(pn ipn, qty int) error {
 	}
 
 	for _, l := range subBom {
-		isSub, _ := l.IPN.isSubAsy()
+		isSub, _ := l.IPN.isOurIPN()
 		if isSub {
-			err := b.addSubAsy(l.IPN, l.Qnty*qty)
+			err := b.processOurIPN(l.IPN, l.Qnty*qty)
 			if err != nil {
 				return fmt.Errorf("Error processing sub %v: %v", l.IPN, err)
 			}
