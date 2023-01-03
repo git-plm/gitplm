@@ -1,0 +1,3 @@
+Error finding part (Design XYZ PCB:PCB-019-0001) on bom line #5 in pm: Part not found
+Error finding part (Design XYZ PCB:PCB-019-0001) on bom line #6 in pm: Part not found
+Error processing BOM: Error proccessing sub PCB-019-0001: Error finding sub assy BOM: File not found: PCB-019-0001.csv
