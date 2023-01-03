@@ -35,20 +35,20 @@ from pathlib import Path
 bomFile = Path(sys.argv[2])
 bomDir = bomFile.parent
 
-ymlFiles = sorted(Path(bomDir).glob('PCB-*.yml'))
+ymlFiles = sorted(Path(bomDir).glob('PCA-*.yml'))
 if len(ymlFiles) == 1:
     print("Found yml file: ", ymlFiles[0].name)
     bomFile = bomDir / Path(ymlFiles[0].stem + ".csv")
 else:
     # look for existing BOM and overwite it
-    pcbCsvFiles = sorted(Path(bomDir).glob('PCB-*.csv'))
+    pcbCsvFiles = sorted(Path(bomDir).glob('PCA-*.csv'))
     if len(pcbCsvFiles) == 1:
         print("Found existing bom file: ", pcbCsvFiles[0].name)
         bomFile = pcbCsvFiles[0]
     else:
         print()
         print("WARNING: Did not find yml config file, please create a "
-              + "PCB-NNN.yml config file so we "
+              + "PCA-NNN.yml config file so we "
               + "know the part number for this PCB.")
         print()
 
