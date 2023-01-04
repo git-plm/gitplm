@@ -170,16 +170,16 @@ add:
   - cmpName: "screw #4,2"
     ref: S3
     ipn: SCR-002-0002
-copy:
-  - gerber
-  - mfg
-  - pcb.schematic
 hooks:
   - date -Iseconds > {{ .RelDir }}/timestamp.txt
   - |
     echo "processing {{ .SrcDir }}"
     echo "hi #1"
     echo "hi #2"
+copy:
+  - gerber
+  - mfg
+  - pcb.schematic
 required:
   - PCA-019-0002_ibom.html
 ```
