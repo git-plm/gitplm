@@ -35,6 +35,10 @@ An example output is shown below:
 GitPLM is designed for small teams building products. We leverage Git to track
 changes and use simple file formats like CSV to store BOMs, partmaster, etc.
 
+## Video overview
+
+[GitPLM overview](https://youtu.be/rSGHQXkrZmc)
+
 ## Installation
 
 You can [download a release](https://github.com/git-plm/gitplm/releases) for
