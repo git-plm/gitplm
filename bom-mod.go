@@ -1,14 +1,19 @@
 package main
 
 import (
+	"log"
+	"path"
 	"sort"
 	"strings"
+
+	"github.com/otiai10/copy"
 )
 
 type bomMod struct {
 	Description string
 	Remove      []bomLine
 	Add         []bomLine
+	Copy        []string
 }
 
 func (bm *bomMod) processBom(b bom) (bom, error) {
@@ -51,4 +56,27 @@ func (bm *bomMod) processBom(b bom) (bom, error) {
 	sort.Sort(ret)
 
 	return ret, nil
+}
+
+func (bm *bomMod) copy(srcDir, destDir string) error {
+	for _, c := range bm.Copy {
+		opts := copy.Options{
+			OnSymlink: func(src string) copy.SymlinkAction {
+				return copy.Deep
+			},
+			OnDirExists: func(src, dest string) copy.DirExistsAction {
+				return copy.Replace
+			},
+		}
+		srcPath := path.Join(srcDir, c)
+		destPath := path.Join(destDir, c)
+		err := copy.Copy(srcPath, destPath, opts)
+		if err != nil {
+			return err
+		}
+
+		log.Printf("%v copied to release dir\n", c)
+	}
+
+	return nil
 }

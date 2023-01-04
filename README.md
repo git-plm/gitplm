@@ -71,8 +71,8 @@ Type `gitplm` from a shell to see commandline options:
 
 ```
 Usage of gitplm:
-  -bom string
-	Process BOM for IPN (ex: PCB-056-0005, ASY-002-0000)
+  -release string
+	Process release for IPN (ex: PCB-056-0005, ASY-002-0000)
   -version int
         display version of this application
 ```
@@ -107,7 +107,7 @@ which is the highest priority. Currently, GitPLM picks the highest priority part
 and populates that in the output BOM. In the future, we could add additional
 columns for multiple sources.
 
-### BOM modification YAML file
+### BOM and release modifications YAML file
 
 BOMs can be modified by instructions in a YAML file next to a BOM source file.
 An example is shown below:
@@ -121,7 +121,17 @@ add:
   - cmpName: "screw #4,2"
     ref: S3
     ipn: SCR-002-0002
+copy:
+  - gerber
+  - mfg
+  - pcb.schematic
 ```
+
+Supported operations:
+
+- `remove`: remove a part from a BOM
+- `add`: add a part to a BOM
+- `copy`: copy a file or dir to the release directory
 
 ### Special Part Numbers
 
@@ -150,8 +160,10 @@ manufacturing package.
 The following files will be copied into the release directory if found in the
 project directory:
 
-- MFG.md: contains notes for manufacturing
-- CHANGELOG.md: contains a list of changes for each version
+- `MFG.md`: contains notes for manufacturing
+- `CHANGELOG.md`: contains a list of changes for each version. See
+  [keep a changelog](https://keepachangelog.com) for ideas on how to structure
+  this file.
 
 ## KiCad Integration
 
@@ -262,7 +274,7 @@ KiCad BOM that is compatible with GitPLM.
 
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
-- `go run ../ -bom PCA-019-0023`
+- `go run ../ -release PCA-019-0023`
   - this recursively searches current directory and subdirectories for a file
     named `PCA-019.csv` and then creates a BOM with supplier part information
     from the part master
@@ -286,14 +298,12 @@ Directory structure:
 
 - `git clone https://github.com/git-plm/gitplm.git`
 - `cd gitplm/example`
-- `go run ../ -bom ASY-001-000`
+- `go run ../ -release ASY-001-000`
 
 This recursively processes the BOM and includes parts and manufacturing assets
 for all subassemblies. The result looks like:
 
 <img src="assets/image-20230103181918906.png" alt="image-20230103181918906" style="zoom:67%;" />
-
-
 
 ## Reference Information
 
