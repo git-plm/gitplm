@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.3.0] - 2023-01-04](https://github.com/git-plm/gitplm/releases/tag/v0.3.0)
+
+- support hooks, and required sections in release configuration (yml) file.
+- rewrite README.md
+
 ## [[0.2.0] - 2023-01-04](https://github.com/git-plm/gitplm/releases/tag/v0.2.0)
 
 - make tool a more general release tool -- CCC-NNN.csv or CCC-NNN.yml will now
