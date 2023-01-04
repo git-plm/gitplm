@@ -9,16 +9,16 @@ import (
 	"github.com/otiai10/copy"
 )
 
-type bomMod struct {
+type relScript struct {
 	Description string
 	Remove      []bomLine
 	Add         []bomLine
 	Copy        []string
 }
 
-func (bm *bomMod) processBom(b bom) (bom, error) {
+func (rs *relScript) processBom(b bom) (bom, error) {
 	ret := b
-	for _, r := range bm.Remove {
+	for _, r := range rs.Remove {
 		if r.CmpName != "" {
 			retM := bom{}
 			for _, l := range ret {
@@ -41,7 +41,7 @@ func (bm *bomMod) processBom(b bom) (bom, error) {
 		}
 	}
 
-	for _, a := range bm.Add {
+	for _, a := range rs.Add {
 		refs := strings.Split(a.Ref, ",")
 		a.Qnty = len(refs)
 		if a.Qnty < 0 {
@@ -58,8 +58,8 @@ func (bm *bomMod) processBom(b bom) (bom, error) {
 	return ret, nil
 }
 
-func (bm *bomMod) copy(srcDir, destDir string) error {
-	for _, c := range bm.Copy {
+func (rs *relScript) copy(srcDir, destDir string) error {
+	for _, c := range rs.Copy {
 		opts := copy.Options{
 			OnSymlink: func(src string) copy.SymlinkAction {
 				return copy.Deep
@@ -78,5 +78,9 @@ func (bm *bomMod) copy(srcDir, destDir string) error {
 		log.Printf("%v copied to release dir\n", c)
 	}
 
+	return nil
+}
+
+func (rs *relScript) hooks(srcDir, destDir string) error {
 	return nil
 }
