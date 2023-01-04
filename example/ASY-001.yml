@@ -1,0 +1,8 @@
+hooks:
+  - date -Iseconds > {{ .RelDir }}/timestamp.txt
+  - |
+    echo "processing {{ .SrcDir }}"
+    echo "hi #1"
+    echo "hi #2"
+required:
+  - ASY-001-0000.html

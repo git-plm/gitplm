@@ -37,7 +37,7 @@ R1, R2;2;;100K_100mw;;;;RES-006-0232;
 S3;1;;screw #4,2;;;;SCR-002-0002;
 `
 
-func TestBomMod(t *testing.T) {
+func TestRelScript(t *testing.T) {
 	initCSV()
 	bIn := bom{}
 	err := gocsv.UnmarshalBytes([]byte(bomIn), &bIn)
@@ -51,14 +51,14 @@ func TestBomMod(t *testing.T) {
 		t.Errorf("error parsing bomExp: %v", err)
 	}
 
-	bm := bomMod{}
+	rs := relScript{}
 
-	err = yaml.Unmarshal([]byte(modFile), &bm)
+	err = yaml.Unmarshal([]byte(modFile), &rs)
 	if err != nil {
 		t.Errorf("error parsing yaml: %v", err)
 	}
 
-	bModified, err := bm.processBom(bIn)
+	bModified, err := rs.processBom(bIn)
 	if err != nil {
 		t.Errorf("error processing bom: %v", err)
 	}

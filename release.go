@@ -104,23 +104,35 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 			return sourceDir, fmt.Errorf("Error loading yml file: %v", err)
 		}
 
-		bm := bomMod{}
-		err = yaml.Unmarshal(ymlBytes, &bm)
+		rs := relScript{}
+		err = yaml.Unmarshal(ymlBytes, &rs)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error parsing yml: %v", err)
 		}
 
 		if bomExists {
-			b, err = bm.processBom(b)
+			b, err = rs.processBom(b)
 			if err != nil {
 				return sourceDir, fmt.Errorf("Error processing bom with yml file: %v", err)
 			}
 		}
 
+		// run hooks
+		err = rs.hooks(sourceDir, releaseDir)
+		if err != nil {
+			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
+		}
+
 		// copy stuff to release dir specified in YML file
-		err = bm.copy(sourceDir, releaseDir)
+		err = rs.copy(sourceDir, releaseDir)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error copying files specified in YML: %v", err)
+		}
+
+		// check if required files are present in release
+		err = rs.required(releaseDir)
+		if err != nil {
+			return sourceDir, err
 		}
 	}
 

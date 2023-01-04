@@ -1,4 +1,4 @@
 IPN;Qnty;MPN;Manufacturer;Ref;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Checked
-ASY-012-0012;2;;;;;;;;;;
-MCH-001-0001;2;1051023;bracketsRus;;;;;;;https://www.brackets.com/pdfs/21523.pdf;Y
-SCR-002-0002;18;18a02SDF;screwsRus;;;;;;;https://www.screws.com/pdfs/abc.pdf;
+ASY-012-0012;2;;mycompany;;;;;endcap assembly;;;
+MCH-001-0001;2;1051023;bracketsRus;;;;;bracket;;https://www.brackets.com/pdfs/21523.pdf;Y
+SCR-002-0002;18;18a02SDF;screwsRus;;;;;#4 screw;;https://www.screws.com/pdfs/abc.pdf;
