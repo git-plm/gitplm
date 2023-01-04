@@ -15,7 +15,7 @@ var version = "Development"
 func main() {
 	initCSV()
 
-	flagBOM := flag.String("bom", "", "Process BOM for IPN (ex: PCB-056-0005, ASY-002-0000)")
+	flagRelease := flag.String("release", "", "Process BOM for IPN (ex: PCB-056-0005, ASY-002-0000)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
 	flag.Parse()
 
@@ -36,22 +36,22 @@ func main() {
 		log.Println(s)
 	}
 
-	if *flagBOM != "" {
-		bomFilePath, err := processBOM(*flagBOM, &gLog)
+	if *flagRelease != "" {
+		relPath, err := processRelease(*flagRelease, &gLog)
 		if err != nil {
 			logMsg(fmt.Sprintf("Error processing BOM: %v\n", err))
 		} else {
-			logMsg(fmt.Sprintf("BOM %v updated\n", *flagBOM))
+			logMsg(fmt.Sprintf("BOM %v updated\n", *flagRelease))
 		}
 
-		if bomFilePath != "" {
+		if relPath != "" {
 			// write out log file
-			c, n, _, err := ipn(*flagBOM).parse()
+			c, n, _, err := ipn(*flagRelease).parse()
 			if err != nil {
 				log.Fatal("Error parsing bom IPN: ", err)
 			}
 			fn := fmt.Sprintf("%v-%03v.log", c, n)
-			logFilePath := filepath.Join(filepath.Dir(bomFilePath), fn)
+			logFilePath := filepath.Join(relPath, fn)
 			err = ioutil.WriteFile(logFilePath, []byte(gLog.String()), 0644)
 			if err != nil {
 				log.Println("Error writing log file: ", err)

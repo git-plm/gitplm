@@ -1,0 +1,5 @@
+# this file is used by GitPLM to describe modifications to a BOM or copy files/dirs to the output directory
+copy:
+  - gerber
+  - mfg
+  - pcb.schematic
