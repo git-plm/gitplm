@@ -88,11 +88,11 @@ func (rs *relScript) copy(srcDir, destDir string) error {
 
 func (rs *relScript) hooks(srcDir, destDir string) error {
 	data := struct {
-		SrcDir  string
-		DestDir string
+		SrcDir string
+		RelDir string
 	}{
-		SrcDir:  srcDir,
-		DestDir: destDir,
+		SrcDir: srcDir,
+		RelDir: destDir,
 	}
 
 	for _, h := range rs.Hooks {
