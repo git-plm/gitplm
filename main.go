@@ -15,7 +15,7 @@ var version = "Development"
 func main() {
 	initCSV()
 
-	flagRelease := flag.String("release", "", "Process BOM for IPN (ex: PCB-056-0005, ASY-002-0000)")
+	flagRelease := flag.String("release", "", "Process release for IPN (ex: PCB-056-0005, ASY-002-0023)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
 	flag.Parse()
 
@@ -39,9 +39,9 @@ func main() {
 	if *flagRelease != "" {
 		relPath, err := processRelease(*flagRelease, &gLog)
 		if err != nil {
-			logMsg(fmt.Sprintf("Error processing BOM: %v\n", err))
+			logMsg(fmt.Sprintf("release error: %v\n", err))
 		} else {
-			logMsg(fmt.Sprintf("BOM %v updated\n", *flagRelease))
+			logMsg(fmt.Sprintf("release %v updated\n", *flagRelease))
 		}
 
 		if relPath != "" {

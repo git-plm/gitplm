@@ -128,6 +128,11 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
 		}
+
+		err = rs.required(releaseDir)
+		if err != nil {
+			return sourceDir, err
+		}
 	}
 
 	if !bomExists {
