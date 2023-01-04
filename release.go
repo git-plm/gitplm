@@ -117,18 +117,19 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 			}
 		}
 
-		// copy stuff to release dir specified in YML file
-		err = rs.copy(sourceDir, releaseDir)
-		if err != nil {
-			return sourceDir, fmt.Errorf("Error copying files specified in YML: %v", err)
-		}
-
 		// run hooks
 		err = rs.hooks(sourceDir, releaseDir)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
 		}
 
+		// copy stuff to release dir specified in YML file
+		err = rs.copy(sourceDir, releaseDir)
+		if err != nil {
+			return sourceDir, fmt.Errorf("Error copying files specified in YML: %v", err)
+		}
+
+		// check if required files are present in release
 		err = rs.required(releaseDir)
 		if err != nil {
 			return sourceDir, err
