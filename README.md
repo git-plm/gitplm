@@ -32,6 +32,9 @@ An example output is shown below:
 
 <img src="assets/image-20230104145925988.png" alt="image-20230104145925988" style="zoom:50%;" />
 
+GitPLM is designed for small teams building products. We leverage Git to track
+changes and use simple file formats like CSV to store BOMs, partmaster, etc.
+
 ## Installation
 
 You can [download a release](https://github.com/git-plm/gitplm/releases) for
