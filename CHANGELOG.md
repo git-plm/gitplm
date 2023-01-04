@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.2.0] - 2023-01-04](https://github.com/git-plm/gitplm/releases/tag/v0.2.0)
+
+- make tool a more general release tool -- CCC-NNN.csv or CCC-NNN.yml will now
+  trigger a release.
+- support `copy` operation in YML file
+
 ## [[0.1.1] - 2023-01-03](https://github.com/git-plm/gitplm/releases/tag/v0.1.1)
 
 - merge partmaster into combined BOM and add description from partmaster
