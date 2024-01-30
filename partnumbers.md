@@ -144,22 +144,25 @@ difficulty of assigning new part numbers.
 
 The following CCC groups are suggested for electrical parts:
 
-| Code | Description                    |
-| ---- | ------------------------------ |
-| ANA  | op-amps, comparators, A/D, D/A |
-| CAP  | capacitors                     |
-| CON  | connectors                     |
-| DIO  | diodes                         |
-| IND  | inductors, transformers        |
-| ICS  | integrated circuits, mcus, etc |
-| OSC  | oscillators                    |
-| PWR  | relays, etc                    |
-| REG  | regulators                     |
-| RES  | resistors                      |
-| SWI  | switch                         |
-| TRA  | transistors, FETs              |
-| TXT  | test points/pads               |
-| XTL  | crystals                       |
+| Code | Description                             |
+| ---- | --------------------------------------- |
+| ANA  | op-amps, comparators, A/D, D/A          |
+| CAP  | capacitors                              |
+| CON  | connectors                              |
+| DIO  | diodes                                  |
+| IND  | inductors, transformers                 |
+| ICS  | integrated circuits                     |
+| MPU  | SOC, SOM, SBC, etc.                     |
+| MCU  | Microcontrolleres, modules, etc.        |
+| OSC  | oscillators                             |
+| PWR  | relays, etc                             |
+| RFQ  | RF modules, ICs, and related components |
+| REG  | regulators                              |
+| RES  | resistors                               |
+| SWI  | switch                                  |
+| TRA  | transistors, FETs                       |
+| TXT  | test points/pads                        |
+| XTL  | crystals                                |
 
 Each group of CCC parts is placed in its own schematic symbol library with the
 same name. Keeping the CCC and CAD library names the same introduces
