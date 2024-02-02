@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -99,7 +98,7 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 	}
 
 	if ymlExists {
-		ymlBytes, err := ioutil.ReadFile(ymlFilePath)
+		ymlBytes, err := os.ReadFile(ymlFilePath)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error loading yml file: %v", err)
 		}
@@ -118,7 +117,7 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 		}
 
 		// run hooks
-		err = rs.hooks(sourceDir, releaseDir)
+		err = rs.hooks(relPn, sourceDir, releaseDir)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
 		}

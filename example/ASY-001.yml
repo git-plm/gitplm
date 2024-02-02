@@ -2,6 +2,7 @@ hooks:
   - date -Iseconds > {{ .RelDir }}/timestamp.txt
   - |
     echo "processing {{ .SrcDir }}"
+    echo "IPN {{ .IPN }}"
     echo "hi #1"
     echo "hi #2"
 required:

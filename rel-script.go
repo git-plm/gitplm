@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"os/exec"
 	"path"
 	"sort"
@@ -86,13 +88,15 @@ func (rs *relScript) copy(srcDir, destDir string) error {
 	return nil
 }
 
-func (rs *relScript) hooks(srcDir, destDir string) error {
+func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
 	data := struct {
 		SrcDir string
 		RelDir string
+		IPN    string
 	}{
 		SrcDir: srcDir,
 		RelDir: destDir,
+		IPN:    pn,
 	}
 
 	for _, h := range rs.Hooks {
@@ -108,12 +112,36 @@ func (rs *relScript) hooks(srcDir, destDir string) error {
 			return fmt.Errorf("Error parsing hook: %v: %v", h, err)
 		}
 
-		output, err := exec.Command("/bin/sh", "-c", out.String()).Output()
-		if len(output) > 0 {
-			log.Println(string(output))
-		}
+		cmd := exec.Command("/bin/sh", "-c", out.String())
+
+		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return fmt.Errorf("Error running %v: %v", out.String(), err)
+			log.Fatal(err)
+		}
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Start the command
+		if err := cmd.Start(); err != nil {
+			log.Fatal(err)
+		}
+
+		// Copy the command's stdout and stderr to the Go program's stdout
+		go func() {
+			_, _ = io.Copy(os.Stdout, stdout)
+		}()
+
+		go func() {
+			_, _ = io.Copy(os.Stderr, stderr)
+		}()
+
+		// Wait for the command to exit
+		if err := cmd.Wait(); err != nil {
+			log.Println("Error running hook: ", err)
+			log.Println("Hook contents: ")
+			fmt.Print(out.String())
 		}
 	}
 	return nil
