@@ -88,13 +88,15 @@ func (rs *relScript) copy(srcDir, destDir string) error {
 	return nil
 }
 
-func (rs *relScript) hooks(srcDir, destDir string) error {
+func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
 	data := struct {
 		SrcDir string
 		RelDir string
+		IPN    string
 	}{
 		SrcDir: srcDir,
 		RelDir: destDir,
+		IPN:    pn,
 	}
 
 	for _, h := range rs.Hooks {
