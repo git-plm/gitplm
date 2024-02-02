@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.4.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.4.0)
+
+- output hook stdout/err to gitplm stdout/err
+- add IPN template variable in hooks
+
 ## [[0.3.0] - 2023-01-04](https://github.com/git-plm/gitplm/releases/tag/v0.3.0)
 
 - support hooks, and required sections in release configuration (yml) file.
