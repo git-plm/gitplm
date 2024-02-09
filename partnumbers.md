@@ -155,15 +155,15 @@ The following CCC groups are suggested for electrical parts:
 | ICS  | integrated circuits                     |
 | MPU  | SOC, SOM, SBC, etc.                     |
 | MCU  | Microcontrolleres, modules, etc.        |
-| OSC  | oscillators                             |
+| OSC  | oscillators, Crystals                   |
 | PWR  | relays, etc                             |
 | RFQ  | RF modules, ICs, and related components |
 | REG  | regulators                              |
 | RES  | resistors                               |
+| SEN  | sensors                                 |
 | SWI  | switch                                  |
 | TRA  | transistors, FETs                       |
 | TXT  | test points/pads                        |
-| XTL  | crystals                                |
 
 Each group of CCC parts is placed in its own schematic symbol library with the
 same name. Keeping the CCC and CAD library names the same introduces
