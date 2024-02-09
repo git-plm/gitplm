@@ -149,6 +149,7 @@ The following CCC groups are suggested for electrical parts:
 | ANA  | op-amps, comparators, A/D, D/A          |
 | CAP  | capacitors                              |
 | CON  | connectors                              |
+| CPD  | Circuit protection devices              |
 | DIO  | diodes                                  |
 | IND  | inductors, transformers                 |
 | ICS  | integrated circuits                     |
