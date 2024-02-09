@@ -163,7 +163,6 @@ The following CCC groups are suggested for electrical parts:
 | SEN  | sensors                                 |
 | SWI  | switch                                  |
 | TRA  | transistors, FETs                       |
-| TXT  | test points/pads                        |
 
 Each group of CCC parts is placed in its own schematic symbol library with the
 same name. Keeping the CCC and CAD library names the same introduces
