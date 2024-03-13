@@ -8,7 +8,7 @@
 
 Additional documents:
 
-- [Part numbers](partnumbers.md)
+- [Part numbers](https://github.com/git-plm/parts/blob/main/partnumbers.md)
 - [Changelog](CHANGELOG.md)
 
 GitPLM is a tool and a collection of best practices for managing information
@@ -68,8 +68,8 @@ Usage of gitplm:
 ## Part Numbers
 
 Each part used to make a product is defined by a
-[IPN (Internal Part Number)](partnumbers.md). The convention used by GitPLM is:
-`CCC-NNN-VVVV`
+[IPN (Internal Part Number)](https://github.com/git-plm/parts/blob/main/partnumbers.md).
+The convention used by GitPLM is: `CCC-NNN-VVVV`
 
 - `CCC`: major category (RES, CAP, DIO, etc)
 - `NNN`: incrementing sequential number for each part
