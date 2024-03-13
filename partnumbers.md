@@ -83,11 +83,11 @@ efficiencies**, and **reduce mistakes.**
 
 ## Suggested part number format
 
-Basic format: CCC-NNN-VVVV
+Basic format: CCC-NNNN-VVVV
 
 - CCC: one to three letters or numbers to identify major category (RES, CAP,
   DIO, E (electrical), M (mechanical), etc).
-- NNN: incrementing sequential number for each part. This gives this format
+- NNNN: incrementing sequential number for each part. This gives this format
   flexibility.
 - VVVV: use to code variations of similar parts typically with the **same
   datasheet or family** (resistance, capacitance, regulator voltage, IC package,
@@ -120,14 +120,14 @@ The 4 digit variation field can be used to encode both of these. The first two
 digits can be used to encode the variation, and the second two digits the
 version:
 
-| IPN          | RAM | Flash | Version |
-| ------------ | --- | ----- | ------- |
-| GTW-012-0001 | 64  | 64    | 1       |
-| GTW-012-0101 | 128 | 64    | 1       |
-| GTW-012-0201 | 128 | 128   | 1       |
-| GTW-012-0002 | 64  | 64    | 2       |
-| GTW-012-0102 | 128 | 64    | 2       |
-| GTW-012-0202 | 128 | 128   | 2       |
+| IPN           | RAM | Flash | Version |
+| ------------- | --- | ----- | ------- |
+| GTW-0012-0001 | 64  | 64    | 1       |
+| GTW-0012-0101 | 128 | 64    | 1       |
+| GTW-0012-0201 | 128 | 128   | 1       |
+| GTW-0012-0002 | 64  | 64    | 2       |
+| GTW-0012-0102 | 128 | 64    | 2       |
+| GTW-0012-0202 | 128 | 128   | 2       |
 
 This gives us 100 variations, and 100 versions. If a product exceeds these
 limits, then celebrate that you are wildly successful!!!! Your product has been
@@ -197,62 +197,26 @@ The following CCC groups are suggested for things you produce:
 | DCL  | data -- calibration data for a design                                                                                                                                                                                                            |
 | FIX  | manufacturing fixtures                                                                                                                                                                                                                           |
 
-Conventions can be used such that the PCS, PCA, and PCB NNN are a matched set:
+Conventions can be used such that the PCS, PCA, and PCB NNNN are a matched set:
 
-| IPN          | Description                                    | Version |
-| ------------ | ---------------------------------------------- | ------- |
-| PCA-055-0002 | Gateway with RS485 support PCB assembly BOM    | 2       |
-| PCA-055-0102 | Gateway with CAN support PCB assembly BOM      | 2       |
-| PCB-055-0005 | Bare PCB used in above assemblies              | 5       |
-| PCS-055-0006 | Schematic documentation for above PCB/assembly | 6       |
+| IPN           | Description                                    | Version |
+| ------------- | ---------------------------------------------- | ------- |
+| PCA-0055-0002 | Gateway with RS485 support PCB assembly BOM    | 2       |
+| PCA-0055-0102 | Gateway with CAN support PCB assembly BOM      | 2       |
+| PCB-0055-0005 | Bare PCB used in above assemblies              | 5       |
+| PCS-0055-0006 | Schematic documentation for above PCB/assembly | 6       |
 
-In the above, the common `055` ties all the IPNs together. We can quickly find
+In the above, the common `0055` ties all the IPNs together. We can quickly find
 the schematic, bare PCB, or BOM if we know one of the IPNs -- whether it's a
 file on disk, paper printout in the lab, documentation in the factory, field
 service kit, etc.
 
 Some additional guidelines:
 
-- Every part number has the same number of characters in it (3-3-4). This makes
+- Every part number has the same number of characters in it (3-4-4). This makes
   sorting/comparison/entry simpler with less chance of error.
 - Character set is restricted to capital letters, digits, and hyphen.
 - Avoid punctuation characters such as %, !, (, ., etc.
-
-### Three number category code
-
-The following
-[was suggested by a user](https://forum.kicad.info/t/internal-house-part-number-formats/34958/12?u=cliff_brake)
-on the KiCad form.
-
-The part category is a 3-position numeric field which designates the _type_ of
-item. A summary of part categories is shown in Table 3 with the full list in
-Appendix A.
-
-| **Category** | **Description**                                   |
-| ------------ | ------------------------------------------------- |
-| **0xx-**     | Not used                                          |
-| **1xx-**     | Assemblies                                        |
-| **2xx-**     | Kits, Cables, Packages, PCB Fab, Mechanical Parts |
-| **3xx-**     | Optical Components                                |
-| **4xx-**     | Active Electrical Components                      |
-| **5xx-**     | Passive Electrical Components                     |
-| **6xx-**     | Standard Hardware Components                      |
-| **7xx-**     | Misc. As Required Items                           |
-| **8xx-**     | Software                                          |
-| **9xx-**     | Documentation & Test                              |
-
-### Two letter category code
-
-| Code | Description   |
-| ---- | ------------- |
-| Ex   | Electrical    |
-| Mx   | Mechanical    |
-| Sx   | Software      |
-| Px   | Prodcuct      |
-| Dx   | Documentation |
-
-x could be expanded to a number of sub categories -- perhaps sequentially
-assigned.
 
 ### Why use the same format for IPN and external model number?
 
@@ -271,37 +235,37 @@ benefits:
 With resistors, capacitors, and connectors, we encode the value and pin count in
 the variation:
 
-- 1K 0805 1%: RES-002-1001
-- 3.3K 0805 1%: RES-002-3301
-- 2.2K 0603 5%: RES-003-2201 (note we bumped NNN to 003, because different
+- 1K 0805 1%: RES-0002-1001
+- 3.3K 0805 1%: RES-0002-3301
+- 2.2K 0603 5%: RES-0003-2201 (note we bumped NNN to 003, because different
   package size)
-- 10.3K high power 0603: RES-004-1032 (different vendor/datasheet than RES-002,
+- 10.3K high power 0603: RES-0004-1032 (different vendor/datasheet than RES-002,
   so we bump NNN)
-- 2x10, 0.1 in header: CON-000-0020
-- 2x12, 0.1 in header: CON-000-0024
-- 1x10, 0.1 in header: CON-001-0010
-- 1x20, 0.1 in header: CON-001-0020
+- 2x10, 0.1 in header: CON-0000-0020
+- 2x12, 0.1 in header: CON-0000-0024
+- 1x10, 0.1 in header: CON-0001-0010
+- 1x20, 0.1 in header: CON-0001-0020
 
 With most ICs we simply enumerate all the variations of a particular IC in a
 sequentially incrementing variation (we don't try to encode information)
 
-- LM78xx SOT223 5V: REG-089-0000
-- LM78xx DIP 5V: REG-089-0001
-- LM78xx SOT223 3.3V: REG-089-0002
-- LM78xx DIP 3.3V: REG-089-0003
-- 3.3v switching reg, SSOP8: REG-002-0000
-- 3.3v switching reg, S08: REG-002-0001
-- STM32H7 in 44 pin package, 1M flash: MCU-001-0000
-- STM32H7 in 44 pin package, 2M flash: MCU-001-0001
-- STM32H7 in 208 pin package, 1M flash: MCU-001-0002
-- STM32H7 in 208 pin package, 2M flash: MCU-001-0003
-- STM32F3 in 44 pin package: MCU-002-0000 (note different base part, so bump
+- LM78xx SOT223 5V: REG-0089-0000
+- LM78xx DIP 5V: REG-0089-0001
+- LM78xx SOT223 3.3V: REG-0089-0002
+- LM78xx DIP 3.3V: REG-0089-0003
+- 3.3v switching reg, SSOP8: REG-0002-0000
+- 3.3v switching reg, S08: REG-0002-0001
+- STM32H7 in 44 pin package, 1M flash: MCU-0001-0000
+- STM32H7 in 44 pin package, 2M flash: MCU-0001-0001
+- STM32H7 in 208 pin package, 1M flash: MCU-0001-0002
+- STM32H7 in 208 pin package, 2M flash: MCU-0001-0003
+- STM32F3 in 44 pin package: MCU-0002-0000 (note different base part, so bump
   NNN)
 
 Many parts will not have any variations:
 
-- 2N4401 DIODE: DIO-000-0000 (no variation information, that is fine)
-- 2N2222 transistor: TRA-000-0000 (again, no variation info)
+- 2N4401 DIODE: DIO-0000-0000 (no variation information, that is fine)
+- 2N2222 transistor: TRA-0000-0000 (again, no variation info)
 
 The variation section is only used in cases where a part with a single datasheet
 has multiple variations. Variations are generally used to encode one parameter
@@ -378,7 +342,7 @@ number -- for example:
 
 A semi-structured part number might be:
 
-`RES-025-1002`
+`RES-0025-1002`
 
 The `0603-0.1W-1%-20ppm` parameters are all represented by the NNN section
 (`025`). `1002` is the standard EIA E69 coding for 10K, which is used to encode
@@ -407,23 +371,26 @@ Some trade-offs to consider:
     makes sense
   - parts may be categorized incorrectly, which is hard to fix later
 - **semi-structure pros**
-  - a semi-structured part number like CAP-023-0429 is easy to recognize as an
+  - a semi-structured part number like CAP-0023-0429 is easy to recognize as an
     IPN, and differentiate from other numbers
   - the category (CCC) part in easy to recognize/remember which reduces the size
     of the arbitrary NNN section you need to memorize. This also naturally sorts
     parts for you -- on your BOM, in the warehouse, in the factory, in your lab
     stock, etc. When physically dealing with 100's part numbers on a large PCB,
-    any organization is helpful.
-  - the NNN increments, so you still have a "Random" part, which gives you any
+    any organization is helpful. Having a dozen or two CCC categories is also
+    reasonable for humans to manage. If you had 200 categories, it would be
+    difficult to determine what category a new part went in, or where to find it
+    in the lab stock.
+  - the NNNN increments, so you still have a "Random" part, which gives you any
     flexibility you need.
   - the VVVV allows you to group variations of the same part together -- in
     documentation and in the warehouse.
-  - RES-098-1004 is much easier for a human to compare without mistakes
-    than 1029102.
+  - `RES-0098-1004` is much easier for a human to compare without mistakes than
+    `1029102` or `0603-0.1W-1%-20ppm`.
   - phone numbers, two-factor authentication codes, PINs, etc are often in the
-    form of XXX-XXX. There is a reason for this -- groups of 3 letters/digits
-    are easy for humans to remember and recognize. Why not follow a similar
-    format in IPNs?
+    form of XXX-XXX. There is a reason for this -- groups of 3 or 4
+    letters/digits are easy for humans to remember and recognize. Why not follow
+    a similar format in IPNs?
   - We often group schematic parts into symbol libraries in our CAD tools. If
     that level of organization is useful for designers, why not leverage that
     same organization throughout the company?
@@ -461,8 +428,8 @@ An argument can be made that if you can't encode all parameters in the PN, then
 you should not encode any. Information is not all or nothing. Some information
 is better than no information. CCC/VVVV organization is very useful when dealing
 with physical bags of parts in the real world. To find commonly used parts, the
-CCC code is fairly obvious -- you will quickly memorize the small NNN number for
-commonly used parts (like 1%, 0603 resistors) and the variation can often be
+CCC code is fairly obvious -- you will quickly memorize the small NNNN number
+for commonly used parts (like 1%, 0603 resistors) and the variation can often be
 deduced logically for most parts. The reason we use IPNs is similar to why we
 give people, countries, cities, etc. names -- so we can quickly identify and
 communicate information about something in the physical (or even virtual) world
@@ -470,7 +437,7 @@ between humans. We don't call our co-worker down the hall
 `engineer-5'11"-brown-hair-blue-eyes-150lbs-bsee-...` or `1029629` -- we
 identify people by `<firstname> <lastname>`. Names are useful!
 
-The CCC-NNN-VVVV scheme is a pragmatic compromise between random part numbers
+The CCC-NNNN-VVVV scheme is a pragmatic compromise between random part numbers
 and extensive descriptions where every last parameter is encoded in the
 description. It is kind of like using colors on the factory floor -- you can't
 encode everything in colors, but what you can encode sure helps with rapid,
@@ -486,22 +453,10 @@ Three letters for CCC has the following attributes:
   (through hole resistor), which is probably overkill and just complicates part
   number assignment.
 
-CCC-NNN-VVVV also follows the general to specific naming convention, which is
+CCC-NNNN-VVVV also follows the general to specific naming convention, which is
 generally a good way to name things.
 
-If you are worried about running out of CCC/NNN variations, then make it
-CCCC-NNNN-VVVV. Still very easy to manually parse on the floor. However, the
-original NNN size gives you 1000 values, which is a lot. If your company is
-successful to the point that you need more than 1000 values in a category, then
-it's time to celebrate, and you'll certainly have the resources to handle the
-next phase of expanding it to NNNN, more categories, etc. However, **you first
-need to get there, so optimize for the "getting to success" phase now.** All the
-microseconds and mistakes you'll save with the shorter NNN vs the longer NNNN
-will pay off. And there is no reason why NNN and NNNN can't live in the same
-database post success -- you now have an additional piece of information which
-groups parts in time.
-
-The CCC-NNN-VVVV format presented here is optimized for a small/mid-sized
+The CCC-NNNN-VVVV format presented here is optimized for a small/mid-sized
 company making electronic products. It may not be optimal for other industries.
 
 If you do a google search on this topic, the seemingly prevailing opinion is
