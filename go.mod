@@ -3,7 +3,7 @@ module github.com/git-plm/gitplm
 go 1.19
 
 require (
-	github.com/gocarina/gocsv v0.0.0-20211020200912-82fc2684cc48
+	github.com/gocarina/gocsv v0.0.0-20231116093920-b87c2d0e983a
 	github.com/samber/lo v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
 )
