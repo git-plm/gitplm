@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -18,6 +19,7 @@ func main() {
 	flagVersion := flag.Bool("version", false, "display version of this application")
 	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
 	flagOutput := flag.String("out", "", "output file")
+	flagCombine := flag.String("combine", "", "adds BOM to output bom")
 	flag.Parse()
 
 	if *flagVersion {
@@ -50,7 +52,47 @@ func main() {
 		}
 
 		for _, l := range in {
-			out.addItemMPN(l)
+			out.addItemMPN(l, true)
+		}
+
+		if *flagOutput == "" {
+			log.Println("Must specify output file")
+			os.Exit(-1)
+		}
+
+		err = saveCSV(*flagOutput, out)
+
+		if err != nil {
+			log.Printf("Error saving CSV: %v: %v", *flagOutput, err)
+			os.Exit(-1)
+		}
+
+		return
+	}
+
+	if *flagCombine != "" {
+
+		in := bom{}
+		out := bom{}
+
+		err := loadCSV(*flagCombine, &in)
+
+		if err != nil {
+			log.Printf("Error loading input CSV: %v: %v", *flagSimplify, err)
+			os.Exit(-1)
+		}
+
+		if fileExists(*flagOutput) {
+			err := loadCSV(*flagOutput, &out)
+
+			if err != nil {
+				log.Printf("Error loading output CSV: %v: %v", *flagOutput, err)
+				os.Exit(-1)
+			}
+		}
+
+		for _, l := range in {
+			out.addItemMPN(l, false)
 		}
 
 		if *flagOutput == "" {
@@ -95,4 +137,9 @@ func main() {
 
 	fmt.Println("Error, please specify an action")
 	flag.Usage()
+}
+
+func fileExists(filePath string) bool {
+	_, err := os.Stat(filePath)
+	return !errors.Is(err, os.ErrNotExist)
 }

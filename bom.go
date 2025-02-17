@@ -178,7 +178,7 @@ func (b *bom) addItem(newItem *bomLine) {
 	*b = append(*b, &n)
 }
 
-func (b *bom) addItemMPN(newItem *bomLine) {
+func (b *bom) addItemMPN(newItem *bomLine, includeRef bool) {
 	if newItem.Qnty <= 0 {
 		newItem.Qnty = 1
 	}
@@ -186,13 +186,18 @@ func (b *bom) addItemMPN(newItem *bomLine) {
 	for i, l := range *b {
 		if newItem.MPN == l.MPN {
 			(*b)[i].Qnty += newItem.Qnty
-			(*b)[i].Ref += " " + newItem.Ref
-			(*b)[i].sortRefs()
+			if includeRef {
+				(*b)[i].Ref += " " + newItem.Ref
+				(*b)[i].sortRefs()
+			}
 			return
 		}
 	}
 
 	n := *newItem
+	if !includeRef {
+		n.Ref = ""
+	}
 	*b = append(*b, &n)
 }
 
