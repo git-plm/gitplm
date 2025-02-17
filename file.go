@@ -90,13 +90,13 @@ func findFile(name string) (string, error) {
 func initCSV() {
 	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
 		r := csv.NewReader(in)
-		r.Comma = ';'
+		r.Comma = ','
 		return r
 	})
 
 	gocsv.SetCSVWriter(func(out io.Writer) *gocsv.SafeCSVWriter {
 		writer := csv.NewWriter(out)
-		writer.Comma = ';'
+		writer.Comma = ','
 		return gocsv.NewSafeCSVWriter(writer)
 	})
 }

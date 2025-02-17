@@ -16,6 +16,8 @@ func main() {
 
 	flagRelease := flag.String("release", "", "Process release for IPN (ex: PCB-056-0005, ASY-002-0023)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
+	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
+	flagOutput := flag.String("out", "", "output file")
 	flag.Parse()
 
 	if *flagVersion {
@@ -33,6 +35,37 @@ func main() {
 			log.Println("Error writing to gLog: ", err)
 		}
 		log.Println(s)
+	}
+
+	if *flagSimplify != "" {
+
+		in := bom{}
+		out := bom{}
+
+		err := loadCSV(*flagSimplify, &in)
+
+		if err != nil {
+			log.Printf("Error loading CSV: %v: %v", *flagSimplify, err)
+			os.Exit(-1)
+		}
+
+		for _, l := range in {
+			out.addItemMPN(l)
+		}
+
+		if *flagOutput == "" {
+			log.Println("Must specify output file")
+			os.Exit(-1)
+		}
+
+		err = saveCSV(*flagOutput, out)
+
+		if err != nil {
+			log.Printf("Error saving CSV: %v: %v", *flagOutput, err)
+			os.Exit(-1)
+		}
+
+		return
 	}
 
 	if *flagRelease != "" {

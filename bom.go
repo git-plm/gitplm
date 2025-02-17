@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -48,6 +51,48 @@ func (bl *bomLine) removeRef(ref string) {
 	}
 	bl.Ref = strings.Join(refsOut, ", ")
 	bl.Qnty = len(refsOut)
+}
+
+func sortReferenceDesignators(input string) string {
+	// Split the input string into individual designators
+	designators := strings.Fields(input)
+
+	// Sort the designators
+	sort.Slice(designators, func(i, j int) bool {
+		// Extract the numeric part from each designator
+		numI := extractNumber(designators[i])
+		numJ := extractNumber(designators[j])
+
+		// If the numeric parts are the same, compare the whole strings
+		if numI == numJ {
+			return designators[i] < designators[j]
+		}
+
+		// Compare the numeric parts
+		return numI < numJ
+	})
+
+	// Join the sorted designators back into a string
+	return strings.Join(designators, " ")
+}
+
+func extractNumber(s string) int {
+	// Use regex to find the numeric part of the string
+	re := regexp.MustCompile(`\d+`)
+	match := re.FindString(s)
+
+	// Convert the matched string to an integer
+	if match != "" {
+		num, _ := strconv.Atoi(match)
+		return num
+	}
+
+	// Return 0 if no number is found
+	return 0
+}
+
+func (bl *bomLine) sortRefs() {
+	bl.Ref = sortReferenceDesignators(bl.Ref)
 }
 
 type bom []*bomLine
@@ -130,6 +175,24 @@ func (b *bom) addItem(newItem *bomLine) {
 	n := *newItem
 	// clear refs
 	n.Ref = ""
+	*b = append(*b, &n)
+}
+
+func (b *bom) addItemMPN(newItem *bomLine) {
+	if newItem.Qnty <= 0 {
+		newItem.Qnty = 1
+	}
+
+	for i, l := range *b {
+		if newItem.MPN == l.MPN {
+			(*b)[i].Qnty += newItem.Qnty
+			(*b)[i].Ref += " " + newItem.Ref
+			(*b)[i].sortRefs()
+			return
+		}
+	}
+
+	n := *newItem
 	*b = append(*b, &n)
 }
 
