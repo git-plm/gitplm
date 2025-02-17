@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -52,7 +51,7 @@ func main() {
 			}
 			fn := fmt.Sprintf("%v-%03v.log", c, n)
 			logFilePath := filepath.Join(relPath, fn)
-			err = ioutil.WriteFile(logFilePath, []byte(gLog.String()), 0644)
+			err = os.WriteFile(logFilePath, []byte(gLog.String()), 0644)
 			if err != nil {
 				log.Println("Error writing log file: ", err)
 			}
