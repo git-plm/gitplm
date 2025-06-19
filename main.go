@@ -20,6 +20,7 @@ func main() {
 	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
 	flagOutput := flag.String("out", "", "output file")
 	flagCombine := flag.String("combine", "", "adds BOM to output bom")
+	flagPMDir := flag.String("pmDir", "", "specify location of partmaster CSV files")
 	flag.Parse()
 
 	if *flagVersion {
@@ -111,7 +112,7 @@ func main() {
 	}
 
 	if *flagRelease != "" {
-		relPath, err := processRelease(*flagRelease, &gLog)
+		relPath, err := processRelease(*flagRelease, &gLog, *flagPMDir)
 		if err != nil {
 			logMsg(fmt.Sprintf("release error: %v\n", err))
 		} else {

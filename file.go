@@ -11,7 +11,7 @@ import (
 )
 
 // load CSV into target data structure. target is modified
-func loadCSV(fileName string, target interface{}) error {
+func loadCSV(fileName string, target any) error {
 	file, err := os.OpenFile(fileName, os.O_RDONLY, 0644)
 	if err != nil {
 		return err
@@ -21,7 +21,7 @@ func loadCSV(fileName string, target interface{}) error {
 	return gocsv.UnmarshalFile(file, target)
 }
 
-func saveCSV(filename string, data interface{}) error {
+func saveCSV(filename string, data any) error {
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err

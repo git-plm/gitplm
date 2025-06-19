@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- add `-pmDir` command line parameter to specify parts database directory
+- add support for loading multiple partmaster CSV files from a directory
+- breaking change: changed CSV column heading "qnty" to "qty"
+
 ## [[0.4.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.4.0)
 
 - output hook stdout/err to gitplm stdout/err

@@ -24,6 +24,7 @@ type relScript struct {
 }
 
 func (rs *relScript) processBom(b bom) (bom, error) {
+	fmt.Printf("rel script: %+v\n", rs)
 	ret := b
 	for _, r := range rs.Remove {
 		if r.CmpName != "" {
@@ -40,7 +41,7 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 			retM := bom{}
 			for _, l := range ret {
 				l.removeRef(r.Ref)
-				if l.Qnty > 0 {
+				if l.Qty > 0 {
 					retM = append(retM, l)
 				}
 			}
@@ -49,10 +50,11 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 	}
 
 	for _, a := range rs.Add {
+		fmt.Println("CLIFF: adding to BOM: ", a)
 		refs := strings.Split(a.Ref, ",")
-		a.Qnty = len(refs)
-		if a.Qnty < 0 {
-			a.Qnty = 1
+		a.Qty = len(refs)
+		if a.Qty < 0 {
+			a.Qty = 1
 		}
 		// for some reason we need to make a copy or it
 		// will alias the last one
@@ -67,6 +69,7 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 
 func (rs *relScript) copy(srcDir, destDir string) error {
 	for _, c := range rs.Copy {
+		fmt.Println("CLIff; copy: ", c)
 		opts := copy.Options{
 			OnSymlink: func(src string) copy.SymlinkAction {
 				return copy.Deep

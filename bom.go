@@ -11,7 +11,7 @@ import (
 
 type bomLine struct {
 	IPN          ipn    `csv:"IPN" yaml:"ipn"`
-	Qnty         int    `csv:"Qnty" yaml:"qnty"`
+	Qty          int    `csv:"Qty" yaml:"qty"`
 	MPN          string `csv:"MPN" yaml:"mpn"`
 	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
 	Ref          string `csv:"Ref" yaml:"ref"`
@@ -27,7 +27,7 @@ type bomLine struct {
 func (bl *bomLine) String() string {
 	return fmt.Sprintf("%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v",
 		bl.Ref,
-		bl.Qnty,
+		bl.Qty,
 		bl.Value,
 		bl.CmpName,
 		bl.Footprint,
@@ -50,7 +50,7 @@ func (bl *bomLine) removeRef(ref string) {
 		}
 	}
 	bl.Ref = strings.Join(refsOut, ", ")
-	bl.Qnty = len(refsOut)
+	bl.Qty = len(refsOut)
 }
 
 func sortReferenceDesignators(input string) string {
@@ -151,13 +151,13 @@ func (b *bom) processOurIPN(pn ipn, qty int) error {
 	for _, l := range subBom {
 		isSub, _ := l.IPN.hasBOM()
 		if isSub {
-			err := b.processOurIPN(l.IPN, l.Qnty*qty)
+			err := b.processOurIPN(l.IPN, l.Qty*qty)
 			if err != nil {
 				return fmt.Errorf("Error processing sub %v: %v", l.IPN, err)
 			}
 		}
 		n := *l
-		n.Qnty *= qty
+		n.Qty *= qty
 		b.addItem(&n)
 	}
 
@@ -167,7 +167,7 @@ func (b *bom) processOurIPN(pn ipn, qty int) error {
 func (b *bom) addItem(newItem *bomLine) {
 	for i, l := range *b {
 		if newItem.IPN == l.IPN {
-			(*b)[i].Qnty += newItem.Qnty
+			(*b)[i].Qty += newItem.Qty
 			return
 		}
 	}
@@ -179,13 +179,13 @@ func (b *bom) addItem(newItem *bomLine) {
 }
 
 func (b *bom) addItemMPN(newItem *bomLine, includeRef bool) {
-	if newItem.Qnty <= 0 {
-		newItem.Qnty = 1
+	if newItem.Qty <= 0 {
+		newItem.Qty = 1
 	}
 
 	for i, l := range *b {
 		if newItem.MPN == l.MPN {
-			(*b)[i].Qnty += newItem.Qnty
+			(*b)[i].Qty += newItem.Qty
 			if includeRef {
 				(*b)[i].Ref += " " + newItem.Ref
 				(*b)[i].sortRefs()
