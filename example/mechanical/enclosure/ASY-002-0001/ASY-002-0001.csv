@@ -1,3 +1,3 @@
-IPN;Qnty;MPN;Manufacturer;Ref;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Checked
+IPN;Qty;MPN;Manufacturer;Ref;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Checked
 ASY-012-0012;2;;mycompany;;;;;endcap assembly;;;
 SCR-002-0002;10;18a02SDF;screwsRus;;;;;#4 screw;;https://www.screws.com/pdfs/abc.pdf;
