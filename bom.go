@@ -25,7 +25,8 @@ type bomLine struct {
 }
 
 func (bl *bomLine) String() string {
-	return fmt.Sprintf("%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v",
+	return fmt.Sprintf("%v,%v,%v,%v,%v,%v,%v,%v,%v,%v,%v,%v",
+		bl.IPN,
 		bl.Ref,
 		bl.Qty,
 		bl.Value,
@@ -33,7 +34,6 @@ func (bl *bomLine) String() string {
 		bl.Footprint,
 		bl.Description,
 		bl.Vendor,
-		bl.IPN,
 		bl.Datasheet,
 		bl.Manufacturer,
 		bl.MPN,
@@ -41,7 +41,7 @@ func (bl *bomLine) String() string {
 }
 
 func (bl *bomLine) removeRef(ref string) {
-	refs := strings.Split(bl.Ref, ",")
+	refs := strings.Split(bl.Ref, " ")
 	refsOut := []string{}
 	for _, r := range refs {
 		r = strings.Trim(r, " ")
@@ -49,7 +49,7 @@ func (bl *bomLine) removeRef(ref string) {
 			refsOut = append(refsOut, r)
 		}
 	}
-	bl.Ref = strings.Join(refsOut, ", ")
+	bl.Ref = strings.Join(refsOut, " ")
 	bl.Qty = len(refsOut)
 }
 
