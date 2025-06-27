@@ -19,6 +19,7 @@ For more details or to discuss releases, please visit the
     ';'. It turns out that anything besides ',' introduces a lot of friction in
     using other tools like LibreOffice.
   - breaking change: switch to using space for reference delimiters (was ',')
+- improve error handling
 
 ## [[0.4.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.4.0)
 
