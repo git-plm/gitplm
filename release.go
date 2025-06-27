@@ -22,7 +22,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 	relPnBase := fmt.Sprintf("%v-%03v", c, n)
 
 	bomFile := relPnBase + ".csv"
-	bomFileGenerated := relPn + "_bom.csv"
+	bomFileGenerated := relPn + ".csv"
 	ymlFile := relPnBase + ".yml"
 	bomExists := false
 	ymlExists := false
