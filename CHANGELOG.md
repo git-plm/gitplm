@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.6.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.6.0)
+
 - add `-pmDir` command line parameter to specify parts database directory
 - add support for loading multiple partmaster CSV files from a directory
 - **breaking changes**
