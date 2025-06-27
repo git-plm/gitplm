@@ -7,10 +7,10 @@ import (
 )
 
 var pmIn = `
-IPN;Description;Value;Manufacturer;MPN;Priority
-CAP-001-1001;superduper cap;;CapsInc;10045;2
-CAP-001-1001;;10k;MaxCaps;abc2322;1
-CAP-001-1002;;;MaxCaps;abc2323;
+IPN,Description,Value,Manufacturer,MPN,Priority
+CAP-001-1001,superduper cap,,CapsInc,10045,2
+CAP-001-1001,,10k,MaxCaps,abc2322,1
+CAP-001-1002,,,MaxCaps,abc2323,
 `
 
 func TestPartmaster(t *testing.T) {
@@ -38,7 +38,7 @@ func TestPartmaster(t *testing.T) {
 		t.Errorf("Got wrong value for CAP-001-1001: %v", p.Value)
 	}
 
-	p, err = pm.findPart("CAP-001-1002")
+	_, err = pm.findPart("CAP-001-1002")
 	if err != nil {
 		t.Fatalf("Error finding part CAP-001-1002: %v", err)
 	}

@@ -40,7 +40,7 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 			retM := bom{}
 			for _, l := range ret {
 				l.removeRef(r.Ref)
-				if l.Qnty > 0 {
+				if l.Qty > 0 {
 					retM = append(retM, l)
 				}
 			}
@@ -50,9 +50,9 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 
 	for _, a := range rs.Add {
 		refs := strings.Split(a.Ref, ",")
-		a.Qnty = len(refs)
-		if a.Qnty < 0 {
-			a.Qnty = 1
+		a.Qty = len(refs)
+		if a.Qty < 0 {
+			a.Qty = 1
 		}
 		// for some reason we need to make a copy or it
 		// will alias the last one
@@ -142,6 +142,7 @@ func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
 			log.Println("Error running hook: ", err)
 			log.Println("Hook contents: ")
 			fmt.Print(out.String())
+			return err
 		}
 	}
 	return nil

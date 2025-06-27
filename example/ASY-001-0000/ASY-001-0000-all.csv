@@ -1,4 +1,4 @@
-IPN;Qnty;MPN;Manufacturer;Ref;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Checked
+IPN;Qty;MPN;Manufacturer;Ref;Value;Cmp name;Footprint;Description;Vendor;Datasheet;Checked
 ANA-000-0000;16;LT1716IS5#TRPBF;Linear Technology;;LT1716;LT1716;Package_TO_SOT_SMD:SOT-23-5;LT1716;;https://www.analog.com/media/en/technical-documentation/data-sheets/LT1716.pdf;
 ASY-002-0001;3;;mycompany;;;;;endplate;;;Y
 ASY-012-0012;6;;mycompany;;;;;endcap assembly;;;

@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 )
 
 type bomLine struct {
 	IPN          ipn    `csv:"IPN" yaml:"ipn"`
-	Qnty         int    `csv:"Qnty" yaml:"qnty"`
+	Qty          int    `csv:"Qty" yaml:"qty"`
 	MPN          string `csv:"MPN" yaml:"mpn"`
 	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
 	Ref          string `csv:"Ref" yaml:"ref"`
@@ -22,15 +25,15 @@ type bomLine struct {
 }
 
 func (bl *bomLine) String() string {
-	return fmt.Sprintf("%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v;%v",
+	return fmt.Sprintf("%v,%v,%v,%v,%v,%v,%v,%v,%v,%v,%v,%v",
+		bl.IPN,
 		bl.Ref,
-		bl.Qnty,
+		bl.Qty,
 		bl.Value,
 		bl.CmpName,
 		bl.Footprint,
 		bl.Description,
 		bl.Vendor,
-		bl.IPN,
 		bl.Datasheet,
 		bl.Manufacturer,
 		bl.MPN,
@@ -38,7 +41,7 @@ func (bl *bomLine) String() string {
 }
 
 func (bl *bomLine) removeRef(ref string) {
-	refs := strings.Split(bl.Ref, ",")
+	refs := strings.Split(bl.Ref, " ")
 	refsOut := []string{}
 	for _, r := range refs {
 		r = strings.Trim(r, " ")
@@ -46,8 +49,50 @@ func (bl *bomLine) removeRef(ref string) {
 			refsOut = append(refsOut, r)
 		}
 	}
-	bl.Ref = strings.Join(refsOut, ", ")
-	bl.Qnty = len(refsOut)
+	bl.Ref = strings.Join(refsOut, " ")
+	bl.Qty = len(refsOut)
+}
+
+func sortReferenceDesignators(input string) string {
+	// Split the input string into individual designators
+	designators := strings.Fields(input)
+
+	// Sort the designators
+	sort.Slice(designators, func(i, j int) bool {
+		// Extract the numeric part from each designator
+		numI := extractNumber(designators[i])
+		numJ := extractNumber(designators[j])
+
+		// If the numeric parts are the same, compare the whole strings
+		if numI == numJ {
+			return designators[i] < designators[j]
+		}
+
+		// Compare the numeric parts
+		return numI < numJ
+	})
+
+	// Join the sorted designators back into a string
+	return strings.Join(designators, " ")
+}
+
+func extractNumber(s string) int {
+	// Use regex to find the numeric part of the string
+	re := regexp.MustCompile(`\d+`)
+	match := re.FindString(s)
+
+	// Convert the matched string to an integer
+	if match != "" {
+		num, _ := strconv.Atoi(match)
+		return num
+	}
+
+	// Return 0 if no number is found
+	return 0
+}
+
+func (bl *bomLine) sortRefs() {
+	bl.Ref = sortReferenceDesignators(bl.Ref)
 }
 
 type bom []*bomLine
@@ -106,13 +151,13 @@ func (b *bom) processOurIPN(pn ipn, qty int) error {
 	for _, l := range subBom {
 		isSub, _ := l.IPN.hasBOM()
 		if isSub {
-			err := b.processOurIPN(l.IPN, l.Qnty*qty)
+			err := b.processOurIPN(l.IPN, l.Qty*qty)
 			if err != nil {
 				return fmt.Errorf("Error processing sub %v: %v", l.IPN, err)
 			}
 		}
 		n := *l
-		n.Qnty *= qty
+		n.Qty *= qty
 		b.addItem(&n)
 	}
 
@@ -122,7 +167,7 @@ func (b *bom) processOurIPN(pn ipn, qty int) error {
 func (b *bom) addItem(newItem *bomLine) {
 	for i, l := range *b {
 		if newItem.IPN == l.IPN {
-			(*b)[i].Qnty += newItem.Qnty
+			(*b)[i].Qty += newItem.Qty
 			return
 		}
 	}
@@ -130,6 +175,29 @@ func (b *bom) addItem(newItem *bomLine) {
 	n := *newItem
 	// clear refs
 	n.Ref = ""
+	*b = append(*b, &n)
+}
+
+func (b *bom) addItemMPN(newItem *bomLine, includeRef bool) {
+	if newItem.Qty <= 0 {
+		newItem.Qty = 1
+	}
+
+	for i, l := range *b {
+		if newItem.MPN == l.MPN {
+			(*b)[i].Qty += newItem.Qty
+			if includeRef {
+				(*b)[i].Ref += " " + newItem.Ref
+				(*b)[i].sortRefs()
+			}
+			return
+		}
+	}
+
+	n := *newItem
+	if !includeRef {
+		n.Ref = ""
+	}
 	*b = append(*b, &n)
 }
 

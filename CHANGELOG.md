@@ -11,6 +11,15 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- add `-pmDir` command line parameter to specify parts database directory
+- add support for loading multiple partmaster CSV files from a directory
+- **breaking changes**
+  - changed CSV column heading "qnty" to "qty"
+  - breaking change: switched to using ',' in CSV files for delimiter instead of
+    ';'. It turns out that anything besides ',' introduces a lot of friction in
+    using other tools like LibreOffice.
+  - breaking change: switch to using space for reference delimiters (was ',')
+
 ## [[0.4.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.4.0)
 
 - output hook stdout/err to gitplm stdout/err

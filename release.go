@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func processRelease(relPn string, relLog *strings.Builder) (string, error) {
+func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string, error) {
 	c, n, _, err := ipn(relPn).parse()
 	if err != nil {
 		return "", fmt.Errorf("error parsing bom %v IPN : %v", relPn, err)
@@ -22,6 +22,7 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 	relPnBase := fmt.Sprintf("%v-%03v", c, n)
 
 	bomFile := relPnBase + ".csv"
+	bomFileGenerated := relPn + ".csv"
 	ymlFile := relPnBase + ".yml"
 	bomExists := false
 	ymlExists := false
@@ -67,7 +68,7 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 		}
 	}
 
-	writeFilePath := filepath.Join(releaseDir, relPn+".csv")
+	bomFileWritePath := filepath.Join(releaseDir, bomFileGenerated)
 
 	logErr := func(s string) {
 		_, err := relLog.Write([]byte(s))
@@ -77,15 +78,22 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 		log.Println(s)
 	}
 
-	partmasterPath, err := findFile("partmaster.csv")
-	if err != nil {
-		return sourceDir, fmt.Errorf("Error, partmaster.csv not found in any dir")
-	}
-
 	p := partmaster{}
-	err = loadCSV(partmasterPath, &p)
-	if err != nil {
-		return sourceDir, err
+	if pmDir != "" {
+		p, err = loadPartmasterFromDir(pmDir)
+		if err != nil {
+			return sourceDir, fmt.Errorf("Error loading partmaster from directory %s: %v", pmDir, err)
+		}
+	} else {
+		partmasterPath, err := findFile("partmaster.csv")
+		if err != nil {
+			return sourceDir, fmt.Errorf("Error, partmaster.csv not found in any dir")
+		}
+
+		err = loadCSV(partmasterPath, &p)
+		if err != nil {
+			return sourceDir, err
+		}
 	}
 
 	b := bom{}
@@ -122,6 +130,23 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
 		}
 
+		// look if we generated a BOM
+		if !bomExists {
+			bomFilePath, err := findFile(bomFileGenerated)
+			if err == nil {
+				bomExists = true
+				err = loadCSV(bomFilePath, &b)
+				if err != nil {
+					return sourceDir, err
+				}
+
+				b, err = rs.processBom(b)
+				if err != nil {
+					return sourceDir, fmt.Errorf("Error processing bom with yml file: %v", err)
+				}
+			}
+		}
+
 		// copy stuff to release dir specified in YML file
 		err = rs.copy(sourceDir, releaseDir)
 		if err != nil {
@@ -146,7 +171,7 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 	// merge in partmaster info into BOM
 	b.mergePartmaster(p, logErr)
 
-	err = saveCSV(writeFilePath, b)
+	err = saveCSV(bomFileWritePath, b)
 	if err != nil {
 		return sourceDir, fmt.Errorf("Error writing BOM: %v", err)
 	}
@@ -204,7 +229,7 @@ func processRelease(relPn string, relLog *strings.Builder) (string, error) {
 			hasBOM, _ := l.IPN.hasBOM()
 			if hasBOM {
 				foundSub = true
-				err = b.processOurIPN(l.IPN, l.Qnty)
+				err = b.processOurIPN(l.IPN, l.Qty)
 				if err != nil {
 					return sourceDir, fmt.Errorf("Error proccessing sub %v: %v", l.IPN, err)
 				}
