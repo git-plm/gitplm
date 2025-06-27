@@ -24,7 +24,6 @@ type relScript struct {
 }
 
 func (rs *relScript) processBom(b bom) (bom, error) {
-	fmt.Printf("rel script: %+v\n", rs)
 	ret := b
 	for _, r := range rs.Remove {
 		if r.CmpName != "" {
@@ -143,6 +142,7 @@ func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
 			log.Println("Error running hook: ", err)
 			log.Println("Hook contents: ")
 			fmt.Print(out.String())
+			return err
 		}
 	}
 	return nil
