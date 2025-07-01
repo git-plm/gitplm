@@ -143,6 +143,15 @@ func main() {
 		return
 	}
 
+	// If no flags were provided, show the TUI
+	if len(os.Args) == 1 {
+		err := runTUI()
+		if err != nil {
+			log.Fatal("Error running TUI: ", err)
+		}
+		return
+	}
+
 	fmt.Println("Error, please specify an action")
 	flag.Usage()
 }
