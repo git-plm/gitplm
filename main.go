@@ -15,12 +15,19 @@ var version = "Development"
 func main() {
 	initCSV()
 
+	// Load config file first
+	config, err := loadConfig()
+	if err != nil {
+		log.Printf("Error loading config: %v", err)
+		os.Exit(-1)
+	}
+
 	flagRelease := flag.String("release", "", "Process release for IPN (ex: PCB-056-0005, ASY-002-0023)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
 	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
 	flagOutput := flag.String("out", "", "output file")
 	flagCombine := flag.String("combine", "", "adds BOM to output bom")
-	flagPMDir := flag.String("pmDir", "", "specify location of partmaster CSV files")
+	flagPMDir := flag.String("pmDir", config.PMDir, "specify location of partmaster CSV files")
 	flag.Parse()
 
 	if *flagVersion {

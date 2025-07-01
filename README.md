@@ -65,6 +65,23 @@ Usage of gitplm:
         display version of this application
 ```
 
+## Configuration
+
+GitPLM supports configuration via YAML files. The tool will look for configuration files in the following order:
+
+1. Current directory: `gitplm.yaml`, `gitplm.yml`, `.gitplm.yaml`, `.gitplm.yml`
+2. Home directory: `~/.gitplm.yaml`, `~/.gitplm.yml`
+
+Example configuration file:
+
+```yaml
+pmDir: /path/to/partmaster/directory
+```
+
+Available configuration options:
+
+- `pmDir`: Specifies the directory containing the partmaster.csv file
+
 ## Part Numbers
 
 Each part used to make a product is defined by a
