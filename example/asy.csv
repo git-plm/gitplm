@@ -1,0 +1,4 @@
+IPN,Description,Footprint,Value,Manufacturer,MPN,Datasheet,Priority,Checked
+ASY-001-0000,productA,productA,mycompany,
+ASY-002-0001,endplate,endplate,mycompany,Y
+ASY-012-0012,endcap assembly,mycompany,
