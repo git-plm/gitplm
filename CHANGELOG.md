@@ -11,6 +11,28 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+### Added
+
+- Interactive TUI (Terminal User Interface) mode when no command line arguments
+  are provided
+- TUI prompt for configuring partmaster directory when not set in configuration
+- Automatic saving of partmaster directory configuration to `gitplm.yml`
+- Scrollable table display of partmaster data in TUI with columns: IPN,
+  Description, Manufacturer, MPN, Value
+- Enhanced file search pattern supporting `CCC-NNN-VV.csv` and `CCC-NNN-VV.yml`
+  formats
+- YAML configuration file support (`gitplm.yaml`, `gitplm.yml`, `.gitplm.yaml`,
+  `.gitplm.yml`)
+
+### Enhanced
+
+- Source file discovery now supports variation-based file naming using first two
+  digits of variation number
+- File search priority: base pattern (`CCC-NNN.csv`) first, then variation
+  pattern (`CCC-NNN-VV.csv`)
+- Improved user experience with seamless configuration flow in TUI mode
+- Quantity fields now support fractional values (e.g., 0.5, 1.25) for more precise BOM specifications
+
 ## [[0.6.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.6.0)
 
 - add `-pmDir` command line parameter to specify parts database directory

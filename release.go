@@ -14,30 +14,49 @@ import (
 )
 
 func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string, error) {
-	c, n, _, err := ipn(relPn).parse()
+	c, n, v, err := ipn(relPn).parse()
 	if err != nil {
 		return "", fmt.Errorf("error parsing bom %v IPN : %v", relPn, err)
 	}
 
 	relPnBase := fmt.Sprintf("%v-%03v", c, n)
+	relPnBaseWithVar := fmt.Sprintf("%v-%03v-%02v", c, n, v/100) // First two digits of variation
 
 	bomFile := relPnBase + ".csv"
+	bomFileWithVar := relPnBaseWithVar + ".csv"
 	bomFileGenerated := relPn + ".csv"
 	ymlFile := relPnBase + ".yml"
+	ymlFileWithVar := relPnBaseWithVar + ".yml"
 	bomExists := false
 	ymlExists := false
 	sourceDir := ""
 
+	// Try to find BOM file - first try CCC-NNN.csv, then CCC-NNN-VV.csv
 	bomFilePath, err := findFile(bomFile)
 	if err == nil {
 		bomExists = true
 		sourceDir = filepath.Dir(bomFilePath)
+	} else {
+		// Try with variation pattern
+		bomFilePath, err = findFile(bomFileWithVar)
+		if err == nil {
+			bomExists = true
+			sourceDir = filepath.Dir(bomFilePath)
+		}
 	}
 
+	// Try to find YML file - first try CCC-NNN.yml, then CCC-NNN-VV.yml
 	ymlFilePath, err := findFile(ymlFile)
 	if err == nil {
 		ymlExists = true
 		sourceDir = filepath.Dir(ymlFilePath)
+	} else {
+		// Try with variation pattern
+		ymlFilePath, err = findFile(ymlFileWithVar)
+		if err == nil {
+			ymlExists = true
+			sourceDir = filepath.Dir(ymlFilePath)
+		}
 	}
 
 	if !ymlExists && !bomExists {
