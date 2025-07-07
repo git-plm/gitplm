@@ -53,3 +53,16 @@ func loadConfig() (*Config, error) {
 	
 	return config, nil
 }
+
+func saveConfig(pmDir string) error {
+	config := Config{
+		PMDir: pmDir,
+	}
+
+	data, err := yaml.Marshal(&config)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile("gitplm.yml", data, 0644)
+}

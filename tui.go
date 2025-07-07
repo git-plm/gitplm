@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -285,15 +284,3 @@ func runTUI(pmDir string) error {
 	return err
 }
 
-func saveConfig(pmDir string) error {
-	config := Config{
-		PMDir: pmDir,
-	}
-
-	data, err := yaml.Marshal(&config)
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile("gitplm.yml", data, 0644)
-}
