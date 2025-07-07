@@ -10,18 +10,18 @@ import (
 )
 
 type bomLine struct {
-	IPN          ipn    `csv:"IPN" yaml:"ipn"`
-	Qty          int    `csv:"Qty" yaml:"qty"`
-	MPN          string `csv:"MPN" yaml:"mpn"`
-	Manufacturer string `csv:"Manufacturer" yaml:"manufacturer"`
-	Ref          string `csv:"Ref" yaml:"ref"`
-	Value        string `csv:"Value" yaml:"value"`
-	CmpName      string `csv:"Cmp name" yaml:"cmpName"`
-	Footprint    string `csv:"Footprint" yaml:"footprint"`
-	Description  string `csv:"Description" yaml:"description"`
-	Vendor       string `csv:"Vendor" yaml:"vendor"`
-	Datasheet    string `csv:"Datasheet" yaml:"datasheet"`
-	Checked      string `csv:"Checked" yaml:"checked"`
+	IPN          ipn     `csv:"IPN" yaml:"ipn"`
+	Qty          float64 `csv:"Qty" yaml:"qty"`
+	MPN          string  `csv:"MPN" yaml:"mpn"`
+	Manufacturer string  `csv:"Manufacturer" yaml:"manufacturer"`
+	Ref          string  `csv:"Ref" yaml:"ref"`
+	Value        string  `csv:"Value" yaml:"value"`
+	CmpName      string  `csv:"Cmp name" yaml:"cmpName"`
+	Footprint    string  `csv:"Footprint" yaml:"footprint"`
+	Description  string  `csv:"Description" yaml:"description"`
+	Vendor       string  `csv:"Vendor" yaml:"vendor"`
+	Datasheet    string  `csv:"Datasheet" yaml:"datasheet"`
+	Checked      string  `csv:"Checked" yaml:"checked"`
 }
 
 func (bl *bomLine) String() string {
@@ -50,7 +50,7 @@ func (bl *bomLine) removeRef(ref string) {
 		}
 	}
 	bl.Ref = strings.Join(refsOut, " ")
-	bl.Qty = len(refsOut)
+	bl.Qty = float64(len(refsOut))
 }
 
 func sortReferenceDesignators(input string) string {
@@ -132,7 +132,7 @@ func (b *bom) copy() bom {
 	return ret
 }
 
-func (b *bom) processOurIPN(pn ipn, qty int) error {
+func (b *bom) processOurIPN(pn ipn, qty float64) error {
 	log.Println("processing our IPN: ", pn, qty)
 
 	// check if BOM exists
@@ -180,7 +180,7 @@ func (b *bom) addItem(newItem *bomLine) {
 
 func (b *bom) addItemMPN(newItem *bomLine, includeRef bool) {
 	if newItem.Qty <= 0 {
-		newItem.Qty = 1
+		newItem.Qty = 1.0
 	}
 
 	for i, l := range *b {
