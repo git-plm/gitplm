@@ -23,6 +23,7 @@ For more details or to discuss releases, please visit the
   formats
 - YAML configuration file support (`gitplm.yaml`, `gitplm.yml`, `.gitplm.yaml`,
   `.gitplm.yml`)
+- Start of KiCad HTTP library API support
 
 ### Enhanced
 
@@ -31,7 +32,8 @@ For more details or to discuss releases, please visit the
 - File search priority: base pattern (`CCC-NNN.csv`) first, then variation
   pattern (`CCC-NNN-VV.csv`)
 - Improved user experience with seamless configuration flow in TUI mode
-- Quantity fields now support fractional values (e.g., 0.5, 1.25) for more precise BOM specifications
+- Quantity fields now support fractional values (e.g., 0.5, 1.25) for more
+  precise BOM specifications
 
 ## [[0.6.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.6.0)
 
