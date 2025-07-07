@@ -145,7 +145,7 @@ func main() {
 
 	// If no flags were provided, show the TUI
 	if len(os.Args) == 1 {
-		err := runTUI(*flagPMDir)
+		err := runTUINew(*flagPMDir)
 		if err != nil {
 			log.Fatal("Error running TUI: ", err)
 		}
