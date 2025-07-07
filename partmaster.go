@@ -89,6 +89,13 @@ func loadPartmasterFromDir(dir string) (partmaster, error) {
 			return pm, fmt.Errorf("error loading CSV file %s: %v", file, err)
 		}
 
+		// Post-process to fix missing values
+		for _, part := range temp {
+			if part.Value == "" && part.MPN != "" {
+				part.Value = part.MPN
+			}
+		}
+
 		pm = append(pm, temp...)
 	}
 
