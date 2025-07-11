@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.7.1] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.1)
+
+- rename release to more friendly names
+
 ## [[0.7.0] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.0)
 
 ### Added
