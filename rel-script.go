@@ -50,9 +50,9 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 
 	for _, a := range rs.Add {
 		refs := strings.Split(a.Ref, ",")
-		a.Qty = len(refs)
+		a.Qty = float64(len(refs))
 		if a.Qty < 0 {
-			a.Qty = 1
+			a.Qty = 1.0
 		}
 		// for some reason we need to make a copy or it
 		// will alias the last one
