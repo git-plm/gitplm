@@ -11,7 +11,20 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
-## [[0.6.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.6.0)
+## [[0.7.0] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.0)
+
+- support fractional quantities
+- support releasing variations. Before, GitPLM only looked for BOM source or
+  YAML files in format of ASY-005.csv or ASY-005.yml. Now it also looks for
+  ASY-005-02.csv/yml. This gives us the ability to have
+  [different variations](https://github.com/git-plm/parts/blob/main/partnumbers.md#encoding-product-version-and-variations)
+  of a base IPN.
+- WIP (work in progress), not finished
+  - start of TUI (terminal UI). This runs if GitPLM is run with no options and
+    can currently be used to browse parts.
+  - start of KiCad HTTP interface
+
+## [[0.6.1] - 2025-06-26](https://github.com/git-plm/gitplm/releases/tag/v0.6.1)
 
 - add `-pmDir` command line parameter to specify parts database directory
 - add support for loading multiple partmaster CSV files from a directory
