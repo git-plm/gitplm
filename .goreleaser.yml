@@ -36,8 +36,11 @@ archives:
   - name_template: >-
       {{- .ProjectName }}-
       {{- .Tag }}-
-      {{- .Os }}-
-      {{- .Arch }}
+      {{- if eq .Os "darwin" }}macos
+      {{- else }}{{ .Os }}{{ end }}-
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}{{ .Arm }}{{ end }}
     wrap_in_directory: true
     format: tar.gz
