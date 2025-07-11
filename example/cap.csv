@@ -1,0 +1,7 @@
+IPN,Description,Footprint,Value,Manufacturer,MPN,Datasheet,Priority,Checked
+CAP-000-1001,1nF 50V cap,1nF_50V,Bogus Caps Inc,1234,2,
+CAP-000-1001,1nF 50V cap,Capacitor_SMD:C_0805_2012Metric,AVX,08055C102JAT2A,http://datasheets.avx.com/X7RDielectric.pdf,1,Y
+CAP-000-1002,10nF 50V,Capacitor_SMD:C_0805_2012Metric,10nF_50V,AVX,08055C103JAT2A,http://datasheets.avx.com/X7RDielectric.pdf,
+CAP-000-1005,1.0uF,Capacitor_SMD:C_0805_2012Metric,1.0uF_50V,AVX,08055C105KAT2A,http://datasheets.avx.com/X7RDielectric.pdf,
+CAP-000-470R,470pF 50V,Capacitor_SMD:C_0603_1608Metric,470pF_50V,AVX,06035C471JAT2A,https://datasheets.avx.com/X7RDielectric.pdf,Y
+CAP-015-1002,10nF/50V,Capacitor_SMD:C_0603_1608Metric,10nF_50V,AVX,06035C103JAT2A,http://datasheets.avx.com/X7RDielectric.pdf,

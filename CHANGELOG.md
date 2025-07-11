@@ -13,16 +13,31 @@ For more details or to discuss releases, please visit the
 
 ## [[0.7.0] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.0)
 
-- support fractional quantities
-- support releasing variations. Before, GitPLM only looked for BOM source or
-  YAML files in format of ASY-005.csv or ASY-005.yml. Now it also looks for
-  ASY-005-02.csv/yml. This gives us the ability to have
+### Added
+
+- Interactive TUI (Terminal User Interface) mode when no command line arguments
+  are provided (WIP)
+- TUI prompt for configuring partmaster directory when not set in configuration
+- Automatic saving of partmaster directory configuration to `gitplm.yml`
+- Scrollable table display of partmaster data in TUI with columns: IPN,
+  Description, Manufacturer, MPN, Value
+- Enhanced file search pattern supporting `CCC-NNN-VV.csv` and `CCC-NNN-VV.yml`
+  formats. This gives us the ability to have
   [different variations](https://github.com/git-plm/parts/blob/main/partnumbers.md#encoding-product-version-and-variations)
   of a base IPN.
-- WIP (work in progress), not finished
-  - start of TUI (terminal UI). This runs if GitPLM is run with no options and
-    can currently be used to browse parts.
-  - start of KiCad HTTP interface
+- YAML configuration file support (`gitplm.yaml`, `gitplm.yml`, `.gitplm.yaml`,
+  `.gitplm.yml`)
+- Start of KiCad HTTP library API support (WIP)
+
+### Enhanced
+
+- Source file discovery now supports variation-based file naming using first two
+  digits of variation number
+- File search priority: base pattern (`CCC-NNN.csv`) first, then variation
+  pattern (`CCC-NNN-VV.csv`)
+- Improved user experience with seamless configuration flow in TUI mode
+- Quantity fields now support fractional values (e.g., 0.5, 1.25) for more
+  precise BOM specifications
 
 ## [[0.6.1] - 2025-06-26](https://github.com/git-plm/gitplm/releases/tag/v0.6.1)
 
@@ -34,6 +49,7 @@ For more details or to discuss releases, please visit the
     ';'. It turns out that anything besides ',' introduces a lot of friction in
     using other tools like LibreOffice.
   - breaking change: switch to using space for reference delimiters (was ',')
+- improve error handling
 
 ## [[0.4.0] - 2024-02-02](https://github.com/git-plm/gitplm/releases/tag/v0.4.0)
 

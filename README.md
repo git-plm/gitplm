@@ -65,6 +65,23 @@ Usage of gitplm:
         display version of this application
 ```
 
+## Configuration
+
+GitPLM supports configuration via YAML files. The tool will look for configuration files in the following order:
+
+1. Current directory: `gitplm.yaml`, `gitplm.yml`, `.gitplm.yaml`, `.gitplm.yml`
+2. Home directory: `~/.gitplm.yaml`, `~/.gitplm.yml`
+
+Example configuration file:
+
+```yaml
+pmDir: /path/to/partmaster/directory
+```
+
+Available configuration options:
+
+- `pmDir`: Specifies the directory containing the partmaster.csv file
+
 ## Part Numbers
 
 Each part used to make a product is defined by a
@@ -129,10 +146,22 @@ hierarchy of release directories for the entire product.
 For parts you produce, GitPLM scans the directory tree looking for source
 directories which are identified by one or both of the following files:
 
-- an input BOM. Ex: `ASY-023.csv`
-- a release configuration file. Ex: `PCB-019.yml`
+- an input BOM. Ex: `ASY-023.csv` or `ASY-023-01.csv`
+- a release configuration file. Ex: `PCB-019.yml` or `PCB-019-02.yml`
 
-If either of these is found, GitPLM considers this a source directory and will
+GitPLM supports two file naming patterns for source files:
+
+1. **Base pattern**: `CCC-NNN.csv` and `CCC-NNN.yml` (e.g., `PCB-019.csv`, `ASY-023.yml`)
+2. **Variation pattern**: `CCC-NNN-VV.csv` and `CCC-NNN-VV.yml` (e.g., `PCB-019-01.csv`, `ASY-023-02.yml`)
+
+The variation pattern uses the first two digits of the variation number, allowing you to organize files by variation ranges. For example:
+- `PCB-019-00.csv` for variations 0000-0099
+- `PCB-019-01.csv` for variations 0100-0199
+- `PCB-019-02.csv` for variations 0200-0299
+
+When processing a release, GitPLM first searches for the base pattern, then falls back to the variation pattern if the base pattern is not found.
+
+If either of these files is found, GitPLM considers this a source directory and will
 use this directory to generate release directories.
 
 A source directory might contain:
