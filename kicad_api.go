@@ -30,11 +30,11 @@ type KiCadPartSummary struct {
 
 // KiCadPartDetail represents a detailed part in the KiCad HTTP API
 type KiCadPartDetail struct {
-	ID              string                        `json:"id"`
-	Name            string                        `json:"name,omitempty"`
-	SymbolIDStr     string                        `json:"symbolIdStr,omitempty"`
-	ExcludeFromBOM  string                        `json:"exclude_from_bom,omitempty"`
-	Fields          map[string]KiCadPartField     `json:"fields,omitempty"`
+	ID             string                    `json:"id"`
+	Name           string                    `json:"name,omitempty"`
+	SymbolIDStr    string                    `json:"symbolIdStr,omitempty"`
+	ExcludeFromBOM string                    `json:"exclude_from_bom,omitempty"`
+	Fields         map[string]KiCadPartField `json:"fields,omitempty"`
 }
 
 // KiCadPartField represents a field in a KiCad part
@@ -51,9 +51,9 @@ type KiCadRootResponse struct {
 
 // KiCadServer represents the KiCad HTTP API server
 type KiCadServer struct {
-	pmDir      string
-	partmaster partmaster
-	token      string
+	pmDir         string
+	csvCollection *CSVFileCollection
+	token         string
 }
 
 // NewKiCadServer creates a new KiCad HTTP API server
@@ -62,27 +62,27 @@ func NewKiCadServer(pmDir, token string) (*KiCadServer, error) {
 		pmDir: pmDir,
 		token: token,
 	}
-	
-	// Load partmaster data
-	if err := server.loadPartmaster(); err != nil {
-		return nil, fmt.Errorf("failed to load partmaster: %w", err)
+
+	// Load CSV collection data
+	if err := server.loadCSVCollection(); err != nil {
+		return nil, fmt.Errorf("failed to load CSV collection: %w", err)
 	}
-	
+
 	return server, nil
 }
 
-// loadPartmaster loads the partmaster data from the configured directory
-func (s *KiCadServer) loadPartmaster() error {
+// loadCSVCollection loads the CSV collection from the configured directory
+func (s *KiCadServer) loadCSVCollection() error {
 	if s.pmDir == "" {
 		return fmt.Errorf("partmaster directory not configured")
 	}
-	
-	pm, err := loadPartmasterFromDir(s.pmDir)
+
+	collection, err := loadAllCSVFiles(s.pmDir)
 	if err != nil {
-		return fmt.Errorf("failed to load partmaster from %s: %w", s.pmDir, err)
+		return fmt.Errorf("failed to load CSV files from %s: %w", s.pmDir, err)
 	}
-	
-	s.partmaster = pm
+
+	s.csvCollection = collection
 	return nil
 }
 
@@ -91,30 +91,40 @@ func (s *KiCadServer) authenticate(r *http.Request) bool {
 	if s.token == "" {
 		return true // No authentication required if no token set
 	}
-	
+
 	auth := r.Header.Get("Authorization")
 	expectedAuth := "Token " + s.token
 	return auth == expectedAuth
 }
 
-// getCategories extracts unique categories from the partmaster data
+// getCategories extracts unique categories from the CSV collection
 func (s *KiCadServer) getCategories() []KiCadCategory {
 	categoryMap := make(map[string]bool)
-	
-	// Extract categories from IPNs (CCC component)
-	for _, part := range s.partmaster {
-		if part.IPN != "" {
-			category := s.extractCategory(string(part.IPN))
-			if category != "" {
-				categoryMap[category] = true
+
+	// Extract categories from CSV files and IPNs
+	for _, file := range s.csvCollection.Files {
+		// Try to extract category from filename (e.g., cap.csv -> CAP)
+		if fileName := strings.TrimSuffix(strings.ToUpper(file.Name), ".CSV"); fileName != "" && len(fileName) == 3 {
+			categoryMap[fileName] = true
+		}
+
+		// Also extract from IPNs if they exist
+		if ipnIdx := s.findColumnIndex(file, "IPN"); ipnIdx >= 0 {
+			for _, row := range file.Rows {
+				if len(row) > ipnIdx && row[ipnIdx] != "" {
+					category := s.extractCategory(row[ipnIdx])
+					if category != "" {
+						categoryMap[category] = true
+					}
+				}
 			}
 		}
 	}
-	
+
 	// Convert to sorted slice
 	categoryNames := lo.Keys(categoryMap)
 	sort.Strings(categoryNames)
-	
+
 	categories := make([]KiCadCategory, len(categoryNames))
 	for i, name := range categoryNames {
 		categories[i] = KiCadCategory{
@@ -123,8 +133,18 @@ func (s *KiCadServer) getCategories() []KiCadCategory {
 			Description: s.getCategoryDescription(name),
 		}
 	}
-	
+
 	return categories
+}
+
+// findColumnIndex finds the index of a column by name in a CSV file
+func (s *KiCadServer) findColumnIndex(file *CSVFile, columnName string) int {
+	for i, header := range file.Headers {
+		if header == columnName {
+			return i
+		}
+	}
+	return -1
 }
 
 // extractCategory extracts the CCC component from an IPN
@@ -172,7 +192,7 @@ func (s *KiCadServer) getCategoryDisplayName(category string) string {
 		"ANT": "Antennas",
 		"CBL": "Cables",
 	}
-	
+
 	if displayName, exists := displayNames[category]; exists {
 		return displayName
 	}
@@ -213,7 +233,7 @@ func (s *KiCadServer) getCategoryDescription(category string) string {
 		"ANT": "Antenna components",
 		"CBL": "Cable components",
 	}
-	
+
 	if description, exists := descriptions[category]; exists {
 		return description
 	}
@@ -223,63 +243,112 @@ func (s *KiCadServer) getCategoryDescription(category string) string {
 // getPartsByCategory returns parts filtered by category
 func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 	var parts []KiCadPartSummary
-	
-	for _, part := range s.partmaster {
-		if part.IPN != "" && s.extractCategory(string(part.IPN)) == categoryID {
-			parts = append(parts, KiCadPartSummary{
-				ID:          string(part.IPN),
-				Name:        part.Description,
-				Description: part.Description,
-			})
+
+	for _, file := range s.csvCollection.Files {
+		// Check if this file belongs to the category
+		fileName := strings.TrimSuffix(strings.ToUpper(file.Name), ".CSV")
+		fileCategory := ""
+		
+		// Try to get category from filename
+		if len(fileName) == 3 {
+			fileCategory = fileName
+		}
+
+		// Check parts within this file
+		ipnIdx := s.findColumnIndex(file, "IPN")
+		descIdx := s.findColumnIndex(file, "Description")
+
+		for _, row := range file.Rows {
+			if len(row) == 0 {
+				continue
+			}
+
+			// Determine part category
+			partCategory := fileCategory
+			if ipnIdx >= 0 && len(row) > ipnIdx && row[ipnIdx] != "" {
+				partCategory = s.extractCategory(row[ipnIdx])
+			}
+
+			// Include if category matches
+			if partCategory == categoryID {
+				partID := ""
+				partName := ""
+				partDesc := ""
+
+				// Get part ID (prefer IPN, fallback to row index)
+				if ipnIdx >= 0 && len(row) > ipnIdx && row[ipnIdx] != "" {
+					partID = row[ipnIdx]
+				} else {
+					partID = fmt.Sprintf("%s-unknown-%d", categoryID, len(parts))
+				}
+
+				// Get description
+				if descIdx >= 0 && len(row) > descIdx {
+					partName = row[descIdx]
+					partDesc = row[descIdx]
+				}
+
+				parts = append(parts, KiCadPartSummary{
+					ID:          partID,
+					Name:        partName,
+					Description: partDesc,
+				})
+			}
 		}
 	}
-	
+
 	return parts
 }
 
 // getPartDetail returns detailed information for a specific part
 func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
-	for _, part := range s.partmaster {
-		if string(part.IPN) == partID {
-			fields := make(map[string]KiCadPartField)
-			
-			// Add standard fields
-			if part.Value != "" {
-				fields["Value"] = KiCadPartField{Value: part.Value}
+	for _, file := range s.csvCollection.Files {
+		ipnIdx := s.findColumnIndex(file, "IPN")
+
+		for _, row := range file.Rows {
+			if len(row) == 0 {
+				continue
 			}
-			if part.Manufacturer != "" {
-				fields["Manufacturer"] = KiCadPartField{Value: part.Manufacturer}
+
+			// Check if this is the right part
+			rowPartID := ""
+			if ipnIdx >= 0 && len(row) > ipnIdx {
+				rowPartID = row[ipnIdx]
 			}
-			if part.MPN != "" {
-				fields["MPN"] = KiCadPartField{Value: part.MPN}
-			}
-			if part.Datasheet != "" {
-				fields["Datasheet"] = KiCadPartField{Value: part.Datasheet}
-			}
-			if part.Footprint != "" {
-				fields["Footprint"] = KiCadPartField{Value: part.Footprint}
-			}
-			
-			// Add IPN as a field
-			fields["IPN"] = KiCadPartField{Value: string(part.IPN)}
-			
-			return &KiCadPartDetail{
-				ID:             string(part.IPN),
-				Name:           part.Description,
-				SymbolIDStr:    s.getSymbolID(part),
-				ExcludeFromBOM: "false", // Default to include in BOM
-				Fields:         fields,
+
+			if rowPartID == partID {
+				fields := make(map[string]KiCadPartField)
+				partName := ""
+				category := s.extractCategory(partID)
+
+				// Add all fields from the CSV dynamically
+				for i, header := range file.Headers {
+					if i < len(row) && row[i] != "" && header != "" {
+						fields[header] = KiCadPartField{Value: row[i]}
+						
+						// Set name from Description field
+						if header == "Description" {
+							partName = row[i]
+						}
+					}
+				}
+
+				return &KiCadPartDetail{
+					ID:             partID,
+					Name:           partName,
+					SymbolIDStr:    s.getSymbolIDFromCategory(category),
+					ExcludeFromBOM: "false", // Default to include in BOM
+					Fields:         fields,
+				}
 			}
 		}
 	}
-	
+
 	return nil
 }
 
-// getSymbolID generates a symbol ID for a part based on its category and properties
-func (s *KiCadServer) getSymbolID(part *partmasterLine) string {
-	category := s.extractCategory(string(part.IPN))
-	
+// getSymbolIDFromCategory generates a symbol ID based on category
+func (s *KiCadServer) getSymbolIDFromCategory(category string) string {
 	// Map categories to common KiCad symbol library symbols
 	symbolMap := map[string]string{
 		"CAP": "Device:C",
@@ -298,12 +367,15 @@ func (s *KiCadServer) getSymbolID(part *partmasterLine) string {
 		"SNS": "Sensor:Sensor",
 		"CNT": "Connector:Conn_01x02",
 		"ANT": "Device:Antenna",
+		"ANA": "Device:IC", // Analog IC
+		"SCR": "Mechanical:MountingHole",
+		"MCH": "Mechanical:MountingHole",
 	}
-	
+
 	if symbol, exists := symbolMap[category]; exists {
 		return symbol
 	}
-	
+
 	// Default symbol
 	return "Device:Device"
 }
@@ -316,17 +388,17 @@ func (s *KiCadServer) rootHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Extract base URL from request
 	baseURL := fmt.Sprintf("%s://%s%s", getScheme(r), r.Host, strings.TrimSuffix(r.URL.Path, "/"))
-	
+
 	response := KiCadRootResponse{
 		Categories: baseURL + "/categories.json",
 		Parts:      baseURL + "/parts",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 // categoriesHandler handles the categories endpoint
@@ -335,11 +407,11 @@ func (s *KiCadServer) categoriesHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	categories := s.getCategories()
-	
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(categories)
+	_ = json.NewEncoder(w).Encode(categories)
 }
 
 // partsByCategoryHandler handles the parts by category endpoint
@@ -348,15 +420,15 @@ func (s *KiCadServer) partsByCategoryHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Extract category ID from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/v1/parts/category/")
 	categoryID := strings.TrimSuffix(path, ".json")
-	
+
 	parts := s.getPartsByCategory(categoryID)
-	
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(parts)
+	_ = json.NewEncoder(w).Encode(parts)
 }
 
 // partDetailHandler handles the part detail endpoint
@@ -365,17 +437,17 @@ func (s *KiCadServer) partDetailHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Extract part ID from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/v1/parts/")
 	partID := strings.TrimSuffix(path, ".json")
-	
+
 	part := s.getPartDetail(partID)
 	if part == nil {
 		http.Error(w, "Part not found", http.StatusNotFound)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(part)
 }
@@ -397,19 +469,19 @@ func StartKiCadServer(pmDir, token string, port int) error {
 	if err != nil {
 		return fmt.Errorf("failed to create KiCad server: %w", err)
 	}
-	
+
 	// Set up routes
 	http.HandleFunc("/v1/", server.rootHandler)
 	http.HandleFunc("/v1/categories.json", server.categoriesHandler)
 	http.HandleFunc("/v1/parts/category/", server.partsByCategoryHandler)
 	http.HandleFunc("/v1/parts/", server.partDetailHandler)
-	
+
 	// Add a health check endpoint
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
-	
+
 	addr := fmt.Sprintf(":%d", port)
 	log.Printf("Starting KiCad HTTP Library API server on %s", addr)
 	log.Printf("API endpoints:")
@@ -417,6 +489,6 @@ func StartKiCadServer(pmDir, token string, port int) error {
 	log.Printf("  Categories: http://localhost%s/v1/categories.json", addr)
 	log.Printf("  Parts by category: http://localhost%s/v1/parts/category/{category_id}.json", addr)
 	log.Printf("  Part detail: http://localhost%s/v1/parts/{part_id}.json", addr)
-	
+
 	return http.ListenAndServe(addr, nil)
 }
