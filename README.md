@@ -10,6 +10,7 @@ Additional documents:
 
 - [Part numbers](https://github.com/git-plm/parts/blob/main/partnumbers.md)
 - [Changelog](CHANGELOG.md)
+- [Windows notes](windows.md)
 
 GitPLM is a tool and a collection of best practices for managing information
 needed to manufacture products.
@@ -67,7 +68,8 @@ Usage of gitplm:
 
 ## Configuration
 
-GitPLM supports configuration via YAML files. The tool will look for configuration files in the following order:
+GitPLM supports configuration via YAML files. The tool will look for
+configuration files in the following order:
 
 1. Current directory: `gitplm.yaml`, `gitplm.yml`, `.gitplm.yaml`, `.gitplm.yml`
 2. Home directory: `~/.gitplm.yaml`, `~/.gitplm.yml`
@@ -151,18 +153,23 @@ directories which are identified by one or both of the following files:
 
 GitPLM supports two file naming patterns for source files:
 
-1. **Base pattern**: `CCC-NNN.csv` and `CCC-NNN.yml` (e.g., `PCB-019.csv`, `ASY-023.yml`)
-2. **Variation pattern**: `CCC-NNN-VV.csv` and `CCC-NNN-VV.yml` (e.g., `PCB-019-01.csv`, `ASY-023-02.yml`)
+1. **Base pattern**: `CCC-NNN.csv` and `CCC-NNN.yml` (e.g., `PCB-019.csv`,
+   `ASY-023.yml`)
+2. **Variation pattern**: `CCC-NNN-VV.csv` and `CCC-NNN-VV.yml` (e.g.,
+   `PCB-019-01.csv`, `ASY-023-02.yml`)
 
-The variation pattern uses the first two digits of the variation number, allowing you to organize files by variation ranges. For example:
+The variation pattern uses the first two digits of the variation number,
+allowing you to organize files by variation ranges. For example:
+
 - `PCB-019-00.csv` for variations 0000-0099
 - `PCB-019-01.csv` for variations 0100-0199
 - `PCB-019-02.csv` for variations 0200-0299
 
-When processing a release, GitPLM first searches for the base pattern, then falls back to the variation pattern if the base pattern is not found.
+When processing a release, GitPLM first searches for the base pattern, then
+falls back to the variation pattern if the base pattern is not found.
 
-If either of these files is found, GitPLM considers this a source directory and will
-use this directory to generate release directories.
+If either of these files is found, GitPLM considers this a source directory and
+will use this directory to generate release directories.
 
 A source directory might contain:
 
