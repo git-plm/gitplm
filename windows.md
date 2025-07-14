@@ -12,16 +12,16 @@ appreciated.
    [release](https://github.com/git-plm/gitplm/releases). For most people, this
    will be the `windows-x86_64`. If you have a newer ARM based (such as the new
    Surface), you may need the `windows-arm64` release.
-1. extact the downloaded zip file
+1. Extract the downloaded zip file
 1. Windows may complain about the program because it is from an Unknown
    publisher. It appears that programs
    [written in Go are often flagged](https://github.com/microsoft/go/issues/1255).
-   If Windows pops upa Virus & threat protection dialog, click on the "Severe"
+   If Windows pops up a Virus & threat protection dialog, click on the "Severe"
    text, and select "Allow on device", then "Start actions".
-1. Double click on the `gitplm` binary in windows Explorer. Windows may show a
+1. Double click on the `gitplm` binary in Windows Explorer. Windows may show a
    Windows protected your PC dialog. Click on the "More info" link and select
-   "Run Anyway". gitplm should now and ask you to enter a directory containing
+   "Run Anyway". gitplm should now ask you to enter a directory containing
    partmaster csv files.
 1. cp the `gitplm` binary to the `C:\bin` directory.
-1. add `C:\bin` to your system path (System properties->Environment variables)
-1. now in powershell, you should be able to run `gitplm`.
+1. Add `C:\bin` to your system path (System properties->Environment variables)
+1. Now in powershell, you should be able to run `gitplm`.
