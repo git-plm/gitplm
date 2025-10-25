@@ -4,12 +4,31 @@
 ![code stats](https://tokei.rs/b1/github/git-plm/gitplm?category=code)
 [![Go Report Card](https://goreportcard.com/badge/github.com/git-plm/gitplm)](https://goreportcard.com/report/github.com/git-plm/gitplm)
 
-## Product Lifecycle Management (PLM) in Git.
+<!--toc:start-->
+
+- [Product Life cycle Management (PLM) in Git.](#product-life-cycle-management-plm-in-git)
+- [Video overview](#video-overview)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Part Numbers](#part-numbers)
+- [Partmaster](#partmaster)
+- [Components you manufacture](#components-you-manufacture)
+- [Source and Release directories](#source-and-release-directories)
+- [Special Files](#special-files)
+- [Release configuration](#release-configuration)
+- [Examples](#examples)
+- [Principles](#principles)
+- [Additional notes](#additional-notes)
+- [Reference Information](#reference-information)
+<!--toc:end-->
+
+## Product Life cycle Management (PLM) in Git.
 
 Additional documents:
 
 - [Part numbers](https://github.com/git-plm/parts/blob/main/partnumbers.md)
-- [Changelog](CHANGELOG.md)
+- [Changelog](/CHANGELOG.md)
 - [Windows notes](windows.md)
 
 GitPLM is a tool and a collection of best practices for managing information
@@ -22,11 +41,11 @@ solves.**
 
 GitPLM does several things:
 
-- combines source BOMs with the partmaster to generate BOMs with manufacturing
+- Combines source BOMs with the partmaster to generate BOMs with manufacturing
   information.
-- automate the generation of release/manufacturing information
-- create combined BOMs that include parts from all sub-assemblies
-- gathers release data for all custom components in the design into one
+- Automate the generation of release/manufacturing information
+- Create combined BOMs that include parts from all sub-assemblies
+- Gathers release data for all custom components in the design into one
   directory for release to manufacturing.
 
 An example output is shown below:
@@ -52,11 +71,11 @@ Alternatively, you can:
 
 or
 
-- clone the Git repo and run: `go run .`
+- Clone the Git repo and run: `go run .`
 
 ## Usage
 
-Type `gitplm` from a shell to see commandline options:
+Type `gitplm` from a shell to see command line options:
 
 ```
 Usage of gitplm:
@@ -86,11 +105,11 @@ Available configuration options:
 
 ## Part Numbers
 
-Each part used to make a product is defined by a
+Each part used to make a product is defined by an
 [IPN (Internal Part Number)](https://github.com/git-plm/parts/blob/main/partnumbers.md).
 The convention used by GitPLM is: `CCC-NNN-VVVV`
 
-- `CCC`: major category (RES, CAP, DIO, etc)
+- `CCC`: major category (`RES`, `CAP`, `DIO`, etc.)
 - `NNN`: incrementing sequential number for each part
 - `VVVV`: variation to code variations of a parts typically with the **same
   datasheet** (resistance, capacitance, regulator voltage, IC package, etc.)
@@ -105,7 +124,7 @@ manufacturer part number (MPN) is also included.
 
 If multiple sources are available for a part, these can be entered on additional
 lines with the same IPN, and different Manufacturer/MPN specified. GitPLM will
-merge other fields like Description, Value, etc so these only need to be
+merge other fields like Description, Value, etc. so these only need to be
 specified on one of the lines. The `Priority` column is used to select the
 preferred part (lowest number wins). If no `Priority` is set, it defaults to 0
 (highest priority). Currently, GitPLM picks the highest priority part and
@@ -113,10 +132,10 @@ populates that in the output BOM. In the future, we could add additional columns
 for multiple sources.
 
 CAD tool libraries should contain IPNs, not MPNs. _Why not just put MPNs in the
-CAD database?_ The fundamental reason is that a single part may be used in 100's
-of different places and dozens of assemblies. If you need to change a supplier
-for a part, you don't want to manually modify a dozen designs, generate new
-BOMs, etc. This is manual, tedious, and error prone. What you want to do is
+CAD database?_ The fundamental reason is that a single part may be used in
+hundreds of different places and dozens of assemblies. If you need to change a
+supplier for a part, you don't want to manually modify a dozen designs, generate
+new BOMs, etc. This is manual, tedious, and error prone. What you want to do is
 change the manufacturer information in the partmaster and then automatically
 generate new BOMs for all affected products. Because the BOMs are stored in Git,
 it is easy to review what changed.
@@ -125,18 +144,18 @@ it is easy to review what changed.
 
 A product is typically a collection of custom parts you manufacture and
 off-the-shelf parts you purchase. Custom parts are identified by the following
-`CCC`s:
+`CCC` codes:
 
-| Code | Description                                                                                                                                                                                                                                      |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| PCA  | Printed Circuit Assembly. The version is incremented any time the BOM for the assembly changes.                                                                                                                                                  |
-| PCB  | Printed Circuit board. This category identifies the bare PCB board.                                                                                                                                                                              |
-| ASY  | Assembly (can be mechanical or top level subassembly -- typically represented by BOM and documentation). Again, the variation is incremented any time a BOM line item changes. You can also use product specific prefixes such as GTW (gateway). |
-| DOC  | standalone documents                                                                                                                                                                                                                             |
-| DFW  | data -- firmware to be loaded on MCUs, etc                                                                                                                                                                                                       |
-| DSW  | data -- software (images for embedded Linux systems, applications, programming utilities, etc)                                                                                                                                                   |
-| DCL  | data -- calibration data for a design                                                                                                                                                                                                            |
-| FIX  | manufacturing fixtures                                                                                                                                                                                                                           |
+| Code  | Description                                                                                                                                                                                                                                       |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PCA` | Printed Circuit Assembly. The version is incremented any time the BOM for the assembly changes.                                                                                                                                                   |
+| `PCB` | Printed Circuit board. This category identifies the bare PCB board.                                                                                                                                                                               |
+| `ASY` | Assembly (can be mechanical or top level subassembly - typically represented by BOM and documentation). Again, the variation is incremented any time a BOM line item changes. You can also use product specific prefixes such as `GTW` (gateway). |
+| `DOC` | standalone documents                                                                                                                                                                                                                              |
+| `DFW` | Data - firmware to be loaded on MCUs, etc.                                                                                                                                                                                                        |
+| `DSW` | Data - software (images for embedded Linux systems, applications, programming utilities, etc.)                                                                                                                                                    |
+| `DCL` | Data - calibration data for a design                                                                                                                                                                                                              |
+| `FIX` | manufacturing fixtures                                                                                                                                                                                                                            |
 
 If IPN with the above category codes are found in a BOM, GitPLM looks for
 release directory that matches the IPN and then soft-links from the release
@@ -148,8 +167,8 @@ hierarchy of release directories for the entire product.
 For parts you produce, GitPLM scans the directory tree looking for source
 directories which are identified by one or both of the following files:
 
-- an input BOM. Ex: `ASY-023.csv` or `ASY-023-01.csv`
-- a release configuration file. Ex: `PCB-019.yml` or `PCB-019-02.yml`
+- An input BOM. Ex: `ASY-023.csv` or `ASY-023-01.csv`
+- A release configuration file. Ex: `PCB-019.yml` or `PCB-019-02.yml`
 
 GitPLM supports two file naming patterns for source files:
 
@@ -179,7 +198,7 @@ A source directory might contain:
 - Mechanical design files
 - Test procedures
 - User documentation
-- Test Fixures/Procedures
+- Test Fixtures/Procedures
 
 Release directories are identified by a full IPN. Examples:
 
@@ -236,9 +255,9 @@ Supported operations:
 
 - `remove`: remove a part from a BOM
 - `add`: add a part to a BOM
-- `copy`: copy a file or dir to the release directory
-- `hooks`: run shell scripts (currently Linux/MacOS only). Can be used to build
-  software, generate PDFs, etc.
+- `copy`: copy a file or directory to the release directory
+- `hooks`: run shell scripts (currently Linux and MacOS only). Can be used to
+  build software, generate PDFs, etc.
 - `required`: looks for required files in the release directory and stops with
   an error if they are not found. This is used to check that manually generated
   files have been populated.
@@ -258,40 +277,40 @@ with `gitplm` if you have it installed.
 
 ## Principles
 
-- manual operations/tweaks to machine generated files are bad. If changes are
+- Manual operations/tweaks to machine generated files are bad. If changes are
   made (example a BOM line item add/removed/changed), this needs to be defined
   declaratively and then this change applied by a program. Ideally this
   mechanism is also idempotent, so we describe where we want to end up, not
   steps to get there. The program can determine how to get there.
-- the number of parts used in a product is bounded, and can easily fit in
+- The number of parts used in a product is bounded, and can easily fit in
   computer memory (IE, we probably don't need a database for small/mid sized
   companies)
-- the total number of parts a company may use (partmaster) is also bounded, and
+- The total number of parts a company may use (partmaster) is also bounded, and
   will likely fit in memory for most small/mid sized companies.
 - tracking changes is important
 - review is important, thus Git workflow is beneficial
 - ASCII (text) files are preferred as they can be manually edited and changes
   easily review in Git workflows.
-- versions are cheap -- `VVVV` should be incremented liberally.
+- Versions are cheap - `VVVV` should be incremented liberally.
 - PLM software should not be tied to any one CAD tool, but should be flexible
   enough to work with any CAD output.
 
 ## Additional notes
 
-- use CSV files for partmaster and all BOMs.
-  - _rational: can be read and written by excel, libreoffice, or by machine_
-  - _rational: easy to get started_
-- versions in part numbers are sequential numbers: (0, 1, 2, 3, 4)
-  - _rational: easy to use in programs, sorting, etc_
+- Use CSV files for partmaster and all BOMs.
+  - _Rational: can be read and written by excel, LibreOffice, or by machine_
+  - _Rational: easy to get started_
+- Versions in part numbers are sequential numbers: (0, 1, 2, 3, 4)
+  - _rational: easy to use in programs, sorting, etc._
 - CAD BOMs are never manually "scrubbed". If additional parts are needed in the
   assembly, create a higher level BOM that includes the CAD generated BOM, or
   create a `*.yml` file to declaratively describe modifications to the BOM.
-  - _rational: since the CAD program generates the BOM in the first place, any
+  - _Rational: since the CAD program generates the BOM in the first place, any
     manual processing of this BOM will only lead to mistakes._
 - CSV files should be delimited with ';' instead of ','.
-  - _rational: comma is useful in lists, descriptions, etc._
+  - _Rational: comma is useful in lists, descriptions, etc._
 - Tooling is written in Go.
-  - _rational:_
+  - _Rational:_
     - _Go programs are reasonably
       [reliable](http://bec-systems.com/site/1625/why-are-go-applications-so-reliable)_
     - _it is easy to generate standalone binaries for most platforms with no
