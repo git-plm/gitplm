@@ -1,0 +1,15 @@
+{
+   "meta": {
+      "version": 1.0
+   },
+   "name": "GitPLM KiCad HTTP Library",
+   "description": "Verifiable parts database and KiCad Libraries",
+   "source": {
+      "type": "REST_API",
+      "api_version": "v1",
+      "root_url": "http://localhost:7654/",
+      "token": "",
+      "timeout_parts_seconds": 15,
+      "timeout_categories_seconds": 15
+   }
+}

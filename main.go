@@ -22,15 +22,22 @@ func main() {
 		os.Exit(-1)
 	}
 
+	// Set defaults from config
+	defaultPort := 7654
+	if config.HTTP.Port > 0 {
+		defaultPort = config.HTTP.Port
+	}
+	defaultToken := config.HTTP.Token
+
 	flagRelease := flag.String("release", "", "Process release for IPN (ex: PCB-056-0005, ASY-002-0023)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
 	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
 	flagOutput := flag.String("out", "", "output file")
 	flagCombine := flag.String("combine", "", "adds BOM to output bom")
 	flagPMDir := flag.String("pmDir", config.PMDir, "specify location of partmaster CSV files")
-	flagHTTPServer := flag.Bool("http", false, "start KiCad HTTP Library API server")
-	flagHTTPPort := flag.Int("port", 8080, "HTTP server port")
-	flagHTTPToken := flag.String("token", "", "authentication token for HTTP API")
+	flagHTTPServer := flag.Bool("http", config.HTTP.Enabled, "start KiCad HTTP Library API server")
+	flagHTTPPort := flag.Int("port", defaultPort, "HTTP server port (default: 7654)")
+	flagHTTPToken := flag.String("token", defaultToken, "authentication token for HTTP API")
 	flag.Parse()
 
 	if *flagVersion {

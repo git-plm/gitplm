@@ -7,8 +7,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type HTTPConfig struct {
+	Enabled bool   `yaml:"enabled"`
+	Port    int    `yaml:"port"`
+	Token   string `yaml:"token"`
+}
+
 type Config struct {
-	PMDir string `yaml:"pmDir"`
+	PMDir string     `yaml:"pmDir"`
+	HTTP  HTTPConfig `yaml:"http"`
 }
 
 func loadConfig() (*Config, error) {

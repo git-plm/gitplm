@@ -265,6 +265,75 @@ Supported operations:
 The release process should be automated as much as possible to process the
 source files and generate the release information with no manual steps.
 
+## KiCad HTTP Libraries support
+
+GitPLM can serve a parts database to KiCad using the
+[KiCad HTTP Libraries feature](https://dev-docs.kicad.org/en/apis-and-binding/http-libraries/).
+
+### Starting the HTTP Server
+
+Start the server using the `-http` flag:
+
+```bash
+# Start with default settings (port 7654)
+gitplm -http -pmDir /path/to/partmaster
+
+# Start with custom port
+gitplm -http -port 8080 -pmDir /path/to/partmaster
+
+# Start with authentication token
+gitplm -http -token mysecrettoken -pmDir /path/to/partmaster
+```
+
+Alternatively, configure the server in `gitplm.yml`:
+
+```yaml
+pmDir: /path/to/partmaster/directory
+
+http:
+  enabled: true
+  port: 7654
+  token: "" # Optional authentication token
+```
+
+Then simply run `gitplm` to start the server with configured settings.
+
+### Configuring KiCad
+
+To use GitPLM as a parts library in KiCad:
+
+1. Open KiCad and go to **Preferences → Configure Paths**
+2. Add a new HTTP library with the URL: `http://localhost:7654/v1/`
+3. If you configured an authentication token, add it in the library settings
+4. The parts will now be available in the Symbol Chooser
+
+### API Endpoints
+
+The server exposes the following endpoints:
+
+- `GET /v1/` - API discovery (returns links to categories and parts)
+- `GET /v1/categories.json` - List all part categories (CAP, RES, etc.)
+- `GET /v1/parts/category/{category_id}.json` - List parts in a category
+- `GET /v1/parts/{part_id}.json` - Get detailed information for a specific part
+- `GET /health` - Health check endpoint
+
+Examples:
+
+- [http://localhost:7654/v1/categories.json](http://localhost:7654/v1/categories.json)
+- [http://localhost:7654/v1/parts/category/CAP.json](http://localhost:7654/v1/parts/category/CAP.json) -
+  Lists all capacitor parts
+- [http://localhost:7654/v1/parts/category/RES.json](http://localhost:7654/v1/parts/category/RES.json) -
+  Lists all resistor parts
+
+### How It Works
+
+GitPLM automatically:
+
+- Loads all CSV files from the partmaster directory
+- Extracts categories from filenames and IPNs
+- Maps parts to appropriate KiCad symbols
+- Serves part data with all fields from the CSV (Description, Value, MPN, etc.)
+
 ## Examples
 
 See the examples folder. You can run commands like to exercise GitPLM:
