@@ -298,6 +298,8 @@ http:
 
 Then simply run `gitplm` to start the server with configured settings.
 
+### Configuring what fields are visible
+
 ### Configuring KiCad
 
 To use GitPLM as a parts library in KiCad:

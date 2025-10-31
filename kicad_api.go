@@ -341,6 +341,7 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 				fields := make(map[string]KiCadPartField)
 				partName := ""
 				symbolID := ""
+				category := s.extractCategory(partID)
 
 				// Add all fields from the CSV dynamically
 				for i, header := range file.Headers {
@@ -365,8 +366,14 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 					log.Printf("ERROR: Part %s has no Symbol field defined", partID)
 				}
 
+				// Format ID as category/part-id (e.g., "rfm/RFM-0000-0001")
+				formattedID := partID
+				if category != "" {
+					formattedID = strings.ToLower(category) + "/" + partID
+				}
+
 				return &KiCadPartDetail{
-					ID:             partID,
+					ID:             formattedID,
 					Name:           partName,
 					SymbolIDStr:    symbolID,
 					ExcludeFromBOM: "false", // Default to include in BOM
