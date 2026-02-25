@@ -138,11 +138,12 @@ func main() {
 
 		if relPath != "" {
 			// write out log file
-			c, n, _, err := ipn(*flagRelease).parse()
+			relIpn := ipn(*flagRelease)
+			_, _, _, err := relIpn.parse()
 			if err != nil {
 				log.Fatal("Error parsing bom IPN: ", err)
 			}
-			fn := fmt.Sprintf("%v-%03v.log", c, n)
+			fn := relIpn.base() + ".log"
 			logFilePath := filepath.Join(relPath, fn)
 			err = os.WriteFile(logFilePath, []byte(gLog.String()), 0644)
 			if err != nil {

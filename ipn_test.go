@@ -15,6 +15,8 @@ func TestIpn(t *testing.T) {
 		{"PCB-001-0500", "PCB", 1, 500, true},
 		{"ASY-200-1000", "ASY", 200, 1000, true},
 		{"SY-200-1000", "", 0, 0, false},
+		{"ASY-0001-0001", "ASY", 1, 1, true},     // 4-digit N
+		{"PCB-0123-0500", "PCB", 123, 500, true},  // 4-digit N
 		{"ASY-20-1000", "", 0, 0, false},
 		{"ASY-200-100", "", 0, 0, false},
 	}
@@ -38,6 +40,25 @@ func TestIpn(t *testing.T) {
 		if v != test.v {
 			t.Errorf("%v, V failed, exp %v, got %v",
 				test.ipn, test.v, v)
+		}
+	}
+}
+
+func TestIpnBase(t *testing.T) {
+	tests := []struct {
+		in   string
+		base string
+	}{
+		{"PCB-001-0500", "PCB-001"},
+		{"ASY-200-1000", "ASY-200"},
+		{"ASY-0001-0001", "ASY-0001"},
+		{"PCB-0123-0500", "PCB-0123"},
+	}
+
+	for _, test := range tests {
+		got := ipn(test.in).base()
+		if got != test.base {
+			t.Errorf("ipn(%q).base() = %q, want %q", test.in, got, test.base)
 		}
 	}
 }
