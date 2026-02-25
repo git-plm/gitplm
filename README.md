@@ -378,8 +378,9 @@ with `gitplm` if you have it installed.
   create a `*.yml` file to declaratively describe modifications to the BOM.
   - _Rational: since the CAD program generates the BOM in the first place, any
     manual processing of this BOM will only lead to mistakes._
-- CSV files should be delimited with ';' instead of ','.
-  - _Rational: comma is useful in lists, descriptions, etc._
+- CSV files are delimited with ','.
+  - _Rational: comma is the standard CSV delimiter and works with all tools
+    (LibreOffice, Excel, etc.)_
 - Tooling is written in Go.
   - _Rational:_
     - _Go programs are reasonably
