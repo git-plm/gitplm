@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.8.0] - 2026-02-26](https://github.com/git-plm/gitplm/releases/tag/v0.8.0)
+
 - Support 3 and 4 digit NNN/NNNN in part numbers
 - KiCad HTTP Library API (WIP - not yet complete)
 - Switch goreleaser to upload raw binaries instead of archives
