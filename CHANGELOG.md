@@ -13,7 +13,8 @@ For more details or to discuss releases, please visit the
 
 ## [[0.8.2] - 2026-02-26](https://github.com/git-plm/gitplm/releases/tag/v0.8.2)
 
-- Add daily update check on startup (at most once per 24 hours) with notice in both CLI output and TUI
+- Add daily update check on startup (at most once per 24 hours) with notice in
+  both CLI output and TUI
 - Fix TUI panic when table columns change with existing rows
 
 ## [[0.8.1] - 2026-02-26](https://github.com/git-plm/gitplm/releases/tag/v0.8.1)
