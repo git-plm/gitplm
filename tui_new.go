@@ -224,6 +224,8 @@ func (m *modelNew) updateTableForSelectedFile() {
 			{Title: "MPN", Width: 20},
 			{Title: "Value", Width: 10},
 		}
+		// Clear rows before changing columns to avoid index-out-of-range panic
+		m.table.SetRows([]table.Row{})
 		m.table.SetColumns(columns)
 
 		// Update rows
