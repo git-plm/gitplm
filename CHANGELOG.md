@@ -11,9 +11,16 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Support 3 and 4 digit NNN/NNNN in part numbers
+- KiCad HTTP Library API (WIP - not yet complete)
+- Switch goreleaser to upload raw binaries instead of archives
+- Add Windows install instructions
+- Fix CSV delimiter documentation to match current convention
+- Add self-update feature (`gitplm -update`)
+
 ## [[0.7.1] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.1)
 
-- rename release to more friendly names
+- Rename release to more friendly names
 
 ## [[0.7.0] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.0)
 
@@ -45,8 +52,8 @@ For more details or to discuss releases, please visit the
 
 ## [[0.6.1] - 2025-06-26](https://github.com/git-plm/gitplm/releases/tag/v0.6.1)
 
-- add `-pmDir` command line parameter to specify parts database directory
-- add support for loading multiple partmaster CSV files from a directory
+- Add `-pmDir` command line parameter to specify parts database directory
+- Add support for loading multiple partmaster CSV files from a directory
 - **breaking changes**
   - changed CSV column heading "qnty" to "qty"
   - breaking change: switched to using ',' in CSV files for delimiter instead of

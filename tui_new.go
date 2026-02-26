@@ -56,7 +56,7 @@ var (
 			BorderForeground(lipgloss.Color("240"))
 
 	selectedItemStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("170"))
+				Foreground(lipgloss.Color("170"))
 
 	normalItemStyle = lipgloss.NewStyle()
 )
@@ -196,7 +196,7 @@ func (m *modelNew) updateTableForSelectedFile() {
 	if m.csvCollection == nil || len(m.csvCollection.Files) == 0 {
 		return
 	}
-	
+
 	// Don't update if we haven't received window size yet
 	if m.width == 0 || m.height == 0 {
 		return
@@ -267,7 +267,7 @@ func (m *modelNew) updateTableForSelectedFile() {
 				if columnTitle == "" {
 					columnTitle = fmt.Sprintf("Column %d", i+1)
 				}
-				
+
 				width := 15
 				if i == 0 {
 					width = 20
@@ -283,7 +283,7 @@ func (m *modelNew) updateTableForSelectedFile() {
 				if len(row) == 0 {
 					continue
 				}
-				
+
 				// Ensure row has correct number of columns
 				tableRow := make([]string, len(columns))
 				for i := 0; i < len(columns); i++ {
@@ -295,12 +295,12 @@ func (m *modelNew) updateTableForSelectedFile() {
 				}
 				rows = append(rows, tableRow)
 			}
-			
+
 			// Ensure we have at least one row to avoid crashes
 			if len(rows) == 0 {
 				rows = append(rows, make([]string, len(columns)))
 			}
-			
+
 			// Reset table state before updating
 			m.table.SetRows([]table.Row{})
 			m.table.SetColumns(columns)
@@ -348,12 +348,12 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.viewState == viewStateBrowse {
 			m.table.SetWidth(tableWidth)
 			m.table.SetHeight(listHeight)
-			
+
 			// Load CSV files if not loaded yet
 			if m.csvCollection == nil && m.pmDir != "" {
 				m.loadCSVFiles()
 			}
-			
+
 			// Update table content if we have a selected file but haven't displayed it yet
 			if m.selectedFile != "" && m.csvCollection != nil {
 				m.updateTableForSelectedFile()

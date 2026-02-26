@@ -109,13 +109,13 @@ func (m *model) loadPartmaster() {
 	if m.pmDir == "" {
 		return
 	}
-	
+
 	pm, err := loadPartmasterFromDir(m.pmDir)
 	if err != nil {
 		m.error = "Error loading partmaster: " + err.Error()
 		return
 	}
-	
+
 	m.partmaster = pm
 	m.updateTable()
 }
@@ -235,31 +235,31 @@ func (m model) View() string {
 	} else {
 		// Show normal GitPLM screen with partmaster table
 		subtitle := subtitleStyle.Width(m.width).Render("Git Product Lifecycle Management")
-		
+
 		// Show partmaster directory if available
 		var pmDirInfo string
 		if m.pmDir != "" {
 			pmDirInfo = subtitleStyle.Width(m.width).Render("Partmaster Directory: " + m.pmDir)
 		}
-		
+
 		// Show error if any
 		var errorMsg string
 		if m.error != "" {
 			errorMsg = errorStyle.Width(m.width).Render(m.error)
 		}
-		
+
 		// Show table if partmaster is loaded
 		var tableView string
 		if len(m.partmaster) > 0 {
 			tableView = tableStyle.Render(m.table.View())
 		}
-		
+
 		help := helpStyle.Width(m.width).Render("Press 'q', 'esc', or 'ctrl+c' to quit • Use ↑/↓ to navigate")
 
 		// Join all components
 		var content string
 		components := []string{title, subtitle}
-		
+
 		if pmDirInfo != "" {
 			components = append(components, pmDirInfo)
 		}
@@ -269,10 +269,10 @@ func (m model) View() string {
 		if tableView != "" {
 			components = append(components, tableView)
 		}
-		
+
 		components = append(components, help)
 		content = lipgloss.JoinVertical(lipgloss.Center, components...)
-		
+
 		return content
 	}
 }
@@ -283,4 +283,3 @@ func runTUI(pmDir string) error {
 	_, err := p.Run()
 	return err
 }
-

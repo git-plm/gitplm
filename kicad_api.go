@@ -101,14 +101,9 @@ func (s *KiCadServer) authenticate(r *http.Request) bool {
 func (s *KiCadServer) getCategories() []KiCadCategory {
 	categoryMap := make(map[string]bool)
 
-	// Extract categories from CSV files and IPNs
+	// Extract categories from CSV files - use IPNs from each file
 	for _, file := range s.csvCollection.Files {
-		// Try to extract category from filename (e.g., cap.csv -> CAP)
-		if fileName := strings.TrimSuffix(strings.ToUpper(file.Name), ".CSV"); fileName != "" && len(fileName) == 3 {
-			categoryMap[fileName] = true
-		}
-
-		// Also extract from IPNs if they exist
+		// Extract from IPNs if they exist
 		if ipnIdx := s.findColumnIndex(file, "IPN"); ipnIdx >= 0 {
 			for _, row := range file.Rows {
 				if len(row) > ipnIdx && row[ipnIdx] != "" {
@@ -149,8 +144,8 @@ func (s *KiCadServer) findColumnIndex(file *CSVFile, columnName string) int {
 
 // extractCategory extracts the CCC component from an IPN
 func (s *KiCadServer) extractCategory(ipnStr string) string {
-	// IPN format: CCC-NNN-VVVV
-	re := regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d\d\d)-(\d\d\d\d)$`)
+	// IPN format: CCC-NNNN-VVVV (also supports CCC-NNN-VVVV for legacy)
+	re := regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d{3,4})-(\d{4})$`)
 	matches := re.FindStringSubmatch(ipnStr)
 	if len(matches) >= 2 {
 		return matches[1]
@@ -161,9 +156,24 @@ func (s *KiCadServer) extractCategory(ipnStr string) string {
 // getCategoryDisplayName returns a human-readable name for a category
 func (s *KiCadServer) getCategoryDisplayName(category string) string {
 	displayNames := map[string]string{
+		"ANA": "Analog ICs",
+		"ART": "Artwork",
 		"CAP": "Capacitors",
-		"RES": "Resistors",
+		"CON": "Connectors",
+		"CPD": "Compound Components",
 		"DIO": "Diodes",
+		"ICS": "Integrated Circuits",
+		"IND": "Inductors",
+		"MCU": "Microcontrollers",
+		"MPU": "Microprocessors",
+		"OPT": "Optical Components",
+		"OSC": "Oscillators",
+		"PWR": "Power Components",
+		"REG": "Regulators",
+		"RES": "Resistors",
+		"RFM": "RF Modules",
+		"SWI": "Switches",
+		"XTR": "Transceivers",
 		"LED": "LEDs",
 		"SCR": "Screws",
 		"MCH": "Mechanical",
@@ -177,9 +187,7 @@ func (s *KiCadServer) getCategoryDisplayName(category string) string {
 		"FIX": "Fixtures",
 		"CNT": "Connectors",
 		"IC":  "Integrated Circuits",
-		"OSC": "Oscillators",
 		"XTL": "Crystals",
-		"IND": "Inductors",
 		"FER": "Ferrites",
 		"FUS": "Fuses",
 		"SW":  "Switches",
@@ -202,9 +210,24 @@ func (s *KiCadServer) getCategoryDisplayName(category string) string {
 // getCategoryDescription returns a description for a category
 func (s *KiCadServer) getCategoryDescription(category string) string {
 	descriptions := map[string]string{
+		"ANA": "Analog integrated circuits",
+		"ART": "Artwork and graphics components",
 		"CAP": "Capacitor components",
-		"RES": "Resistor components",
+		"CON": "Connector components",
+		"CPD": "Compound and complex components",
 		"DIO": "Diode components",
+		"ICS": "Integrated circuit components",
+		"IND": "Inductor components",
+		"MCU": "Microcontroller components",
+		"MPU": "Microprocessor components",
+		"OPT": "Optical components",
+		"OSC": "Oscillator components",
+		"PWR": "Power supply and management components",
+		"REG": "Voltage regulator components",
+		"RES": "Resistor components",
+		"RFM": "RF module components",
+		"SWI": "Switch components",
+		"XTR": "Transceiver components",
 		"LED": "Light emitting diode components",
 		"SCR": "Screw and fastener components",
 		"MCH": "Mechanical components",
@@ -218,9 +241,7 @@ func (s *KiCadServer) getCategoryDescription(category string) string {
 		"FIX": "Fixture components",
 		"CNT": "Connector components",
 		"IC":  "Integrated circuit components",
-		"OSC": "Oscillator components",
 		"XTL": "Crystal components",
-		"IND": "Inductor components",
 		"FER": "Ferrite components",
 		"FUS": "Fuse components",
 		"SW":  "Switch components",
@@ -248,7 +269,7 @@ func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 		// Check if this file belongs to the category
 		fileName := strings.TrimSuffix(strings.ToUpper(file.Name), ".CSV")
 		fileCategory := ""
-		
+
 		// Try to get category from filename
 		if len(fileName) == 3 {
 			fileCategory = fileName
@@ -319,24 +340,42 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 			if rowPartID == partID {
 				fields := make(map[string]KiCadPartField)
 				partName := ""
+				symbolID := ""
 				category := s.extractCategory(partID)
 
 				// Add all fields from the CSV dynamically
 				for i, header := range file.Headers {
 					if i < len(row) && row[i] != "" && header != "" {
-						fields[header] = KiCadPartField{Value: row[i]}
-						
 						// Set name from Description field
 						if header == "Description" {
 							partName = row[i]
 						}
+
+						// Set symbol from Symbol field
+						if header == "Symbol" {
+							symbolID = row[i]
+						} else {
+							// Add field to fields map (exclude Symbol as it goes in symbolIdStr)
+							fields[header] = KiCadPartField{Value: row[i]}
+						}
 					}
 				}
 
+				// Error if no Symbol field found
+				if symbolID == "" {
+					log.Printf("ERROR: Part %s has no Symbol field defined", partID)
+				}
+
+				// Format ID as category/part-id (e.g., "rfm/RFM-0000-0001")
+				formattedID := partID
+				if category != "" {
+					formattedID = strings.ToLower(category) + "/" + partID
+				}
+
 				return &KiCadPartDetail{
-					ID:             partID,
+					ID:             formattedID,
 					Name:           partName,
-					SymbolIDStr:    s.getSymbolIDFromCategory(category),
+					SymbolIDStr:    symbolID,
 					ExcludeFromBOM: "false", // Default to include in BOM
 					Fields:         fields,
 				}

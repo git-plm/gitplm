@@ -14,13 +14,14 @@ import (
 )
 
 func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string, error) {
-	c, n, v, err := ipn(relPn).parse()
+	relIpn := ipn(relPn)
+	_, _, v, err := relIpn.parse()
 	if err != nil {
 		return "", fmt.Errorf("error parsing bom %v IPN : %v", relPn, err)
 	}
 
-	relPnBase := fmt.Sprintf("%v-%03v", c, n)
-	relPnBaseWithVar := fmt.Sprintf("%v-%03v-%02v", c, n, v/100) // First two digits of variation
+	relPnBase := relIpn.base()
+	relPnBaseWithVar := fmt.Sprintf("%v-%02v", relPnBase, v/100) // First two digits of variation
 
 	bomFile := relPnBase + ".csv"
 	bomFileWithVar := relPnBaseWithVar + ".csv"

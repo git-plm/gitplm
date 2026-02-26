@@ -22,15 +22,23 @@ func main() {
 		os.Exit(-1)
 	}
 
+	// Set defaults from config
+	defaultPort := 7654
+	if config.HTTP.Port > 0 {
+		defaultPort = config.HTTP.Port
+	}
+	defaultToken := config.HTTP.Token
+
 	flagRelease := flag.String("release", "", "Process release for IPN (ex: PCB-056-0005, ASY-002-0023)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
+	flagUpdate := flag.Bool("update", false, "update gitplm to the latest version")
 	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
 	flagOutput := flag.String("out", "", "output file")
 	flagCombine := flag.String("combine", "", "adds BOM to output bom")
 	flagPMDir := flag.String("pmDir", config.PMDir, "specify location of partmaster CSV files")
-	flagHTTPServer := flag.Bool("http", false, "start KiCad HTTP Library API server")
-	flagHTTPPort := flag.Int("port", 8080, "HTTP server port")
-	flagHTTPToken := flag.String("token", "", "authentication token for HTTP API")
+	flagHTTPServer := flag.Bool("http", config.HTTP.Enabled, "start KiCad HTTP Library API server")
+	flagHTTPPort := flag.Int("port", defaultPort, "HTTP server port (default: 7654)")
+	flagHTTPToken := flag.String("token", defaultToken, "authentication token for HTTP API")
 	flag.Parse()
 
 	if *flagVersion {
@@ -39,6 +47,13 @@ func main() {
 		}
 		fmt.Printf("%v\n", version)
 		os.Exit(0)
+	}
+
+	if *flagUpdate {
+		if err := Update(version); err != nil {
+			log.Fatalf("Update failed: %v", err)
+		}
+		return
 	}
 
 	var gLog strings.Builder
@@ -131,11 +146,12 @@ func main() {
 
 		if relPath != "" {
 			// write out log file
-			c, n, _, err := ipn(*flagRelease).parse()
+			relIpn := ipn(*flagRelease)
+			_, _, _, err := relIpn.parse()
 			if err != nil {
 				log.Fatal("Error parsing bom IPN: ", err)
 			}
-			fn := fmt.Sprintf("%v-%03v.log", c, n)
+			fn := relIpn.base() + ".log"
 			logFilePath := filepath.Join(relPath, fn)
 			err = os.WriteFile(logFilePath, []byte(gLog.String()), 0644)
 			if err != nil {
@@ -151,7 +167,7 @@ func main() {
 		if *flagPMDir == "" {
 			log.Fatal("Error: partmaster directory not specified. Use -pmDir flag or configure gitplm.yml")
 		}
-		
+
 		log.Printf("Starting KiCad HTTP Library API server...")
 		log.Printf("Partmaster directory: %s", *flagPMDir)
 		if *flagHTTPToken != "" {
@@ -159,7 +175,7 @@ func main() {
 		} else {
 			log.Printf("No authentication token specified - server will be open")
 		}
-		
+
 		err := StartKiCadServer(*flagPMDir, *flagHTTPToken, *flagHTTPPort)
 		if err != nil {
 			log.Fatal("Error starting HTTP server: ", err)

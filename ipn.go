@@ -11,7 +11,7 @@ import (
 
 type ipn string
 
-var reIpn = regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d\d\d)-(\d\d\d\d)$`)
+var reIpn = regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d{3,4})-(\d\d\d\d)$`)
 var reC = regexp.MustCompile(`^[A-Z][A-Z][A-Z]$`)
 
 func newIpn(s string) (ipn, error) {
@@ -20,7 +20,7 @@ func newIpn(s string) (ipn, error) {
 }
 
 func newIpnParts(c string, n, v int) (ipn, error) {
-	if n < 0 || n > 999 {
+	if n < 0 || n > 9999 {
 		return "", errors.New("N out of range")
 	}
 
@@ -36,7 +36,11 @@ func newIpnParts(c string, n, v int) (ipn, error) {
 		return "", errors.New("C must be in format CCC")
 	}
 
-	return ipn(fmt.Sprintf("%v-%03v-%04v", c, n, v)), nil
+	nFmt := "%03v"
+	if n > 999 {
+		nFmt = "%04v"
+	}
+	return ipn(fmt.Sprintf("%v-"+nFmt+"-%04v", c, n, v)), nil
 }
 
 func (i ipn) String() string {
@@ -61,6 +65,24 @@ func (i ipn) parse() (string, int, int, error) {
 	}
 
 	return c, n, v, nil
+}
+
+// nWidth returns the number of digits in the N segment of the IPN
+func (i ipn) nWidth() int {
+	groups := reIpn.FindStringSubmatch(string(i))
+	if len(groups) < 4 {
+		return 3
+	}
+	return len(groups[2])
+}
+
+// base returns the CCC-NNN portion of the IPN, preserving the original digit width
+func (i ipn) base() string {
+	c, n, _, err := i.parse()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%v-%0*v", c, i.nWidth(), n)
 }
 
 func (i ipn) c() (string, error) {
