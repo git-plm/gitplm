@@ -16,6 +16,7 @@ For more details or to discuss releases, please visit the
 - Switch goreleaser to upload raw binaries instead of archives
 - Add Windows install instructions
 - Fix CSV delimiter documentation to match current convention
+- Add self-update feature (`gitplm -update`)
 
 ## [[0.7.1] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.1)
 

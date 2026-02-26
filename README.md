@@ -81,7 +81,9 @@ Type `gitplm` from a shell to see command line options:
 Usage of gitplm:
   -release string
 	      Process release for IPN (ex: PCB-056-0005, ASY-002-0023)
-  -version int
+  -update
+        update gitplm to the latest version
+  -version
         display version of this application
 ```
 

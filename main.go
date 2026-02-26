@@ -31,6 +31,7 @@ func main() {
 
 	flagRelease := flag.String("release", "", "Process release for IPN (ex: PCB-056-0005, ASY-002-0023)")
 	flagVersion := flag.Bool("version", false, "display version of this application")
+	flagUpdate := flag.Bool("update", false, "update gitplm to the latest version")
 	flagSimplify := flag.String("simplify", "", "simplify a BOM file, combine lines with common MPN")
 	flagOutput := flag.String("out", "", "output file")
 	flagCombine := flag.String("combine", "", "adds BOM to output bom")
@@ -46,6 +47,13 @@ func main() {
 		}
 		fmt.Printf("%v\n", version)
 		os.Exit(0)
+	}
+
+	if *flagUpdate {
+		if err := Update(version); err != nil {
+			log.Fatalf("Update failed: %v", err)
+		}
+		return
 	}
 
 	var gLog strings.Builder
