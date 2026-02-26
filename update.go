@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 const (
@@ -20,6 +21,46 @@ const (
 type GitHubRelease struct {
 	TagName string `json:"tag_name"`
 	Name    string `json:"name"`
+}
+
+// CheckForUpdate checks if a newer version is available, at most once per day.
+// Returns a user-facing message if an update is available, or empty string otherwise.
+// Errors are silently ignored.
+func CheckForUpdate(currentVersion string) string {
+	current := strings.TrimPrefix(currentVersion, "v")
+	if current == "Development" || current == "" {
+		return ""
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+
+	tsFile := filepath.Join(home, ".gitplm-last-update-check")
+
+	if data, err := os.ReadFile(tsFile); err == nil {
+		if t, err := time.Parse(time.RFC3339, strings.TrimSpace(string(data))); err == nil {
+			if time.Since(t) < 24*time.Hour {
+				return ""
+			}
+		}
+	}
+
+	latestVersion, err := getLatestVersion()
+	if err != nil {
+		return ""
+	}
+
+	// Write timestamp regardless of version comparison
+	_ = os.WriteFile(tsFile, []byte(time.Now().Format(time.RFC3339)), 0644)
+
+	latest := strings.TrimPrefix(latestVersion, "v")
+	if latest != current {
+		return fmt.Sprintf("A new version of gitplm is available (v%s). Run 'gitplm -update' to upgrade.", latest)
+	}
+
+	return ""
 }
 
 // Update checks for and downloads the latest version of gitplm

@@ -59,6 +59,10 @@ var (
 				Foreground(lipgloss.Color("170"))
 
 	normalItemStyle = lipgloss.NewStyle()
+
+	updateStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("220")).
+			Align(lipgloss.Center)
 )
 
 type fileItem struct {
@@ -99,13 +103,14 @@ type modelNew struct {
 	fileList      list.Model
 	table         table.Model
 	pmDir         string
+	updateMsg     string
 	error         string
 	csvCollection *CSVFileCollection
 	selectedFile  string
 	listFocused   bool
 }
 
-func initialModelNew(needsPMDir bool, pmDir string) modelNew {
+func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
 	ti := textinput.New()
 	ti.Placeholder = "/path/to/partmaster/directory"
 	ti.Focus()
@@ -150,6 +155,7 @@ func initialModelNew(needsPMDir bool, pmDir string) modelNew {
 		table:       t,
 		viewState:   viewStateInput,
 		pmDir:       pmDir,
+		updateMsg:   updateMsg,
 		listFocused: true,
 	}
 
@@ -477,6 +483,12 @@ func (m modelNew) View() string {
 		// Show browse view with file list and table
 		subtitle := subtitleStyle2.Width(m.width).Render("Git Product Lifecycle Management")
 
+		// Show update notice if available
+		var updateNotice string
+		if m.updateMsg != "" {
+			updateNotice = updateStyle.Width(m.width).Render(m.updateMsg)
+		}
+
 		// Show partmaster directory
 		var pmDirInfo string
 		if m.pmDir != "" {
@@ -497,6 +509,9 @@ func (m modelNew) View() string {
 		// Account for title (3 lines), subtitle (3 lines), pmDirInfo (3 lines), help (3 lines)
 		// Plus some padding
 		headerHeight := 4 // title + subtitle
+		if updateNotice != "" {
+			headerHeight += 2
+		}
 		if pmDirInfo != "" {
 			headerHeight += 3
 		}
@@ -523,6 +538,9 @@ func (m modelNew) View() string {
 		// Join all components
 		components := []string{title, subtitle}
 
+		if updateNotice != "" {
+			components = append(components, updateNotice)
+		}
 		if pmDirInfo != "" {
 			components = append(components, pmDirInfo)
 		}
@@ -537,9 +555,9 @@ func (m modelNew) View() string {
 	}
 }
 
-func runTUINew(pmDir string) error {
+func runTUINew(pmDir string, updateMsg string) error {
 	needsPMDir := pmDir == ""
-	p := tea.NewProgram(initialModelNew(needsPMDir, pmDir), tea.WithAltScreen())
+	p := tea.NewProgram(initialModelNew(needsPMDir, pmDir, updateMsg), tea.WithAltScreen())
 	_, err := p.Run()
 	return err
 }

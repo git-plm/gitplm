@@ -56,6 +56,8 @@ func main() {
 		return
 	}
 
+	updateMsg := CheckForUpdate(version)
+
 	var gLog strings.Builder
 	logMsg := func(s string) {
 		_, err := gLog.Write([]byte(s))
@@ -63,6 +65,11 @@ func main() {
 			log.Println("Error writing to gLog: ", err)
 		}
 		log.Println(s)
+	}
+
+	// Print update notice for non-TUI commands
+	if updateMsg != "" {
+		fmt.Println(updateMsg)
 	}
 
 	if *flagSimplify != "" {
@@ -185,7 +192,7 @@ func main() {
 
 	// If no flags were provided, show the TUI
 	if len(os.Args) == 1 {
-		err := runTUINew(*flagPMDir)
+		err := runTUINew(*flagPMDir, updateMsg)
 		if err != nil {
 			log.Fatal("Error running TUI: ", err)
 		}
