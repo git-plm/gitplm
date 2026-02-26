@@ -23,7 +23,7 @@
 - [Reference Information](#reference-information)
 <!--toc:end-->
 
-## Product Life cycle Management (PLM) in Git.
+## 🏭 Product Life cycle Management (PLM) in Git.
 
 Additional documents:
 
@@ -55,11 +55,11 @@ An example output is shown below:
 GitPLM is designed for small teams building products. We leverage Git to track
 changes and use simple file formats like CSV to store BOMs, partmaster, etc.
 
-## Video overview
+## 🎬 Video overview
 
 [GitPLM overview](https://youtu.be/rSGHQXkrZmc)
 
-## Installation
+## 📦 Installation
 
 You can [download a release](https://github.com/git-plm/gitplm/releases) for
 your favorite platform. This tool is a self-contained binary with no
@@ -73,7 +73,7 @@ or
 
 - Clone the Git repo and run: `go run .`
 
-## Usage
+## 🚀 Usage
 
 Type `gitplm` from a shell to see command line options:
 
@@ -87,7 +87,7 @@ Usage of gitplm:
         display version of this application
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 GitPLM supports configuration via YAML files. The tool will look for
 configuration files in the following order:
@@ -105,7 +105,7 @@ Available configuration options:
 
 - `pmDir`: Specifies the directory containing the partmaster.csv file
 
-## Part Numbers
+## 🔢 Part Numbers
 
 Each part used to make a product is defined by an
 [IPN (Internal Part Number)](https://github.com/git-plm/parts/blob/main/partnumbers.md).
@@ -117,7 +117,7 @@ The convention used by GitPLM is: `CCC-NNN-VVVV`
   datasheet** (resistance, capacitance, regulator voltage, IC package, etc.)
   Also used to encode the version of custom parts or assemblies.
 
-## Partmaster
+## 📋 Partmaster
 
 A single [`partmaster.csv`](example/partmaster.csv) file or multiple CSV files
 can be used to specify the internal part numbers (IPN) for all assets used to
@@ -142,7 +142,7 @@ change the manufacturer information in the partmaster and then automatically
 generate new BOMs for all affected products. Because the BOMs are stored in Git,
 it is easy to review what changed.
 
-## Components you manufacture
+## 🔧 Components you manufacture
 
 A product is typically a collection of custom parts you manufacture and
 off-the-shelf parts you purchase. Custom parts are identified by the following
@@ -164,7 +164,7 @@ release directory that matches the IPN and then soft-links from the release
 directory to the sub component release directory. In this way we build up a
 hierarchy of release directories for the entire product.
 
-## Source and Release directories
+## 📁 Source and Release directories
 
 For parts you produce, GitPLM scans the directory tree looking for source
 directories which are identified by one or both of the following files:
@@ -208,7 +208,7 @@ Release directories are identified by a full IPN. Examples:
 - `ASY-012-0002`
 - `DOC-055-0006`
 
-## Special Files
+## 📄 Special Files
 
 The following files will be copied into the release directory if found in the
 project directory:
@@ -218,7 +218,7 @@ project directory:
   [keep a changelog](https://keepachangelog.com) for ideas on how to structure
   this file. Every source directory should have a `CHANGELOG.md`.
 
-## Release configuration
+## 🛠️ Release configuration
 
 A release configuration file (`CCC-NNN.yml`) in the source directory can be used
 to customize the release process.
@@ -267,7 +267,7 @@ Supported operations:
 The release process should be automated as much as possible to process the
 source files and generate the release information with no manual steps.
 
-## KiCad HTTP Libraries support
+## 🔌 KiCad HTTP Libraries support
 
 GitPLM can serve a parts database to KiCad using the
 [KiCad HTTP Libraries feature](https://dev-docs.kicad.org/en/apis-and-binding/http-libraries/).
@@ -338,7 +338,7 @@ GitPLM automatically:
 - Maps parts to appropriate KiCad symbols
 - Serves part data with all fields from the CSV (Description, Value, MPN, etc.)
 
-## Examples
+## 💡 Examples
 
 See the examples folder. You can run commands like to exercise GitPLM:
 
@@ -348,7 +348,7 @@ See the examples folder. You can run commands like to exercise GitPLM:
 `go run .` is used when working in the source directory. You can replace this
 with `gitplm` if you have it installed.
 
-## Principles
+## 🎯 Principles
 
 - Manual operations/tweaks to machine generated files are bad. If changes are
   made (example a BOM line item add/removed/changed), this needs to be defined
@@ -368,7 +368,7 @@ with `gitplm` if you have it installed.
 - PLM software should not be tied to any one CAD tool, but should be flexible
   enough to work with any CAD output.
 
-## Additional notes
+## 📝 Additional notes
 
 - Use CSV files for partmaster and all BOMs.
   - _Rational: can be read and written by excel, LibreOffice, or by machine_
@@ -397,7 +397,7 @@ with `gitplm` if you have it installed.
     - _Program can be started as a command line program, but eventually grow
       into a full-blown web application._
 
-## Reference Information
+## 📚 Reference Information
 
 - https://www.awkwardengineer.com/pages/writing
 - https://github.com/jaredwolff/eagle-plm
