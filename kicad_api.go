@@ -269,7 +269,7 @@ func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 		// Check if this file belongs to the category
 		fileName := strings.TrimSuffix(strings.ToUpper(file.Name), ".CSV")
 		fileCategory := ""
-		
+
 		// Try to get category from filename
 		if len(fileName) == 3 {
 			fileCategory = fileName

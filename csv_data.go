@@ -40,7 +40,7 @@ func loadCSVRaw(filePath string) (*CSVFile, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading headers from %s: %v", filePath, err)
 	}
-	
+
 	// Trim whitespace from headers
 	for i := range headers {
 		headers[i] = strings.TrimSpace(headers[i])

@@ -167,7 +167,7 @@ func main() {
 		if *flagPMDir == "" {
 			log.Fatal("Error: partmaster directory not specified. Use -pmDir flag or configure gitplm.yml")
 		}
-		
+
 		log.Printf("Starting KiCad HTTP Library API server...")
 		log.Printf("Partmaster directory: %s", *flagPMDir)
 		if *flagHTTPToken != "" {
@@ -175,7 +175,7 @@ func main() {
 		} else {
 			log.Printf("No authentication token specified - server will be open")
 		}
-		
+
 		err := StartKiCadServer(*flagPMDir, *flagHTTPToken, *flagHTTPPort)
 		if err != nil {
 			log.Fatal("Error starting HTTP server: ", err)

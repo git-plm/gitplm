@@ -16,7 +16,7 @@ func TestIpn(t *testing.T) {
 		{"ASY-200-1000", "ASY", 200, 1000, true},
 		{"SY-200-1000", "", 0, 0, false},
 		{"ASY-0001-0001", "ASY", 1, 1, true},     // 4-digit N
-		{"PCB-0123-0500", "PCB", 123, 500, true},  // 4-digit N
+		{"PCB-0123-0500", "PCB", 123, 500, true}, // 4-digit N
 		{"ASY-20-1000", "", 0, 0, false},
 		{"ASY-200-100", "", 0, 0, false},
 	}

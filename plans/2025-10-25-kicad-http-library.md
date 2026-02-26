@@ -1,12 +1,14 @@
 # Plan: KiCad HTTP Library Implementation
 
-**Date:** 2025-10-25
-**Status:** Draft
-**Goal:** Complete implementation of KiCad HTTP Libraries API support for GitPLM
+**Date:** 2025-10-25 **Status:** Draft **Goal:** Complete implementation of
+KiCad HTTP Libraries API support for GitPLM
 
 ## Context
 
-Based on the README.md changes, GitPLM now includes support for serving a parts database to KiCad using the KiCad HTTP Libraries feature. The implementation is already substantially complete in `kicad_api.go`, but this plan documents the current state and any remaining work needed.
+Based on the README.md changes, GitPLM now includes support for serving a parts
+database to KiCad using the KiCad HTTP Libraries feature. The implementation is
+already substantially complete in `kicad_api.go`, but this plan documents the
+current state and any remaining work needed.
 
 ## Current State Analysis
 
@@ -20,7 +22,8 @@ The codebase already has a working KiCad HTTP library server implementation:
    - Four main HTTP endpoints:
      - Root endpoint (`/v1/`) - returns API discovery
      - Categories endpoint (`/v1/categories.json`) - lists part categories
-     - Parts by category (`/v1/parts/category/{id}.json`) - lists parts in a category
+     - Parts by category (`/v1/parts/category/{id}.json`) - lists parts in a
+       category
      - Part detail (`/v1/parts/{id}.json`) - returns detailed part information
    - Category extraction from CSV filenames and IPNs
    - Display names and descriptions for common categories (CAP, RES, DIO, etc.)
@@ -67,8 +70,8 @@ The codebase already has a working KiCad HTTP library server implementation:
 ## Implementation Plan
 
 ### Phase 1: Port and Configuration Alignment
-**Priority:** High
-**Estimated Effort:** 15 minutes
+
+**Priority:** High **Estimated Effort:** 15 minutes
 
 1. **Fix Port Default:**
    - Change default port from 8080 to 7654 in `main.go:32`
@@ -83,12 +86,13 @@ The codebase already has a working KiCad HTTP library server implementation:
    - Update `main.go` to prefer config file values, fall back to flags
 
 ### Phase 2: Documentation Enhancement
-**Priority:** High
-**Estimated Effort:** 30 minutes
+
+**Priority:** High **Estimated Effort:** 30 minutes
 
 1. **Update README.md:**
    - Add usage section for HTTP server mode
    - Include example commands:
+
      ```bash
      # Start server with default settings
      gitplm -http -pmDir /path/to/partmaster
@@ -99,6 +103,7 @@ The codebase already has a working KiCad HTTP library server implementation:
      # Start with authentication
      gitplm -http -token mysecrettoken -pmDir /path/to/partmaster
      ```
+
    - Add KiCad configuration instructions
    - Document the API endpoints
 
@@ -113,8 +118,8 @@ The codebase already has a working KiCad HTTP library server implementation:
      ```
 
 ### Phase 3: Testing and Validation
-**Priority:** Medium
-**Estimated Effort:** 1-2 hours
+
+**Priority:** Medium **Estimated Effort:** 1-2 hours
 
 1. **Create Integration Test:**
    - Add `kicad_api_test.go` with tests for:
@@ -134,8 +139,8 @@ The codebase already has a working KiCad HTTP library server implementation:
    - Add to README or separate TESTING.md
 
 ### Phase 4: Feature Enhancements (Optional)
-**Priority:** Low
-**Estimated Effort:** 2-4 hours
+
+**Priority:** Low **Estimated Effort:** 2-4 hours
 
 1. **Caching:**
    - Add CSV reload capability (watch for file changes)
@@ -155,11 +160,13 @@ The codebase already has a working KiCad HTTP library server implementation:
 ## Implementation Sequence
 
 ### Immediate (Next PR)
+
 1. Fix port default to 7654
 2. Update README with usage examples
 3. Add HTTP configuration to YAML config
 
 ### Follow-up (Future PRs)
+
 1. Add comprehensive tests
 2. Manual validation with KiCad
 3. Optional enhancements based on user feedback
@@ -194,7 +201,8 @@ The codebase already has a working KiCad HTTP library server implementation:
 
 ## References
 
-- KiCad HTTP Libraries API: https://dev-docs.kicad.org/en/apis-and-binding/http-libraries/
+- KiCad HTTP Libraries API:
+  https://dev-docs.kicad.org/en/apis-and-binding/http-libraries/
 - Existing implementation: `kicad_api.go:1-495`
 - Main program: `main.go:149-168`
 - CSV loading: `csv_data.go:75-101`
