@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Support 3 and 4 digit NNN/NNNN in part numbers
+- KiCad HTTP Library API (WIP - not yet complete)
+- Switch goreleaser to upload raw binaries instead of archives
+- Add Windows install instructions
+- Fix CSV delimiter documentation to match current convention
+
 ## [[0.7.1] - 2025-07-11](https://github.com/git-plm/gitplm/releases/tag/v0.7.1)
 
 - Rename release to more friendly names
