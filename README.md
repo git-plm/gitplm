@@ -397,6 +397,20 @@ with `gitplm` if you have it installed.
     - _Program can be started as a command line program, but eventually grow
       into a full-blown web application._
 
+## 📦 Releasing
+
+Releases are automated via GitHub Actions and
+[GoReleaser](https://goreleaser.com/). To create a new release:
+
+1. Update `CHANGELOG.md` with the changes for the new version.
+2. Tag the release: `git tag v0.x.x`
+3. Push the tag: `git push origin v0.x.x`
+
+The release workflow will automatically build binaries for all platforms and
+create a GitHub release with notes extracted from `CHANGELOG.md`.
+
+Users can update to the latest release by running: `gitplm -update`
+
 ## 📚 Reference Information
 
 - https://www.awkwardengineer.com/pages/writing
