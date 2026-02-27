@@ -19,6 +19,14 @@ const (
 	viewStateBrowse
 )
 
+const (
+	modeNormal = iota
+	modeSearch
+	modeEdit
+	modeConfirmDelete
+	modeParametricSearch
+)
+
 const allFilesOption = "All Parts (Combined)"
 
 var (
@@ -111,6 +119,30 @@ type modelNew struct {
 	csvCollection *CSVFileCollection
 	selectedFile  string
 	listFocused   bool
+
+	// Interactive mode fields
+	mode         int
+	allRows      []table.Row
+	filteredRows []table.Row
+	rowToDataIdx []int // filtered index -> allRows index
+	isEditable   bool
+
+	// Search
+	searchInput textinput.Model
+
+	// Edit
+	editInputs   []textinput.Model
+	editHeaders  []string
+	editFocusIdx int
+	editRowIdx   int
+	editIsNew    bool
+
+	// Delete
+	deleteRowIdx int
+
+	// Parametric search
+	paramInputs   []textinput.Model
+	paramFocusIdx int
 }
 
 func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
@@ -295,7 +327,9 @@ func (m *modelNew) updateTableForSelectedFile() {
 				})
 			}
 			m.table.SetRows(rows)
+			m.allRows = rows
 		}
+		m.isEditable = false
 	} else {
 		// Show individual CSV file
 		var csvFile *CSVFile
@@ -364,9 +398,14 @@ func (m *modelNew) updateTableForSelectedFile() {
 			m.table.SetColumns(columns)
 			m.table.SetRows(rows)
 			m.table.SetCursor(0)
+			m.allRows = rows
 		}
+		m.isEditable = true
 	}
 
+	m.filteredRows = m.allRows
+	m.rowToDataIdx = nil
+	m.mode = modeNormal
 	m.error = ""
 }
 
