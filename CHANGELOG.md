@@ -11,6 +11,15 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- TUI: search parts across all columns with `/` key.
+- TUI: parametric search with per-column filters via `p` key.
+- TUI: edit a part in-place with `e` key.
+- TUI: add a new part with auto-generated next IPN via `a` key.
+- TUI: copy a row to create a new part via `c` key.
+- TUI: delete a part with confirmation via `d` key.
+- TUI: dynamic help bar shows available actions for the current mode.
+- TUI: editing is disabled in the combined "All Parts" view.
+
 ## [[0.8.4] - 2026-02-27](https://github.com/git-plm/gitplm/releases/tag/v0.8.4)
 
 - Search parent directories for config file and resolve relative paths in config

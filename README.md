@@ -116,17 +116,21 @@ Available configuration options:
 ## Terminal User Interface (TUI)
 
 GitPLM has a terminal user interface that will be displayed if you start GitPLM
-without any command line arguments. Current features:
+without any command line arguments.
 
-- Display part libraries
-- Edit a part
-- Duplicate a line item (often useful for creating a new part)
-- Delete a part
-- Search (quick) - searches on IPN, description, MPN, and mfg fields.
-- Parametric search - allows enter specific parameters for the current table
-  viewed.
+| Key | Action |
+|-----|--------|
+| `/` | Quick search across all columns. |
+| `p` | Parametric search with per-column filters. |
+| `e` | Edit the selected part. |
+| `a` | Add a new part with the next available IPN. |
+| `c` | Copy the selected row into a new part. |
+| `d` | Delete the selected part (with confirmation). |
+| `Tab` | Switch focus between file list and data table. |
+| `q` | Quit. |
 
-When anything changes in a part table, the table is automatically sorted by IPN.
+Edit, add, copy, and delete are disabled in the combined "All Parts" view.
+Changes are saved immediately and the table is auto-sorted by IPN.
 
 ## 🔢 Part Numbers
 

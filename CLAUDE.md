@@ -29,8 +29,11 @@ are in the repository root.
   copies files, merges partmaster data, and outputs a versioned release BOM. For
   assemblies (PCA/ASY), recursively expands sub-assembly BOMs and creates a
   combined `-all.csv`.
-- **TUI** (no args): Interactive Bubbletea terminal UI (`tui_new.go`) for
-  browsing partmaster CSV data. Split-pane: file list + data table.
+- **TUI** (no args): Interactive Bubbletea terminal UI (`tui.go`) for
+  browsing and editing partmaster CSV data. Split-pane: file list + data table.
+  Supports search, parametric search, edit, add, copy, delete. Mode-based key
+  dispatch (`modeNormal`, `modeSearch`, `modeEdit`, `modeConfirmDelete`,
+  `modeParametricSearch`).
 - **HTTP** (`-http`): KiCad HTTP Library API server (`kicad_api.go`) exposing
   partmaster data as REST JSON.
 - **Simplify/Combine** (`-simplify`/`-combine`): BOM consolidation utilities.
@@ -51,7 +54,8 @@ are in the repository root.
 - **`Config`** (`config.go`): YAML config loaded from `gitplm.yml`/`.gitplm.yml`
   (cwd) or `~/.gitplm.yml`.
 - **`CSVFileCollection`** (`csv_data.go`): Schema-flexible raw CSV loading used
-  by TUI and KiCad API.
+  by TUI and KiCad API. Also provides `saveCSVRaw`, `findHeaderIndex`,
+  `sortRowsByIPN`, and `nextAvailableIPN` helpers for TUI mutations.
 
 ### IPN Categories
 

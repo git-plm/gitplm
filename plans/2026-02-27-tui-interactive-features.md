@@ -9,7 +9,7 @@ supports read-only browsing of CSV files. This plan implements all 7 features.
 ## Files to modify
 
 - **`tui.go`** — All TUI model changes, key handling, view rendering, new modes
-- **`csv_data.go`** — Add `saveCSVRaw`, `sortRowsByIPN`, `findHeaderIndex`
+- **`csv_data.go`** — Add `saveCSVRaw`, `sortRowsByIPN`, `findHeaderIndex`, `nextAvailableIPN`
 
 ## Design decisions
 
@@ -73,8 +73,7 @@ isEditable      bool
 - Add `searchInput` textinput.Model, initialize in `initialModelNew`
 - `/` → `modeSearch`, focus search input
 - On keystroke: filter `allRows` by substring match (case-insensitive) across
-  IPN, Description, MPN, Manufacturer columns → build `filteredRows` and
-  `rowToDataIdx`
+  all columns → build `filteredRows` and `rowToDataIdx`
 - `Escape` → clear search, restore all rows, `modeNormal`
 - `Enter` → accept filter, return to `modeNormal`
 - Render search bar between main content and help line
@@ -155,6 +154,13 @@ case modeParametricSearch: // paramInputs + Tab/Enter/Escape
 | 1af6569 | feat: add delete with confirmation via d key | Implemented |
 | e5643d6 | feat: add parametric search with p key | Implemented |
 | efe19c6 | feat: add dynamic help text based on mode | Implemented |
+
+## Deviations from original plan
+
+- Quick search filters across all columns, not just IPN/Description/MPN/Manufacturer.
+- "Duplicate" was renamed to "copy" (`c` key) and delete moved from `x` to `d`.
+- "Add a part" (`a` key) was added as a new feature not in the original plan.
+- Canceling edit (Esc) on a newly added or copied row removes it from the file.
 
 ## Verification
 
