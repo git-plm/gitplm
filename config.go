@@ -18,37 +18,56 @@ type Config struct {
 	HTTP  HTTPConfig `yaml:"http"`
 }
 
+var configNames = []string{
+	"gitplm.yaml",
+	"gitplm.yml",
+	".gitplm.yaml",
+	".gitplm.yml",
+}
+
+// findConfigFile searches for a config file starting from the current directory,
+// walking up parent directories to the filesystem root, then falling back to
+// the home directory.
+func findConfigFile() (string, bool) {
+	dir, err := os.Getwd()
+	if err == nil {
+		dir, _ = filepath.Abs(dir)
+		for {
+			for _, name := range configNames {
+				p := filepath.Join(dir, name)
+				if _, err := os.Stat(p); err == nil {
+					return p, true
+				}
+			}
+			parent := filepath.Dir(dir)
+			if parent == dir {
+				break
+			}
+			dir = parent
+		}
+	}
+
+	if homeDir, err := os.UserHomeDir(); err == nil {
+		for _, name := range configNames {
+			p := filepath.Join(homeDir, name)
+			if _, err := os.Stat(p); err == nil {
+				return p, true
+			}
+		}
+	}
+
+	return "", false
+}
+
 func loadConfig() (*Config, error) {
 	config := &Config{}
 
-	// Look for config file in current directory first, then home directory
-	configPaths := []string{
-		"gitplm.yaml",
-		"gitplm.yml",
-		".gitplm.yaml",
-		".gitplm.yml",
+	configPath, found := findConfigFile()
+	if !found {
+		return config, nil
 	}
 
-	// Also check home directory
-	if homeDir, err := os.UserHomeDir(); err == nil {
-		homePaths := []string{
-			filepath.Join(homeDir, ".gitplm.yaml"),
-			filepath.Join(homeDir, ".gitplm.yml"),
-		}
-		configPaths = append(configPaths, homePaths...)
-	}
-
-	var configData []byte
-	var err error
-
-	// Try to find and load a config file
-	for _, path := range configPaths {
-		if configData, err = os.ReadFile(path); err == nil {
-			break
-		}
-	}
-
-	// If no config file found, return empty config (not an error)
+	configData, err := os.ReadFile(configPath)
 	if err != nil {
 		return config, nil
 	}
@@ -56,6 +75,11 @@ func loadConfig() (*Config, error) {
 	err = yaml.Unmarshal(configData, config)
 	if err != nil {
 		return nil, err
+	}
+
+	// Resolve relative pmDir against the config file's directory
+	if config.PMDir != "" && !filepath.IsAbs(config.PMDir) {
+		config.PMDir = filepath.Join(filepath.Dir(configPath), config.PMDir)
 	}
 
 	return config, nil
