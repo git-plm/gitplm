@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -208,4 +209,91 @@ func (c *CSVFileCollection) parseFileAsPartmaster(file *CSVFile) (partmaster, er
 	}
 
 	return pm, nil
+}
+
+// saveCSVRaw writes headers and rows back to the CSV file on disk.
+func saveCSVRaw(csvFile *CSVFile) error {
+	f, err := os.Create(csvFile.Path)
+	if err != nil {
+		return fmt.Errorf("error creating file %s: %v", csvFile.Path, err)
+	}
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+	if err := w.Write(csvFile.Headers); err != nil {
+		return fmt.Errorf("error writing headers: %v", err)
+	}
+	for _, row := range csvFile.Rows {
+		if err := w.Write(row); err != nil {
+			return fmt.Errorf("error writing row: %v", err)
+		}
+	}
+	w.Flush()
+	return w.Error()
+}
+
+// findHeaderIndex returns the index of name in headers, or -1 if not found.
+func findHeaderIndex(headers []string, name string) int {
+	for i, h := range headers {
+		if h == name {
+			return i
+		}
+	}
+	return -1
+}
+
+// sortRowsByIPN sorts rows in-place by the IPN column value.
+func sortRowsByIPN(rows [][]string, ipnColIdx int) {
+	if ipnColIdx < 0 {
+		return
+	}
+	sort.SliceStable(rows, func(i, j int) bool {
+		a, b := "", ""
+		if ipnColIdx < len(rows[i]) {
+			a = rows[i][ipnColIdx]
+		}
+		if ipnColIdx < len(rows[j]) {
+			b = rows[j][ipnColIdx]
+		}
+		return a < b
+	})
+}
+
+// nextAvailableIPN scans rows to determine the category (CCC) and the maximum
+// NNN value, then returns CCC-(NNN+1)-0001 as the next available IPN string.
+func nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error) {
+	if ipnColIdx < 0 {
+		return "", fmt.Errorf("no IPN column")
+	}
+
+	category := ""
+	maxN := 0
+
+	for _, row := range rows {
+		if ipnColIdx >= len(row) {
+			continue
+		}
+		parsed, err := newIpn(row[ipnColIdx])
+		if err != nil {
+			continue
+		}
+		c, _ := parsed.c()
+		n, _ := parsed.n()
+		if category == "" {
+			category = c
+		}
+		if n > maxN {
+			maxN = n
+		}
+	}
+
+	if category == "" {
+		return "", fmt.Errorf("no valid IPNs found to determine category")
+	}
+
+	newIPN, err := newIpnParts(category, maxN+1, 1)
+	if err != nil {
+		return "", fmt.Errorf("error creating new IPN: %v", err)
+	}
+	return string(newIPN), nil
 }
