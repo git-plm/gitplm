@@ -483,6 +483,13 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.listFocused {
 			m.fileList, cmd = m.fileList.Update(msg)
 			cmds = append(cmds, cmd)
+			// Update table when list selection changes
+			if selected := m.fileList.SelectedItem(); selected != nil {
+				if item, ok := selected.(fileItem); ok && item.name != m.selectedFile {
+					m.selectedFile = item.name
+					m.updateTableForSelectedFile()
+				}
+			}
 		} else {
 			m.table, cmd = m.table.Update(msg)
 			cmds = append(cmds, cmd)
