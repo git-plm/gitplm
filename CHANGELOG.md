@@ -11,6 +11,13 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.8.3] - 2026-02-27](https://github.com/git-plm/gitplm/releases/tag/v0.8.3)
+
+- Highlight focused pane border in TUI for clearer focus indication
+- Auto-fit TUI table columns to terminal width
+- Update TUI table automatically when navigating file list
+- Consolidate TUI into single tui.go file
+
 ## [[0.8.2] - 2026-02-26](https://github.com/git-plm/gitplm/releases/tag/v0.8.2)
 
 - Add daily update check on startup (at most once per 24 hours) with notice in
