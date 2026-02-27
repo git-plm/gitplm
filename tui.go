@@ -682,6 +682,40 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.enterEditMode(dataIdx, false)
 					}
 					return m, nil
+				case "c":
+					if !m.listFocused && m.isEditable {
+						csvFile := m.getSelectedCSVFile()
+						if csvFile != nil {
+							cursor := m.table.Cursor()
+							dataIdx := cursor
+							if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+								dataIdx = m.rowToDataIdx[cursor]
+							}
+							if dataIdx >= 0 && dataIdx < len(csvFile.Rows) {
+								// Deep copy the row
+								srcRow := csvFile.Rows[dataIdx]
+								newRow := make([]string, len(srcRow))
+								copy(newRow, srcRow)
+								csvFile.Rows = append(csvFile.Rows, newRow)
+								ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+								sortRowsByIPN(csvFile.Rows, ipnIdx)
+								if err := saveCSVRaw(csvFile); err != nil {
+									m.error = "Error saving: " + err.Error()
+								}
+								m.updateTableForSelectedFile()
+								// Find the new row (last occurrence of matching IPN)
+								newIdx := len(csvFile.Rows) - 1
+								for i := len(csvFile.Rows) - 1; i >= 0; i-- {
+									if csvFile.Rows[i][0] == newRow[0] && i != dataIdx {
+										newIdx = i
+										break
+									}
+								}
+								m.enterEditMode(newIdx, true)
+							}
+						}
+					}
+					return m, nil
 				}
 
 			case modeEdit:
