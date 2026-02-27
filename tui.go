@@ -184,6 +184,11 @@ func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
 		Bold(false)
 	t.SetStyles(s)
 
+	si := textinput.New()
+	si.Placeholder = "Search..."
+	si.CharLimit = 128
+	si.Width = 40
+
 	m := modelNew{
 		textInput:   ti,
 		fileList:    l,
@@ -192,6 +197,7 @@ func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
 		pmDir:       pmDir,
 		updateMsg:   updateMsg,
 		listFocused: true,
+		searchInput: si,
 	}
 
 	if pmDir != "" && !needsPMDir {
@@ -409,6 +415,49 @@ func (m *modelNew) updateTableForSelectedFile() {
 	m.error = ""
 }
 
+// getSelectedCSVFile returns the CSVFile for the currently selected file, or nil.
+func (m *modelNew) getSelectedCSVFile() *CSVFile {
+	if m.csvCollection == nil || m.selectedFile == allFilesOption {
+		return nil
+	}
+	for _, file := range m.csvCollection.Files {
+		if file.Name == m.selectedFile {
+			return file
+		}
+	}
+	return nil
+}
+
+// applySearchFilter filters allRows by case-insensitive substring match across
+// all columns. It rebuilds filteredRows, rowToDataIdx, and updates the table.
+func (m *modelNew) applySearchFilter(query string) {
+	if query == "" {
+		m.filteredRows = m.allRows
+		m.rowToDataIdx = nil
+		m.table.SetRows(m.allRows)
+		return
+	}
+
+	q := strings.ToLower(query)
+	var filtered []table.Row
+	var idxMap []int
+	for i, row := range m.allRows {
+		for _, cell := range row {
+			if strings.Contains(strings.ToLower(cell), q) {
+				filtered = append(filtered, row)
+				idxMap = append(idxMap, i)
+				break
+			}
+		}
+	}
+	m.filteredRows = filtered
+	m.rowToDataIdx = idxMap
+	m.table.SetRows(filtered)
+	if len(filtered) > 0 {
+		m.table.SetCursor(0)
+	}
+}
+
 func (m modelNew) Init() tea.Cmd {
 	return nil
 }
@@ -490,27 +539,52 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		} else {
-			switch msg.String() {
-			case "ctrl+c", "q":
-				return m, tea.Quit
-			case "tab":
-				// Toggle focus between list and table
-				m.listFocused = !m.listFocused
-				if m.listFocused {
-					m.table.Blur()
-				} else {
-					m.table.Focus()
+			switch m.mode {
+			case modeSearch:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "esc":
+					m.searchInput.SetValue("")
+					m.applySearchFilter("")
+					m.mode = modeNormal
+					return m, nil
+				case "enter":
+					m.mode = modeNormal
+					return m, nil
+				default:
+					m.searchInput, cmd = m.searchInput.Update(msg)
+					m.applySearchFilter(m.searchInput.Value())
+					return m, cmd
 				}
-				return m, nil
-			case "enter":
-				if m.listFocused {
-					selected := m.fileList.SelectedItem()
-					if item, ok := selected.(fileItem); ok {
-						m.selectedFile = item.name
-						m.updateTableForSelectedFile()
+
+			case modeNormal:
+				switch msg.String() {
+				case "ctrl+c", "q":
+					return m, tea.Quit
+				case "tab":
+					m.listFocused = !m.listFocused
+					if m.listFocused {
+						m.table.Blur()
+					} else {
+						m.table.Focus()
 					}
+					return m, nil
+				case "enter":
+					if m.listFocused {
+						selected := m.fileList.SelectedItem()
+						if item, ok := selected.(fileItem); ok {
+							m.selectedFile = item.name
+							m.updateTableForSelectedFile()
+						}
+					}
+					return m, nil
+				case "/":
+					m.mode = modeSearch
+					m.searchInput.SetValue("")
+					m.searchInput.Focus()
+					return m, nil
 				}
-				return m, nil
 			}
 		}
 	}
@@ -518,11 +592,10 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.viewState == viewStateInput {
 		m.textInput, cmd = m.textInput.Update(msg)
 		cmds = append(cmds, cmd)
-	} else {
+	} else if m.mode == modeNormal {
 		if m.listFocused {
 			m.fileList, cmd = m.fileList.Update(msg)
 			cmds = append(cmds, cmd)
-			// Update table when list selection changes
 			if selected := m.fileList.SelectedItem(); selected != nil {
 				if item, ok := selected.(fileItem); ok && item.name != m.selectedFile {
 					m.selectedFile = item.name
@@ -637,6 +710,17 @@ func (m modelNew) View() string {
 		// Join list and table horizontally
 		mainContent := lipgloss.JoinHorizontal(lipgloss.Top, listView, tableView)
 
+		// Search bar
+		var searchBar string
+		if m.mode == modeSearch {
+			searchBar = lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("62")).
+				Padding(0, 1).
+				Width(m.width - 4).
+				Render("/ " + m.searchInput.View())
+		}
+
 		help := helpStyle.Width(m.width).Render("Press Tab to switch focus • ↑/↓ to navigate • Enter to select • q or Ctrl+C to quit")
 
 		// Join all components
@@ -650,6 +734,10 @@ func (m modelNew) View() string {
 		}
 		if errorMsg != "" {
 			components = append(components, errorMsg)
+		}
+
+		if searchBar != "" {
+			components = append(components, searchBar)
 		}
 
 		components = append(components, mainContent, help)
