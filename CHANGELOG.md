@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.8.4] - 2026-02-27](https://github.com/git-plm/gitplm/releases/tag/v0.8.4)
+
+- Search parent directories for config file and resolve relative paths in config
+
 ## [[0.8.3] - 2026-02-27](https://github.com/git-plm/gitplm/releases/tag/v0.8.3)
 
 - Highlight focused pane border in TUI for clearer focus indication
