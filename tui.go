@@ -638,6 +638,40 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.searchInput.SetValue("")
 					m.searchInput.Focus()
 					return m, nil
+				case "a":
+					if !m.listFocused && m.isEditable {
+						csvFile := m.getSelectedCSVFile()
+						if csvFile != nil {
+							ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+							newIPNStr, err := nextAvailableIPN(csvFile.Rows, ipnIdx)
+							if err != nil {
+								m.error = "Cannot add part: " + err.Error()
+								return m, nil
+							}
+							newRow := make([]string, len(csvFile.Headers))
+							if ipnIdx >= 0 {
+								newRow[ipnIdx] = newIPNStr
+							}
+							csvFile.Rows = append(csvFile.Rows, newRow)
+							sortRowsByIPN(csvFile.Rows, ipnIdx)
+							if err := saveCSVRaw(csvFile); err != nil {
+								m.error = "Error saving: " + err.Error()
+							}
+							m.updateTableForSelectedFile()
+							// Find the new row index after sort
+							newIdx := -1
+							for i, row := range csvFile.Rows {
+								if ipnIdx >= 0 && i < len(csvFile.Rows) && row[ipnIdx] == newIPNStr {
+									newIdx = i
+									break
+								}
+							}
+							if newIdx >= 0 {
+								m.enterEditMode(newIdx, true)
+							}
+						}
+					}
+					return m, nil
 				case "e":
 					if !m.listFocused && m.isEditable {
 						cursor := m.table.Cursor()
