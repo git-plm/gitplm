@@ -655,6 +655,21 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "enter":
 					m.mode = modeNormal
 					return m, nil
+				case "tab":
+					m.listFocused = !m.listFocused
+					if m.listFocused {
+						m.table.Blur()
+					} else {
+						m.table.Focus()
+					}
+					return m, nil
+				case "up", "down":
+					if !m.listFocused {
+						m.table, cmd = m.table.Update(msg)
+						return m, cmd
+					}
+					m.fileList, cmd = m.fileList.Update(msg)
+					return m, cmd
 				default:
 					m.searchInput, cmd = m.searchInput.Update(msg)
 					m.applySearchFilter(m.searchInput.Value())
@@ -1040,7 +1055,7 @@ func (m modelNew) View() string {
 		var helpText string
 		switch m.mode {
 		case modeSearch:
-			helpText = "Type to search • Enter: accept • Esc: clear & cancel"
+			helpText = "Type to search • Tab: switch pane • Enter: accept • Esc: clear & cancel"
 		case modeParametricSearch:
 			helpText = "Tab/Shift+Tab: cycle columns • Enter: accept • Esc: clear & cancel"
 		case modeEdit:
