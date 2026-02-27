@@ -1037,7 +1037,25 @@ func (m modelNew) View() string {
 				Render(strings.Join(fields, " | "))
 		}
 
-		help := helpStyle.Width(m.width).Render("Press Tab to switch focus • ↑/↓ to navigate • Enter to select • q or Ctrl+C to quit")
+		var helpText string
+		switch m.mode {
+		case modeSearch:
+			helpText = "Type to search • Enter: accept • Esc: clear & cancel"
+		case modeParametricSearch:
+			helpText = "Tab/Shift+Tab: cycle columns • Enter: accept • Esc: clear & cancel"
+		case modeEdit:
+			helpText = "Tab/Shift+Tab: cycle fields • Enter: save • Esc: cancel"
+		case modeConfirmDelete:
+			helpText = "y/Enter: confirm delete • n/Esc: cancel"
+		default:
+			parts := []string{"/ search", "p parametric"}
+			if m.isEditable {
+				parts = append(parts, "e edit", "a add", "c copy", "d delete")
+			}
+			parts = append(parts, "Tab switch", "q quit")
+			helpText = strings.Join(parts, " • ")
+		}
+		help := helpStyle.Width(m.width).Render(helpText)
 
 		// Join all components
 		components := []string{title, subtitle}
