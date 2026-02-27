@@ -512,6 +512,55 @@ func (m *modelNew) saveEdit() {
 	m.updateTableForSelectedFile()
 }
 
+// applyParametricFilter filters allRows by AND-combining per-column substring
+// matches from paramInputs.
+func (m *modelNew) applyParametricFilter() {
+	// Check if any filter is active
+	anyActive := false
+	for _, pi := range m.paramInputs {
+		if pi.Value() != "" {
+			anyActive = true
+			break
+		}
+	}
+	if !anyActive {
+		m.filteredRows = m.allRows
+		m.rowToDataIdx = nil
+		m.table.SetRows(m.allRows)
+		return
+	}
+
+	var filtered []table.Row
+	var idxMap []int
+	for i, row := range m.allRows {
+		match := true
+		for col, pi := range m.paramInputs {
+			q := strings.ToLower(pi.Value())
+			if q == "" {
+				continue
+			}
+			cell := ""
+			if col < len(row) {
+				cell = strings.ToLower(row[col])
+			}
+			if !strings.Contains(cell, q) {
+				match = false
+				break
+			}
+		}
+		if match {
+			filtered = append(filtered, row)
+			idxMap = append(idxMap, i)
+		}
+	}
+	m.filteredRows = filtered
+	m.rowToDataIdx = idxMap
+	m.table.SetRows(filtered)
+	if len(filtered) > 0 {
+		m.table.SetCursor(0)
+	}
+}
+
 func (m modelNew) Init() tea.Cmd {
 	return nil
 }
@@ -612,6 +661,36 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, cmd
 				}
 
+			case modeParametricSearch:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "esc":
+					for i := range m.paramInputs {
+						m.paramInputs[i].SetValue("")
+					}
+					m.applyParametricFilter()
+					m.mode = modeNormal
+					return m, nil
+				case "enter":
+					m.mode = modeNormal
+					return m, nil
+				case "tab":
+					m.paramInputs[m.paramFocusIdx].Blur()
+					m.paramFocusIdx = (m.paramFocusIdx + 1) % len(m.paramInputs)
+					m.paramInputs[m.paramFocusIdx].Focus()
+					return m, nil
+				case "shift+tab":
+					m.paramInputs[m.paramFocusIdx].Blur()
+					m.paramFocusIdx = (m.paramFocusIdx - 1 + len(m.paramInputs)) % len(m.paramInputs)
+					m.paramInputs[m.paramFocusIdx].Focus()
+					return m, nil
+				default:
+					m.paramInputs[m.paramFocusIdx], cmd = m.paramInputs[m.paramFocusIdx].Update(msg)
+					m.applyParametricFilter()
+					return m, cmd
+				}
+
 			case modeNormal:
 				switch msg.String() {
 				case "ctrl+c", "q":
@@ -637,6 +716,28 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.mode = modeSearch
 					m.searchInput.SetValue("")
 					m.searchInput.Focus()
+					return m, nil
+				case "p":
+					csvFile := m.getSelectedCSVFile()
+					headers := []string{}
+					if csvFile != nil {
+						headers = csvFile.Headers
+					} else if m.selectedFile == allFilesOption {
+						headers = []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
+					}
+					if len(headers) > 0 {
+						m.paramInputs = make([]textinput.Model, len(headers))
+						for i, h := range headers {
+							ti := textinput.New()
+							ti.Placeholder = h
+							ti.CharLimit = 128
+							ti.Width = 15
+							m.paramInputs[i] = ti
+						}
+						m.paramFocusIdx = 0
+						m.paramInputs[0].Focus()
+						m.mode = modeParametricSearch
+					}
 					return m, nil
 				case "a":
 					if !m.listFocused && m.isEditable {
@@ -921,6 +1022,21 @@ func (m modelNew) View() string {
 				Render("/ " + m.searchInput.View())
 		}
 
+		// Parametric search bar
+		var paramBar string
+		if m.mode == modeParametricSearch && len(m.paramInputs) > 0 {
+			var fields []string
+			for _, pi := range m.paramInputs {
+				fields = append(fields, pi.View())
+			}
+			paramBar = lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("62")).
+				Padding(0, 1).
+				Width(m.width - 4).
+				Render(strings.Join(fields, " | "))
+		}
+
 		help := helpStyle.Width(m.width).Render("Press Tab to switch focus • ↑/↓ to navigate • Enter to select • q or Ctrl+C to quit")
 
 		// Join all components
@@ -938,6 +1054,9 @@ func (m modelNew) View() string {
 
 		if searchBar != "" {
 			components = append(components, searchBar)
+		}
+		if paramBar != "" {
+			components = append(components, paramBar)
 		}
 
 		components = append(components, mainContent)
