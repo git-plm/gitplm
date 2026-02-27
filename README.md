@@ -6,21 +6,29 @@
 
 <!--toc:start-->
 
-- [Product Life cycle Management (PLM) in Git.](#product-life-cycle-management-plm-in-git)
-- [Video overview](#video-overview)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Part Numbers](#part-numbers)
-- [Partmaster](#partmaster)
-- [Components you manufacture](#components-you-manufacture)
-- [Source and Release directories](#source-and-release-directories)
-- [Special Files](#special-files)
-- [Release configuration](#release-configuration)
-- [Examples](#examples)
-- [Principles](#principles)
-- [Additional notes](#additional-notes)
-- [Reference Information](#reference-information)
+- [🏭 Product Life cycle Management (PLM) in Git.](#🏭-product-life-cycle-management-plm-in-git)
+- [🎬 Video overview](#🎬-video-overview)
+- [📦 Installation](#📦-installation)
+- [🚀 Usage](#🚀-usage)
+- [⚙️ Configuration](#️-configuration)
+- [Terminal User Interface (TUI)](#terminal-user-interface-tui)
+- [🔢 Part Numbers](#🔢-part-numbers)
+- [📋 Partmaster](#📋-partmaster)
+- [🔧 Components you manufacture](#🔧-components-you-manufacture)
+- [📁 Source and Release directories](#📁-source-and-release-directories)
+- [📄 Special Files](#📄-special-files)
+- [🛠️ Release configuration](#🛠️-release-configuration)
+- [🔌 KiCad HTTP Libraries support](#🔌-kicad-http-libraries-support)
+  - [Starting the HTTP Server](#starting-the-http-server)
+  - [Configuring what fields are visible](#configuring-what-fields-are-visible)
+  - [Configuring KiCad](#configuring-kicad)
+  - [API Endpoints](#api-endpoints)
+  - [How It Works](#how-it-works)
+- [💡 Examples](#💡-examples)
+- [🎯 Principles](#🎯-principles)
+- [📝 Additional notes](#📝-additional-notes)
+- [📦 Releasing](#📦-releasing)
+- [📚 Reference Information](#📚-reference-information)
 <!--toc:end-->
 
 ## 🏭 Product Life cycle Management (PLM) in Git.
@@ -98,12 +106,27 @@ configuration files in the following order:
 Example configuration file:
 
 ```yaml
-pmDir: /path/to/partmaster/directory
+pmDir: /path/to/parts/database
 ```
 
 Available configuration options:
 
-- `pmDir`: Specifies the directory containing the partmaster.csv file
+- `pmDir`: Specifies the directory containing parts database of CSV files
+
+## Terminal User Interface (TUI)
+
+GitPLM has a terminal user interface that will be displayed if you start GitPLM
+without any command line arguments. Current features:
+
+- Display part libraries
+- Edit a part
+- Duplicate a line item (often useful for creating a new part)
+- Delete a part
+- Search (quick) - searches on IPN, description, MPN, and mfg fields.
+- Parametric search - allows enter specific parameters for the current table
+  viewed.
+
+When anything changes in a part table, the table is automatically sorted by IPN.
 
 ## 🔢 Part Numbers
 
