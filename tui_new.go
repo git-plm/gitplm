@@ -201,6 +201,57 @@ func (m *modelNew) loadCSVFiles() {
 	}
 }
 
+// fitColumns distributes availableWidth among columns proportionally based on
+// their weight values. Each column gets at least minCol characters.
+func fitColumns(titles []string, weights []int, availableWidth int) []table.Column {
+	const minCol = 6
+
+	if len(titles) == 0 {
+		return nil
+	}
+
+	// Account for column separators (1 char between each column)
+	usable := availableWidth - (len(titles) - 1)
+	if usable < len(titles)*minCol {
+		usable = len(titles) * minCol
+	}
+
+	totalWeight := 0
+	for _, w := range weights {
+		totalWeight += w
+	}
+
+	columns := make([]table.Column, len(titles))
+	assigned := 0
+	for i, title := range titles {
+		w := weights[i] * usable / totalWeight
+		if w < minCol {
+			w = minCol
+		}
+		columns[i] = table.Column{Title: title, Width: w}
+		assigned += w
+	}
+
+	// Give any remaining pixels to the last column
+	if remainder := usable - assigned; remainder > 0 {
+		columns[len(columns)-1].Width += remainder
+	}
+
+	return columns
+}
+
+// tableAvailableWidth returns the width available for table columns,
+// accounting for the list pane, borders, and padding.
+func (m *modelNew) tableAvailableWidth() int {
+	listWidth := m.width / 4
+	// 4 for gap between panes, 2 for table border
+	w := m.width - listWidth - 4 - 2
+	if w < 30 {
+		w = 30
+	}
+	return w
+}
+
 func (m *modelNew) updateTableForSelectedFile() {
 	if m.csvCollection == nil || len(m.csvCollection.Files) == 0 {
 		return
@@ -211,6 +262,8 @@ func (m *modelNew) updateTableForSelectedFile() {
 		return
 	}
 
+	avail := m.tableAvailableWidth()
+
 	if m.selectedFile == allFilesOption {
 		// Show combined partmaster view
 		pm, err := m.csvCollection.GetCombinedPartmaster()
@@ -219,25 +272,19 @@ func (m *modelNew) updateTableForSelectedFile() {
 			return
 		}
 
-		// Update table columns for partmaster
-		columns := []table.Column{
-			{Title: "IPN", Width: 15},
-			{Title: "Description", Width: 30},
-			{Title: "Manufacturer", Width: 20},
-			{Title: "MPN", Width: 20},
-			{Title: "Value", Width: 10},
-		}
 		// Clear rows before changing columns to avoid index-out-of-range panic
 		m.table.SetRows([]table.Row{})
-		m.table.SetColumns(columns)
 
-		// Update rows
-		rows := []table.Row{}
 		if len(pm) == 0 {
-			// Show message when no parts found
 			m.table.SetColumns([]table.Column{{Title: "No partmaster data found", Width: 50}})
 			m.table.SetRows([]table.Row{})
 		} else {
+			titles := []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
+			weights := []int{2, 4, 3, 3, 1}
+			columns := fitColumns(titles, weights, avail)
+			m.table.SetColumns(columns)
+
+			rows := []table.Row{}
 			for _, part := range pm {
 				rows = append(rows, table.Row{
 					string(part.IPN),
@@ -271,31 +318,32 @@ func (m *modelNew) updateTableForSelectedFile() {
 			m.table.SetColumns(columns)
 			m.table.SetRows([]table.Row{})
 		} else {
-			columns := []table.Column{}
+			titles := make([]string, len(csvFile.Headers))
+			weights := make([]int, len(csvFile.Headers))
 			for i, header := range csvFile.Headers {
-				// Handle empty headers
-				columnTitle := header
-				if columnTitle == "" {
-					columnTitle = fmt.Sprintf("Column %d", i+1)
+				if header == "" {
+					titles[i] = fmt.Sprintf("Column %d", i+1)
+				} else {
+					titles[i] = header
 				}
-
-				width := 15
-				if i == 0 {
-					width = 20
-				} else if header == "Description" {
-					width = 30
+				// Give more weight to Description-like columns
+				switch header {
+				case "Description":
+					weights[i] = 4
+				case "IPN", "MPN", "Manufacturer":
+					weights[i] = 2
+				default:
+					weights[i] = 1
 				}
-				columns = append(columns, table.Column{Title: columnTitle, Width: width})
 			}
-			// Update rows first, ensuring they match column count
+			columns := fitColumns(titles, weights, avail)
+
+			// Build rows ensuring they match column count
 			rows := []table.Row{}
 			for _, row := range csvFile.Rows {
-				// Skip completely empty rows
 				if len(row) == 0 {
 					continue
 				}
-
-				// Ensure row has correct number of columns
 				tableRow := make([]string, len(columns))
 				for i := 0; i < len(columns); i++ {
 					if i < len(row) {
@@ -307,7 +355,6 @@ func (m *modelNew) updateTableForSelectedFile() {
 				rows = append(rows, tableRow)
 			}
 
-			// Ensure we have at least one row to avoid crashes
 			if len(rows) == 0 {
 				rows = append(rows, make([]string, len(columns)))
 			}
@@ -316,7 +363,7 @@ func (m *modelNew) updateTableForSelectedFile() {
 			m.table.SetRows([]table.Row{})
 			m.table.SetColumns(columns)
 			m.table.SetRows(rows)
-			m.table.SetCursor(0) // Reset cursor to first row
+			m.table.SetCursor(0)
 		}
 	}
 
