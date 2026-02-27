@@ -458,6 +458,60 @@ func (m *modelNew) applySearchFilter(query string) {
 	}
 }
 
+// enterEditMode sets up the edit overlay for the given data row index.
+func (m *modelNew) enterEditMode(dataRowIdx int, isNew bool) {
+	csvFile := m.getSelectedCSVFile()
+	if csvFile == nil || dataRowIdx < 0 || dataRowIdx >= len(csvFile.Rows) {
+		return
+	}
+
+	row := csvFile.Rows[dataRowIdx]
+	m.editHeaders = csvFile.Headers
+	m.editInputs = make([]textinput.Model, len(csvFile.Headers))
+	for i, header := range csvFile.Headers {
+		ti := textinput.New()
+		ti.Placeholder = header
+		ti.CharLimit = 256
+		ti.Width = 40
+		if i < len(row) {
+			ti.SetValue(row[i])
+		}
+		m.editInputs[i] = ti
+	}
+	m.editFocusIdx = 0
+	m.editInputs[0].Focus()
+	m.editRowIdx = dataRowIdx
+	m.editIsNew = isNew
+	m.mode = modeEdit
+}
+
+// saveEdit writes the edit form values back to the CSV file, sorts, saves,
+// and refreshes the table.
+func (m *modelNew) saveEdit() {
+	csvFile := m.getSelectedCSVFile()
+	if csvFile == nil || m.editRowIdx < 0 || m.editRowIdx >= len(csvFile.Rows) {
+		return
+	}
+
+	// Write values back
+	for i, input := range m.editInputs {
+		if i < len(csvFile.Rows[m.editRowIdx]) {
+			csvFile.Rows[m.editRowIdx][i] = input.Value()
+		}
+	}
+
+	// Sort by IPN
+	ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+	sortRowsByIPN(csvFile.Rows, ipnIdx)
+
+	// Save to disk
+	if err := saveCSVRaw(csvFile); err != nil {
+		m.error = "Error saving: " + err.Error()
+	}
+
+	m.updateTableForSelectedFile()
+}
+
 func (m modelNew) Init() tea.Cmd {
 	return nil
 }
@@ -584,6 +638,53 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.searchInput.SetValue("")
 					m.searchInput.Focus()
 					return m, nil
+				case "e":
+					if !m.listFocused && m.isEditable {
+						cursor := m.table.Cursor()
+						dataIdx := cursor
+						if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+							dataIdx = m.rowToDataIdx[cursor]
+						}
+						m.enterEditMode(dataIdx, false)
+					}
+					return m, nil
+				}
+
+			case modeEdit:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "esc":
+					if m.editIsNew {
+						// Cancel add/copy: remove the row that was appended
+						csvFile := m.getSelectedCSVFile()
+						if csvFile != nil && m.editRowIdx >= 0 && m.editRowIdx < len(csvFile.Rows) {
+							csvFile.Rows = append(csvFile.Rows[:m.editRowIdx], csvFile.Rows[m.editRowIdx+1:]...)
+							if err := saveCSVRaw(csvFile); err != nil {
+								m.error = "Error saving: " + err.Error()
+							}
+						}
+						m.updateTableForSelectedFile()
+					}
+					m.mode = modeNormal
+					return m, nil
+				case "enter":
+					m.saveEdit()
+					m.mode = modeNormal
+					return m, nil
+				case "tab", "down":
+					m.editInputs[m.editFocusIdx].Blur()
+					m.editFocusIdx = (m.editFocusIdx + 1) % len(m.editInputs)
+					m.editInputs[m.editFocusIdx].Focus()
+					return m, nil
+				case "shift+tab", "up":
+					m.editInputs[m.editFocusIdx].Blur()
+					m.editFocusIdx = (m.editFocusIdx - 1 + len(m.editInputs)) % len(m.editInputs)
+					m.editInputs[m.editFocusIdx].Focus()
+					return m, nil
+				default:
+					m.editInputs[m.editFocusIdx], cmd = m.editInputs[m.editFocusIdx].Update(msg)
+					return m, cmd
 				}
 			}
 		}
@@ -740,7 +841,32 @@ func (m modelNew) View() string {
 			components = append(components, searchBar)
 		}
 
-		components = append(components, mainContent, help)
+		components = append(components, mainContent)
+
+		// Edit overlay
+		if m.mode == modeEdit && len(m.editInputs) > 0 {
+			var editLines []string
+			actionLabel := "Edit Part"
+			if m.editIsNew {
+				actionLabel = "New Part"
+			}
+			editLines = append(editLines, lipgloss.NewStyle().Bold(true).Render(actionLabel))
+			editLines = append(editLines, "")
+			for i, header := range m.editHeaders {
+				label := lipgloss.NewStyle().Width(16).Align(lipgloss.Right).Render(header + ": ")
+				editLines = append(editLines, label+m.editInputs[i].View())
+			}
+			editLines = append(editLines, "")
+			editLines = append(editLines, helpStyle.Render("Tab/Shift+Tab: cycle fields • Enter: save • Esc: cancel"))
+			overlay := lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("62")).
+				Padding(1, 2).
+				Render(strings.Join(editLines, "\n"))
+			components = append(components, overlay)
+		}
+
+		components = append(components, help)
 		content := lipgloss.JoinVertical(lipgloss.Top, components...)
 
 		return content
