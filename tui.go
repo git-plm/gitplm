@@ -682,6 +682,17 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.enterEditMode(dataIdx, false)
 					}
 					return m, nil
+				case "d":
+					if !m.listFocused && m.isEditable {
+						cursor := m.table.Cursor()
+						dataIdx := cursor
+						if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+							dataIdx = m.rowToDataIdx[cursor]
+						}
+						m.deleteRowIdx = dataIdx
+						m.mode = modeConfirmDelete
+					}
+					return m, nil
 				case "c":
 					if !m.listFocused && m.isEditable {
 						csvFile := m.getSelectedCSVFile()
@@ -715,6 +726,26 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							}
 						}
 					}
+					return m, nil
+				}
+
+			case modeConfirmDelete:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "y", "enter":
+					csvFile := m.getSelectedCSVFile()
+					if csvFile != nil && m.deleteRowIdx >= 0 && m.deleteRowIdx < len(csvFile.Rows) {
+						csvFile.Rows = append(csvFile.Rows[:m.deleteRowIdx], csvFile.Rows[m.deleteRowIdx+1:]...)
+						if err := saveCSVRaw(csvFile); err != nil {
+							m.error = "Error saving: " + err.Error()
+						}
+						m.updateTableForSelectedFile()
+					}
+					m.mode = modeNormal
+					return m, nil
+				case "n", "esc":
+					m.mode = modeNormal
 					return m, nil
 				}
 
@@ -910,6 +941,25 @@ func (m modelNew) View() string {
 		}
 
 		components = append(components, mainContent)
+
+		// Delete confirmation overlay
+		if m.mode == modeConfirmDelete {
+			ipnLabel := ""
+			csvFile := m.getSelectedCSVFile()
+			if csvFile != nil && m.deleteRowIdx >= 0 && m.deleteRowIdx < len(csvFile.Rows) {
+				ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+				if ipnIdx >= 0 && ipnIdx < len(csvFile.Rows[m.deleteRowIdx]) {
+					ipnLabel = csvFile.Rows[m.deleteRowIdx][ipnIdx]
+				}
+			}
+			prompt := fmt.Sprintf("Delete row %s? (y/n)", ipnLabel)
+			overlay := lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("196")).
+				Padding(1, 2).
+				Render(prompt)
+			components = append(components, overlay)
+		}
 
 		// Edit overlay
 		if m.mode == modeEdit && len(m.editInputs) > 0 {
