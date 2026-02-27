@@ -55,6 +55,9 @@ var (
 			BorderStyle(lipgloss.NormalBorder()).
 			BorderForeground(lipgloss.Color("240"))
 
+	focusedBorderColor  = lipgloss.Color("62")
+	unfocusedBorderColor = lipgloss.Color("240")
+
 	selectedItemStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("170"))
 
@@ -526,11 +529,17 @@ func (m modelNew) View() string {
 			availableHeight = 5
 		}
 
-		// Style the list
-		listView := listStyle.Width(listWidth).Height(availableHeight).Render(m.fileList.View())
+		// Style the list and table with focus-dependent border colors
+		listBorder := unfocusedBorderColor
+		tableBorder := unfocusedBorderColor
+		if m.listFocused {
+			listBorder = focusedBorderColor
+		} else {
+			tableBorder = focusedBorderColor
+		}
 
-		// Style the table
-		tableView := tableStyle2.Width(tableWidth).Height(availableHeight).Render(m.table.View())
+		listView := listStyle.BorderForeground(listBorder).Width(listWidth).Height(availableHeight).Render(m.fileList.View())
+		tableView := tableStyle2.BorderForeground(tableBorder).Width(tableWidth).Height(availableHeight).Render(m.table.View())
 
 		// Join list and table horizontally
 		mainContent := lipgloss.JoinHorizontal(lipgloss.Top, listView, tableView)
