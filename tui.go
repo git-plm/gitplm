@@ -753,6 +753,8 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						if item, ok := selected.(fileItem); ok {
 							m.selectedFile = item.name
 							m.updateTableForSelectedFile()
+							m.listFocused = false
+							m.table.Focus()
 						}
 					}
 					return m, nil
