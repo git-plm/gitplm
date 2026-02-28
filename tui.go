@@ -131,11 +131,12 @@ type modelNew struct {
 	searchInput textinput.Model
 
 	// Edit
-	editInputs   []textinput.Model
-	editHeaders  []string
-	editFocusIdx int
-	editRowIdx   int
-	editIsNew    bool
+	editInputs    []textinput.Model
+	editHeaders   []string
+	editFocusIdx  int
+	editRowIdx    int
+	editIsNew     bool
+	editPrevCursor int
 
 	// Delete
 	deleteRowIdx int
@@ -500,8 +501,14 @@ func (m *modelNew) saveEdit() {
 		}
 	}
 
-	// Sort by IPN
+	// Remember the IPN so we can restore cursor after sort/refresh
 	ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+	savedIPN := ""
+	if ipnIdx >= 0 && ipnIdx < len(csvFile.Rows[m.editRowIdx]) {
+		savedIPN = csvFile.Rows[m.editRowIdx][ipnIdx]
+	}
+
+	// Sort by IPN
 	sortRowsByIPN(csvFile.Rows, ipnIdx)
 
 	// Save to disk
@@ -510,6 +517,21 @@ func (m *modelNew) saveEdit() {
 	}
 
 	m.updateTableForSelectedFile()
+	m.restoreCursorToIPN(savedIPN, ipnIdx)
+}
+
+// restoreCursorToIPN sets the table cursor to the row matching the given IPN.
+func (m *modelNew) restoreCursorToIPN(targetIPN string, ipnIdx int) {
+	if targetIPN == "" || ipnIdx < 0 {
+		return
+	}
+	rows := m.table.Rows()
+	for i, row := range rows {
+		if ipnIdx < len(row) && row[ipnIdx] == targetIPN {
+			m.table.SetCursor(i)
+			return
+		}
+	}
 }
 
 // applyParametricFilter filters allRows by AND-combining per-column substring
@@ -780,6 +802,7 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				case "a":
 					if !m.listFocused && m.isEditable {
+						m.editPrevCursor = m.table.Cursor()
 						csvFile := m.getSelectedCSVFile()
 						if csvFile != nil {
 							ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
@@ -838,6 +861,7 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						csvFile := m.getSelectedCSVFile()
 						if csvFile != nil {
 							cursor := m.table.Cursor()
+							m.editPrevCursor = cursor
 							dataIdx := cursor
 							if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
 								dataIdx = m.rowToDataIdx[cursor]
@@ -904,6 +928,13 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							}
 						}
 						m.updateTableForSelectedFile()
+						// Restore cursor to where the user was before add/copy
+						rows := m.table.Rows()
+						if m.editPrevCursor >= len(rows) && len(rows) > 0 {
+							m.table.SetCursor(len(rows) - 1)
+						} else if m.editPrevCursor >= 0 {
+							m.table.SetCursor(m.editPrevCursor)
+						}
 					}
 					m.mode = modeNormal
 					return m, nil
