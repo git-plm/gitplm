@@ -727,12 +727,34 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 					return m, nil
+				case "esc":
+					// Clear active search/parametric filter
+					if m.searchInput.Value() != "" {
+						m.searchInput.SetValue("")
+						m.applySearchFilter("")
+						return m, nil
+					}
+					anyParam := false
+					for _, pi := range m.paramInputs {
+						if pi.Value() != "" {
+							anyParam = true
+							break
+						}
+					}
+					if anyParam {
+						for i := range m.paramInputs {
+							m.paramInputs[i].SetValue("")
+						}
+						m.applyParametricFilter()
+						return m, nil
+					}
+					return m, nil
 				case "/":
 					m.mode = modeSearch
-					m.searchInput.SetValue("")
 					m.searchInput.Focus()
 					return m, nil
 				case "p":
+					// If we already have paramInputs with matching column count, reuse them
 					csvFile := m.getSelectedCSVFile()
 					headers := []string{}
 					if csvFile != nil {
@@ -741,13 +763,15 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						headers = []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
 					}
 					if len(headers) > 0 {
-						m.paramInputs = make([]textinput.Model, len(headers))
-						for i, h := range headers {
-							ti := textinput.New()
-							ti.Placeholder = h
-							ti.CharLimit = 128
-							ti.Width = 15
-							m.paramInputs[i] = ti
+						if len(m.paramInputs) != len(headers) {
+							m.paramInputs = make([]textinput.Model, len(headers))
+							for i, h := range headers {
+								ti := textinput.New()
+								ti.Placeholder = h
+								ti.CharLimit = 128
+								ti.Width = 15
+								m.paramInputs[i] = ti
+							}
 						}
 						m.paramFocusIdx = 0
 						m.paramInputs[0].Focus()
@@ -1035,6 +1059,13 @@ func (m modelNew) View() string {
 				Padding(0, 1).
 				Width(m.width - 4).
 				Render("/ " + m.searchInput.View())
+		} else if m.searchInput.Value() != "" {
+			searchBar = lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("241")).
+				Padding(0, 1).
+				Width(m.width - 4).
+				Render("/ " + m.searchInput.Value())
 		}
 
 		// Parametric search bar
@@ -1050,20 +1081,64 @@ func (m modelNew) View() string {
 				Padding(0, 1).
 				Width(m.width - 4).
 				Render(strings.Join(fields, " | "))
+		} else if m.mode != modeParametricSearch && len(m.paramInputs) > 0 {
+			anyParam := false
+			for _, pi := range m.paramInputs {
+				if pi.Value() != "" {
+					anyParam = true
+					break
+				}
+			}
+			if anyParam {
+				var fields []string
+				for i, pi := range m.paramInputs {
+					label := fmt.Sprintf("Column %d", i)
+					if pi.Value() != "" {
+						label = pi.Placeholder + ": " + pi.Value()
+					} else {
+						label = pi.Placeholder + ": *"
+					}
+					fields = append(fields, label)
+				}
+				paramBar = lipgloss.NewStyle().
+					BorderStyle(lipgloss.RoundedBorder()).
+					BorderForeground(lipgloss.Color("241")).
+					Padding(0, 1).
+					Width(m.width - 4).
+					Render(strings.Join(fields, " | "))
+			}
 		}
 
 		var helpText string
 		switch m.mode {
 		case modeSearch:
 			helpText = "Type to search • Tab: switch pane • Enter: accept • Esc: clear & cancel"
+			if m.isEditable {
+				helpText += " • e edit • a add • c copy • d delete"
+			}
 		case modeParametricSearch:
 			helpText = "Tab/Shift+Tab: cycle columns • Enter: accept • Esc: clear & cancel"
+			if m.isEditable {
+				helpText += " • e edit • a add • c copy • d delete"
+			}
 		case modeEdit:
 			helpText = "Tab/Shift+Tab: cycle fields • Enter: save • Esc: cancel"
 		case modeConfirmDelete:
 			helpText = "y/Enter: confirm delete • n/Esc: cancel"
 		default:
+			hasFilter := m.searchInput.Value() != ""
+			if !hasFilter {
+				for _, pi := range m.paramInputs {
+					if pi.Value() != "" {
+						hasFilter = true
+						break
+					}
+				}
+			}
 			parts := []string{"/ search", "p parametric"}
+			if hasFilter {
+				parts = append(parts, "Esc clear filter")
+			}
 			if m.isEditable {
 				parts = append(parts, "e edit", "a add", "c copy", "d delete")
 			}

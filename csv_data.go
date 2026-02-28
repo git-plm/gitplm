@@ -268,6 +268,7 @@ func nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error) {
 
 	category := ""
 	maxN := 0
+	nDigits := 3
 
 	for _, row := range rows {
 		if ipnColIdx >= len(row) {
@@ -281,6 +282,7 @@ func nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error) {
 		n, _ := parsed.n()
 		if category == "" {
 			category = c
+			nDigits = parsed.nWidth()
 		}
 		if n > maxN {
 			maxN = n
@@ -291,7 +293,15 @@ func nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error) {
 		return "", fmt.Errorf("no valid IPNs found to determine category")
 	}
 
-	newIPN, err := newIpnParts(category, maxN+1, 1)
+	newN := maxN + 1
+	// If existing IPNs use 4-digit N, preserve that format
+	if nDigits >= 4 || newN > 999 {
+		nDigits = 4
+	}
+
+	nFmt := fmt.Sprintf("%%0%dv", nDigits)
+	newIPNStr := fmt.Sprintf("%v-"+nFmt+"-%04v", category, newN, 1)
+	newIPN, err := newIpn(newIPNStr)
 	if err != nil {
 		return "", fmt.Errorf("error creating new IPN: %v", err)
 	}
