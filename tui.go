@@ -528,10 +528,17 @@ func (m *modelNew) restoreCursorToIPN(targetIPN string, ipnIdx int) {
 	rows := m.table.Rows()
 	for i, row := range rows {
 		if ipnIdx < len(row) && row[ipnIdx] == targetIPN {
-			m.table.SetCursor(i)
+			m.setCursorVisible(i)
 			return
 		}
 	}
+}
+
+// setCursorVisible moves the table cursor to position n and ensures the
+// viewport scrolls so the row is visible.
+func (m *modelNew) setCursorVisible(n int) {
+	m.table.GotoTop()
+	m.table.MoveDown(n)
 }
 
 // applyParametricFilter filters allRows by AND-combining per-column substring
@@ -930,10 +937,12 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.updateTableForSelectedFile()
 						// Restore cursor to where the user was before add/copy
 						rows := m.table.Rows()
-						if m.editPrevCursor >= len(rows) && len(rows) > 0 {
-							m.table.SetCursor(len(rows) - 1)
-						} else if m.editPrevCursor >= 0 {
-							m.table.SetCursor(m.editPrevCursor)
+						target := m.editPrevCursor
+						if target >= len(rows) && len(rows) > 0 {
+							target = len(rows) - 1
+						}
+						if target >= 0 {
+							m.setCursorVisible(target)
 						}
 					}
 					m.mode = modeNormal
