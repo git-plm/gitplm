@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.8.9] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.9)
+
 - TUI: entering search mode with `/` now immediately reapplies the current
   search filter to reflect any navigation changes.
 
