@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- TUI: release overlay captures log output properly instead of writing to
+  stderr, constrains width to the terminal, removes timestamps, and truncates
+  long lines.
+
 ## [[0.8.9] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.9)
 
 - TUI: entering search mode with `/` now immediately reapplies the current

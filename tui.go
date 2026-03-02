@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -1022,7 +1023,14 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 								m.error = fmt.Sprintf("%s is not a releasable part", ipnVal)
 							} else {
 								var logBuilder strings.Builder
+								// Redirect log output to the builder during release
+								origWriter := log.Writer()
+								origFlags := log.Flags()
+								log.SetOutput(&logBuilder)
+								log.SetFlags(0)
 								_, err := processRelease(ipnVal, &logBuilder, m.pmDir)
+								log.SetOutput(origWriter)
+								log.SetFlags(origFlags)
 								m.releaseLog = logBuilder.String()
 								m.releaseError = err != nil
 								if err != nil {
@@ -1501,6 +1509,13 @@ func (m modelNew) View() string {
 			releaseLines = append(releaseLines, lipgloss.NewStyle().Bold(true).Render("Release Output"))
 			releaseLines = append(releaseLines, "")
 
+			overlayWidth := m.width - 8
+			if overlayWidth < 40 {
+				overlayWidth = 40
+			}
+			// Content width inside padding and border
+			contentWidth := overlayWidth - 6
+
 			logLines := strings.Split(m.releaseLog, "\n")
 			visibleLines := m.height - 10
 			if visibleLines < 5 {
@@ -1513,7 +1528,11 @@ func (m modelNew) View() string {
 			}
 
 			for i := m.releaseScroll; i < end; i++ {
-				releaseLines = append(releaseLines, logLines[i])
+				line := logLines[i]
+				if len(line) > contentWidth {
+					line = line[:contentWidth]
+				}
+				releaseLines = append(releaseLines, line)
 			}
 
 			releaseLines = append(releaseLines, "")
@@ -1527,6 +1546,7 @@ func (m modelNew) View() string {
 				BorderStyle(lipgloss.RoundedBorder()).
 				BorderForeground(borderColor).
 				Padding(1, 2).
+				Width(overlayWidth).
 				Render(strings.Join(releaseLines, "\n"))
 			components = append(components, overlay)
 		}
