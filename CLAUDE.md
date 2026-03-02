@@ -42,9 +42,9 @@ gitplm version                Display version
 - **TUI** (default, no subcommand): Interactive Bubbletea terminal UI (`tui.go`)
   for browsing and editing partmaster CSV data. Split-pane: file list + data
   table. Supports search, parametric search, edit, add, copy, delete, detail
-  view, and datasheet opening. Mode-based key dispatch (`modeNormal`,
-  `modeSearch`, `modeEdit`, `modeConfirmDelete`, `modeParametricSearch`,
-  `modeDetail`).
+  view, datasheet opening, and release processing. Mode-based key dispatch
+  (`modeNormal`, `modeSearch`, `modeEdit`, `modeConfirmDelete`,
+  `modeParametricSearch`, `modeDetail`, `modeRelease`).
 - **http**: KiCad HTTP Library API server (`kicad_api.go`) exposing partmaster
   data as REST JSON. Flags: `-pmDir`, `-port`, `-token`.
 - **simplify/combine**: BOM consolidation utilities. Flag: `-out`.
