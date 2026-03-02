@@ -7,3 +7,5 @@
 - Create BOM
   - search to add line items
 - collect changelog from all subassemblies
+
+## Done
