@@ -848,6 +848,7 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "/":
 					m.mode = modeSearch
 					m.searchInput.Focus()
+					m.applySearchFilter(m.searchInput.Value())
 					return m, nil
 				case "p":
 					// If we already have paramInputs with matching column count, reuse them
