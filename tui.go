@@ -66,7 +66,7 @@ var (
 			BorderStyle(lipgloss.NormalBorder()).
 			BorderForeground(lipgloss.Color("240"))
 
-	focusedBorderColor  = lipgloss.Color("62")
+	focusedBorderColor   = lipgloss.Color("62")
 	unfocusedBorderColor = lipgloss.Color("240")
 
 	selectedItemStyle = lipgloss.NewStyle().
@@ -134,11 +134,11 @@ type modelNew struct {
 	searchInput textinput.Model
 
 	// Edit
-	editInputs    []textinput.Model
-	editHeaders   []string
-	editFocusIdx  int
-	editRowIdx    int
-	editIsNew     bool
+	editInputs     []textinput.Model
+	editHeaders    []string
+	editFocusIdx   int
+	editRowIdx     int
+	editIsNew      bool
 	editPrevCursor int
 
 	// Delete

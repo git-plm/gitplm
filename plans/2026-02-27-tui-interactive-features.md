@@ -2,14 +2,15 @@
 
 ## Context
 
-The README describes TUI features (edit, add, copy, delete, search,
-parametric search, auto-sort) that don't exist yet. The TUI currently only
-supports read-only browsing of CSV files. This plan implements all 7 features.
+The README describes TUI features (edit, add, copy, delete, search, parametric
+search, auto-sort) that don't exist yet. The TUI currently only supports
+read-only browsing of CSV files. This plan implements all 7 features.
 
 ## Files to modify
 
 - **`tui.go`** — All TUI model changes, key handling, view rendering, new modes
-- **`csv_data.go`** — Add `saveCSVRaw`, `sortRowsByIPN`, `findHeaderIndex`, `nextAvailableIPN`
+- **`csv_data.go`** — Add `saveCSVRaw`, `sortRowsByIPN`, `findHeaderIndex`,
+  `nextAvailableIPN`
 
 ## Design decisions
 
@@ -65,8 +66,8 @@ isEditable      bool
   `encoding/csv`
 - `findHeaderIndex(headers []string, name string) int` — return column index
 - `sortRowsByIPN(rows [][]string, ipnColIdx int)` — sort rows by IPN column
-- `nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error)` — scan
-  rows to find category CCC and max NNN, return `CCC-(NNN+1)-0001`
+- `nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error)` — scan rows
+  to find category CCC and max NNN, return `CCC-(NNN+1)-0001`
 
 ### Step 3: Quick search (`/` key)
 
@@ -124,7 +125,8 @@ isEditable      bool
 ### Step 9: Update help text
 
 - Dynamic help based on `mode` and `isEditable`
-- Normal mode: `/ search | p parametric | e edit | a add | c copy | d delete | Tab switch | q quit`
+- Normal mode:
+  `/ search | p parametric | e edit | a add | c copy | d delete | Tab switch | q quit`
 - When not editable: omit edit/add/copy/delete hints
 
 ## Key handling restructure
@@ -143,21 +145,22 @@ case modeParametricSearch: // paramInputs + Tab/Enter/Escape
 
 ## Commits
 
-| Hash | Description | Status |
-|------|-------------|--------|
-| 0c41e86 | refactor: add mode and row tracking fields to TUI model | Implemented |
+| Hash    | Description                                                      | Status      |
+| ------- | ---------------------------------------------------------------- | ----------- |
+| 0c41e86 | refactor: add mode and row tracking fields to TUI model          | Implemented |
 | d1bd09e | feat: add CSV save, header index, IPN sort, and next IPN helpers | Implemented |
-| 8a2023e | feat: add quick search with / key | Implemented |
-| 288790b | feat: add edit mode with e key | Implemented |
-| 0e1ba10 | feat: add new part with a key | Implemented |
-| 96782e1 | feat: add copy line with c key | Implemented |
-| 1af6569 | feat: add delete with confirmation via d key | Implemented |
-| e5643d6 | feat: add parametric search with p key | Implemented |
-| efe19c6 | feat: add dynamic help text based on mode | Implemented |
+| 8a2023e | feat: add quick search with / key                                | Implemented |
+| 288790b | feat: add edit mode with e key                                   | Implemented |
+| 0e1ba10 | feat: add new part with a key                                    | Implemented |
+| 96782e1 | feat: add copy line with c key                                   | Implemented |
+| 1af6569 | feat: add delete with confirmation via d key                     | Implemented |
+| e5643d6 | feat: add parametric search with p key                           | Implemented |
+| efe19c6 | feat: add dynamic help text based on mode                        | Implemented |
 
 ## Deviations from original plan
 
-- Quick search filters across all columns, not just IPN/Description/MPN/Manufacturer.
+- Quick search filters across all columns, not just
+  IPN/Description/MPN/Manufacturer.
 - "Duplicate" was renamed to "copy" (`c` key) and delete moved from `x` to `d`.
 - "Add a part" (`a` key) was added as a new feature not in the original plan.
 - Canceling edit (Esc) on a newly added or copied row removes it from the file.

@@ -29,11 +29,11 @@ are in the repository root.
   copies files, merges partmaster data, and outputs a versioned release BOM. For
   assemblies (PCA/ASY), recursively expands sub-assembly BOMs and creates a
   combined `-all.csv`.
-- **TUI** (no args): Interactive Bubbletea terminal UI (`tui.go`) for
-  browsing and editing partmaster CSV data. Split-pane: file list + data table.
-  Supports search, parametric search, edit, add, copy, delete, detail view,
-  and datasheet opening. Mode-based key dispatch (`modeNormal`, `modeSearch`,
-  `modeEdit`, `modeConfirmDelete`, `modeParametricSearch`, `modeDetail`).
+- **TUI** (no args): Interactive Bubbletea terminal UI (`tui.go`) for browsing
+  and editing partmaster CSV data. Split-pane: file list + data table. Supports
+  search, parametric search, edit, add, copy, delete, detail view, and datasheet
+  opening. Mode-based key dispatch (`modeNormal`, `modeSearch`, `modeEdit`,
+  `modeConfirmDelete`, `modeParametricSearch`, `modeDetail`).
 - **HTTP** (`-http`): KiCad HTTP Library API server (`kicad_api.go`) exposing
   partmaster data as REST JSON.
 - **Simplify/Combine** (`-simplify`/`-combine`): BOM consolidation utilities.

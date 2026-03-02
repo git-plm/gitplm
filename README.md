@@ -118,16 +118,16 @@ Available configuration options:
 GitPLM has a terminal user interface that will be displayed if you start GitPLM
 without any command line arguments.
 
-| Key | Action |
-|-----|--------|
-| `/` | Quick search across all columns. |
-| `p` | Parametric search with per-column filters. |
-| `e` | Edit the selected part. |
-| `a` | Add a new part with the next available IPN. |
-| `c` | Copy the selected row into a new part. |
-| `d` | Delete the selected part (with confirmation). |
+| Key   | Action                                         |
+| ----- | ---------------------------------------------- |
+| `/`   | Quick search across all columns.               |
+| `p`   | Parametric search with per-column filters.     |
+| `e`   | Edit the selected part.                        |
+| `a`   | Add a new part with the next available IPN.    |
+| `c`   | Copy the selected row into a new part.         |
+| `d`   | Delete the selected part (with confirmation).  |
 | `Tab` | Switch focus between file list and data table. |
-| `q` | Quit. |
+| `q`   | Quit.                                          |
 
 Edit, add, copy, and delete are disabled in the combined "All Parts" view.
 Changes are saved immediately and the table is auto-sorted by IPN.
