@@ -87,6 +87,10 @@ type releaseResultMsg struct {
 	err error
 }
 
+type editorFinishedMsg struct {
+	err error
+}
+
 type fileItem struct {
 	name        string
 	isAllOption bool
@@ -451,6 +455,26 @@ func (m *modelNew) getSelectedCSVFile() *CSVFile {
 	return nil
 }
 
+func (m *modelNew) startRelease() tea.Cmd {
+	m.releaseLog = "Releasing " + m.releaseIPN + " ...\n"
+	m.releaseScroll = 0
+	m.releaseError = false
+	m.mode = modeRelease
+	ipnVal := m.releaseIPN
+	pmDir := m.pmDir
+	return func() tea.Msg {
+		var logBuilder strings.Builder
+		origWriter := log.Writer()
+		origFlags := log.Flags()
+		log.SetOutput(&logBuilder)
+		log.SetFlags(0)
+		_, err := processRelease(ipnVal, &logBuilder, pmDir)
+		log.SetOutput(origWriter)
+		log.SetFlags(origFlags)
+		return releaseResultMsg{log: logBuilder.String(), err: err}
+	}
+}
+
 // applySearchFilter filters allRows by case-insensitive substring match across
 // all columns. It rebuilds filteredRows, rowToDataIdx, and updates the table.
 func (m *modelNew) applySearchFilter(query string) {
@@ -621,6 +645,30 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case editorFinishedMsg:
+		if msg.err != nil {
+			m.releaseLog = "Editor error: " + msg.err.Error()
+			m.releaseError = true
+			m.releaseScroll = 0
+			m.mode = modeRelease
+			return m, nil
+		}
+		// Re-check changelog after editor; proceed with release if entry now exists
+		sourceDir, err := findIPNSourceDir(m.releaseIPN)
+		if err != nil {
+			m.releaseLog = "Error: " + err.Error()
+			m.releaseError = true
+			m.releaseScroll = 0
+			m.mode = modeRelease
+			return m, nil
+		}
+		_, hasEntry, err := checkIPNChangelog(sourceDir, m.releaseIPN)
+		if err != nil || !hasEntry {
+			m.error = fmt.Sprintf("CHANGELOG.md still missing entry for %s — release cancelled", m.releaseIPN)
+			m.mode = modeNormal
+			return m, nil
+		}
+		return m, m.startRelease()
 	case releaseResultMsg:
 		m.releaseLog = msg.log
 		m.releaseError = msg.err != nil
@@ -1111,23 +1159,36 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "ctrl+c":
 					return m, tea.Quit
 				case "y", "enter":
-					m.releaseLog = "Releasing " + m.releaseIPN + " ...\n"
-					m.releaseScroll = 0
-					m.releaseError = false
-					m.mode = modeRelease
 					ipnVal := m.releaseIPN
-					pmDir := m.pmDir
-					return m, func() tea.Msg {
-						var logBuilder strings.Builder
-						origWriter := log.Writer()
-						origFlags := log.Flags()
-						log.SetOutput(&logBuilder)
-						log.SetFlags(0)
-						_, err := processRelease(ipnVal, &logBuilder, pmDir)
-						log.SetOutput(origWriter)
-						log.SetFlags(origFlags)
-						return releaseResultMsg{log: logBuilder.String(), err: err}
+					// Check changelog for IPN entry before releasing
+					sourceDir, err := findIPNSourceDir(ipnVal)
+					if err != nil {
+						m.releaseLog = "Error: " + err.Error()
+						m.releaseError = true
+						m.releaseScroll = 0
+						m.mode = modeRelease
+						return m, nil
 					}
+					clPath, hasEntry, err := checkIPNChangelog(sourceDir, ipnVal)
+					if err != nil {
+						m.releaseLog = "Error: " + err.Error()
+						m.releaseError = true
+						m.releaseScroll = 0
+						m.mode = modeRelease
+						return m, nil
+					}
+					if !hasEntry {
+						// Open editor so user can add the entry
+						editor := os.Getenv("EDITOR")
+						if editor == "" {
+							editor = "vi"
+						}
+						c := exec.Command(editor, clPath)
+						return m, tea.ExecProcess(c, func(err error) tea.Msg {
+							return editorFinishedMsg{err: err}
+						})
+					}
+					return m, m.startRelease()
 				case "n", "esc":
 					m.mode = modeNormal
 					return m, nil

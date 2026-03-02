@@ -13,6 +13,53 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// findIPNSourceDir locates the source directory for an IPN by searching for
+// its BOM CSV or release YAML file.
+func findIPNSourceDir(relPn string) (string, error) {
+	relIpn := ipn(relPn)
+	_, _, v, err := relIpn.parse()
+	if err != nil {
+		return "", fmt.Errorf("error parsing IPN %v: %v", relPn, err)
+	}
+
+	relPnBase := relIpn.base()
+	relPnBaseWithVar := fmt.Sprintf("%v-%02v", relPnBase, v/100)
+
+	for _, name := range []string{
+		relPnBase + ".csv",
+		relPnBaseWithVar + ".csv",
+		relPnBase + ".yml",
+		relPnBaseWithVar + ".yml",
+	} {
+		if p, err := findFile(name); err == nil {
+			return filepath.Dir(p), nil
+		}
+	}
+
+	return "", fmt.Errorf("could not find source files for %s", relPn)
+}
+
+// checkIPNChangelog checks that a CHANGELOG.md exists in the source directory
+// and contains an entry for the given IPN. Returns the changelog path and
+// whether the IPN was found.
+func checkIPNChangelog(sourceDir, relPn string) (changelogPath string, hasEntry bool, err error) {
+	changelogPath = filepath.Join(sourceDir, "CHANGELOG.md")
+	clExists, err := exists(changelogPath)
+	if err != nil {
+		return changelogPath, false, fmt.Errorf("error checking for CHANGELOG.md: %v", err)
+	}
+	if !clExists {
+		return changelogPath, false, nil
+	}
+
+	data, err := os.ReadFile(changelogPath)
+	if err != nil {
+		return changelogPath, false, fmt.Errorf("error reading CHANGELOG.md: %v", err)
+	}
+
+	return changelogPath, strings.Contains(string(data), relPn), nil
+}
+
 func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string, error) {
 	relIpn := ipn(relPn)
 	_, _, v, err := relIpn.parse()
@@ -71,6 +118,15 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 		if bomDir != ymlDir {
 			return "", fmt.Errorf("BOM and YML files should be in the same directory: %v %v", bomFilePath, ymlFilePath)
 		}
+	}
+
+	// Check that CHANGELOG.md exists and contains an entry for this IPN
+	_, hasEntry, err := checkIPNChangelog(sourceDir, relPn)
+	if err != nil {
+		return sourceDir, err
+	}
+	if !hasEntry {
+		return sourceDir, fmt.Errorf("CHANGELOG.md in %s does not contain an entry for %s", sourceDir, relPn)
 	}
 
 	// Create output release dir

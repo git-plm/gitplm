@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Release process now requires a CHANGELOG.md entry for the IPN version being
+  released. If the entry is missing, the TUI opens `$EDITOR` so the user can
+  add it before proceeding. The CLI release command also checks and fails with
+  a clear error.
+
 ## [[0.8.11] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.11)
 
 - TUI: add confirmation prompt before running a release (y/n). Show "Releasing
