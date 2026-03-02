@@ -29,6 +29,7 @@ const (
 	modeConfirmDelete
 	modeParametricSearch
 	modeDetail
+	modeConfirmRelease
 	modeRelease
 )
 
@@ -80,6 +81,11 @@ var (
 			Foreground(lipgloss.Color("220")).
 			Align(lipgloss.Center)
 )
+
+type releaseResultMsg struct {
+	log string
+	err error
+}
 
 type fileItem struct {
 	name        string
@@ -156,6 +162,7 @@ type modelNew struct {
 	detailScroll  int
 
 	// Release overlay
+	releaseIPN    string
 	releaseLog    string
 	releaseScroll int
 	releaseError  bool
@@ -614,6 +621,14 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case releaseResultMsg:
+		m.releaseLog = msg.log
+		m.releaseError = msg.err != nil
+		if msg.err != nil {
+			m.releaseLog += "\nError: " + msg.err.Error()
+		}
+		m.releaseScroll = 0
+		return m, nil
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -1022,22 +1037,8 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							if isOur, err := ipn(ipnVal).isOurIPN(); err != nil || !isOur {
 								m.error = fmt.Sprintf("%s is not a releasable part", ipnVal)
 							} else {
-								var logBuilder strings.Builder
-								// Redirect log output to the builder during release
-								origWriter := log.Writer()
-								origFlags := log.Flags()
-								log.SetOutput(&logBuilder)
-								log.SetFlags(0)
-								_, err := processRelease(ipnVal, &logBuilder, m.pmDir)
-								log.SetOutput(origWriter)
-								log.SetFlags(origFlags)
-								m.releaseLog = logBuilder.String()
-								m.releaseError = err != nil
-								if err != nil {
-									m.releaseLog += "\nError: " + err.Error()
-								}
-								m.releaseScroll = 0
-								m.mode = modeRelease
+								m.releaseIPN = ipnVal
+								m.mode = modeConfirmRelease
 							}
 						}
 					}
@@ -1102,6 +1103,33 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if m.releaseScroll < maxScroll {
 						m.releaseScroll++
 					}
+					return m, nil
+				}
+
+			case modeConfirmRelease:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "y", "enter":
+					m.releaseLog = "Releasing " + m.releaseIPN + " ...\n"
+					m.releaseScroll = 0
+					m.releaseError = false
+					m.mode = modeRelease
+					ipnVal := m.releaseIPN
+					pmDir := m.pmDir
+					return m, func() tea.Msg {
+						var logBuilder strings.Builder
+						origWriter := log.Writer()
+						origFlags := log.Flags()
+						log.SetOutput(&logBuilder)
+						log.SetFlags(0)
+						_, err := processRelease(ipnVal, &logBuilder, pmDir)
+						log.SetOutput(origWriter)
+						log.SetFlags(origFlags)
+						return releaseResultMsg{log: logBuilder.String(), err: err}
+					}
+				case "n", "esc":
+					m.mode = modeNormal
 					return m, nil
 				}
 
@@ -1370,6 +1398,8 @@ func (m modelNew) View() string {
 			helpText = "Tab/Shift+Tab: cycle fields • Enter: save • Esc: cancel"
 		case modeConfirmDelete:
 			helpText = "y/Enter: confirm delete • n/Esc: cancel"
+		case modeConfirmRelease:
+			helpText = "y/Enter: confirm release • n/Esc: cancel"
 		case modeDetail:
 			helpText = "↑/↓: scroll • o: open datasheet • Esc: close"
 		case modeRelease:
@@ -1440,6 +1470,17 @@ func (m modelNew) View() string {
 			overlay := lipgloss.NewStyle().
 				BorderStyle(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("196")).
+				Padding(1, 2).
+				Render(prompt)
+			components = append(components, overlay)
+		}
+
+		// Release confirmation overlay
+		if m.mode == modeConfirmRelease {
+			prompt := fmt.Sprintf("Release %s? (y/n)", m.releaseIPN)
+			overlay := lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("220")).
 				Padding(1, 2).
 				Render(prompt)
 			components = append(components, overlay)
