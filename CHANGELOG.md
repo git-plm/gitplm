@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.8.7] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.7)
+
 - TUI: trigger release from within the TUI by pressing `r` on a manufactured
   part (PCA, PCB, ASY, etc.). Release output is displayed in a scrollable
   overlay with green/red border indicating success/failure.
