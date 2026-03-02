@@ -28,6 +28,7 @@ const (
 	modeConfirmDelete
 	modeParametricSearch
 	modeDetail
+	modeRelease
 )
 
 const allFilesOption = "All Parts (Combined)"
@@ -152,6 +153,11 @@ type modelNew struct {
 	detailHeaders []string
 	detailValues  []string
 	detailScroll  int
+
+	// Release overlay
+	releaseLog    string
+	releaseScroll int
+	releaseError  bool
 }
 
 func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
@@ -971,6 +977,42 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 					return m, nil
+				case "r":
+					if !m.listFocused {
+						var ipnVal string
+						csvFile := m.getSelectedCSVFile()
+						cursor := m.table.Cursor()
+						dataIdx := cursor
+						if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+							dataIdx = m.rowToDataIdx[cursor]
+						}
+						if csvFile != nil {
+							ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+							if ipnIdx >= 0 && dataIdx >= 0 && dataIdx < len(csvFile.Rows) && ipnIdx < len(csvFile.Rows[dataIdx]) {
+								ipnVal = csvFile.Rows[dataIdx][ipnIdx]
+							}
+						} else if m.selectedFile == allFilesOption {
+							if dataIdx >= 0 && dataIdx < len(m.allRows) {
+								ipnVal = m.allRows[dataIdx][0]
+							}
+						}
+						if ipnVal != "" {
+							if isOur, err := ipn(ipnVal).isOurIPN(); err != nil || !isOur {
+								m.error = fmt.Sprintf("%s is not a releasable part", ipnVal)
+							} else {
+								var logBuilder strings.Builder
+								_, err := processRelease(ipnVal, &logBuilder, m.pmDir)
+								m.releaseLog = logBuilder.String()
+								m.releaseError = err != nil
+								if err != nil {
+									m.releaseLog += "\nError: " + err.Error()
+								}
+								m.releaseScroll = 0
+								m.mode = modeRelease
+							}
+						}
+					}
+					return m, nil
 				}
 
 			case modeDetail:
@@ -1007,6 +1049,30 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 					m.error = "No valid datasheet URL found"
+					return m, nil
+				}
+
+			case modeRelease:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "esc", "enter":
+					m.mode = modeNormal
+					return m, nil
+				case "up", "k":
+					if m.releaseScroll > 0 {
+						m.releaseScroll--
+					}
+					return m, nil
+				case "down", "j":
+					lines := strings.Split(m.releaseLog, "\n")
+					maxScroll := len(lines) - 1
+					if maxScroll < 0 {
+						maxScroll = 0
+					}
+					if m.releaseScroll < maxScroll {
+						m.releaseScroll++
+					}
 					return m, nil
 				}
 
@@ -1277,6 +1343,8 @@ func (m modelNew) View() string {
 			helpText = "y/Enter: confirm delete • n/Esc: cancel"
 		case modeDetail:
 			helpText = "↑/↓: scroll • o: open datasheet • Esc: close"
+		case modeRelease:
+			helpText = "↑/↓: scroll • Esc: close"
 		default:
 			hasFilter := m.searchInput.Value() != ""
 			if !hasFilter {
@@ -1287,7 +1355,7 @@ func (m modelNew) View() string {
 					}
 				}
 			}
-			parts := []string{"Enter details", "/ search", "p parametric", "o datasheet"}
+			parts := []string{"Enter details", "/ search", "p parametric", "o datasheet", "r release"}
 			if hasFilter {
 				parts = append(parts, "Esc clear filter")
 			}
@@ -1395,6 +1463,42 @@ func (m modelNew) View() string {
 				BorderForeground(lipgloss.Color("33")).
 				Padding(1, 2).
 				Render(strings.Join(detailLines, "\n"))
+			components = append(components, overlay)
+		}
+
+		// Release overlay
+		if m.mode == modeRelease && m.releaseLog != "" {
+			var releaseLines []string
+			releaseLines = append(releaseLines, lipgloss.NewStyle().Bold(true).Render("Release Output"))
+			releaseLines = append(releaseLines, "")
+
+			logLines := strings.Split(m.releaseLog, "\n")
+			visibleLines := m.height - 10
+			if visibleLines < 5 {
+				visibleLines = 5
+			}
+
+			end := m.releaseScroll + visibleLines
+			if end > len(logLines) {
+				end = len(logLines)
+			}
+
+			for i := m.releaseScroll; i < end; i++ {
+				releaseLines = append(releaseLines, logLines[i])
+			}
+
+			releaseLines = append(releaseLines, "")
+			releaseLines = append(releaseLines, helpStyle.Render("↑/↓: scroll • Esc: close"))
+
+			borderColor := lipgloss.Color("34") // green
+			if m.releaseError {
+				borderColor = lipgloss.Color("196") // red
+			}
+			overlay := lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(borderColor).
+				Padding(1, 2).
+				Render(strings.Join(releaseLines, "\n"))
 			components = append(components, overlay)
 		}
 
