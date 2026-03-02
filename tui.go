@@ -25,6 +25,7 @@ const (
 	modeEdit
 	modeConfirmDelete
 	modeParametricSearch
+	modeDetail
 )
 
 const allFilesOption = "All Parts (Combined)"
@@ -144,6 +145,11 @@ type modelNew struct {
 	// Parametric search
 	paramInputs   []textinput.Model
 	paramFocusIdx int
+
+	// Detail popup
+	detailHeaders []string
+	detailValues  []string
+	detailScroll  int
 }
 
 func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
@@ -756,6 +762,32 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							m.listFocused = false
 							m.table.Focus()
 						}
+					} else {
+						cursor := m.table.Cursor()
+						csvFile := m.getSelectedCSVFile()
+						if csvFile != nil {
+							dataIdx := cursor
+							if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+								dataIdx = m.rowToDataIdx[cursor]
+							}
+							if dataIdx >= 0 && dataIdx < len(csvFile.Rows) {
+								m.detailHeaders = csvFile.Headers
+								m.detailValues = csvFile.Rows[dataIdx]
+								m.detailScroll = 0
+								m.mode = modeDetail
+							}
+						} else if m.selectedFile == allFilesOption {
+							dataIdx := cursor
+							if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+								dataIdx = m.rowToDataIdx[cursor]
+							}
+							if dataIdx >= 0 && dataIdx < len(m.allRows) {
+								m.detailHeaders = []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
+								m.detailValues = m.allRows[dataIdx]
+								m.detailScroll = 0
+								m.mode = modeDetail
+							}
+						}
 					}
 					return m, nil
 				case "esc":
@@ -898,6 +930,29 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 								m.enterEditMode(newIdx, true)
 							}
 						}
+					}
+					return m, nil
+				}
+
+			case modeDetail:
+				switch msg.String() {
+				case "ctrl+c":
+					return m, tea.Quit
+				case "esc", "enter":
+					m.mode = modeNormal
+					return m, nil
+				case "up", "k":
+					if m.detailScroll > 0 {
+						m.detailScroll--
+					}
+					return m, nil
+				case "down", "j":
+					maxScroll := len(m.detailHeaders) - 1
+					if maxScroll < 0 {
+						maxScroll = 0
+					}
+					if m.detailScroll < maxScroll {
+						m.detailScroll++
 					}
 					return m, nil
 				}
@@ -1167,6 +1222,8 @@ func (m modelNew) View() string {
 			helpText = "Tab/Shift+Tab: cycle fields • Enter: save • Esc: cancel"
 		case modeConfirmDelete:
 			helpText = "y/Enter: confirm delete • n/Esc: cancel"
+		case modeDetail:
+			helpText = "↑/↓: scroll • Esc: close"
 		default:
 			hasFilter := m.searchInput.Value() != ""
 			if !hasFilter {
@@ -1177,7 +1234,7 @@ func (m modelNew) View() string {
 					}
 				}
 			}
-			parts := []string{"/ search", "p parametric"}
+			parts := []string{"Enter details", "/ search", "p parametric"}
 			if hasFilter {
 				parts = append(parts, "Esc clear filter")
 			}
@@ -1250,6 +1307,41 @@ func (m modelNew) View() string {
 				BorderForeground(lipgloss.Color("62")).
 				Padding(1, 2).
 				Render(strings.Join(editLines, "\n"))
+			components = append(components, overlay)
+		}
+
+		// Detail overlay
+		if m.mode == modeDetail && len(m.detailHeaders) > 0 {
+			var detailLines []string
+			detailLines = append(detailLines, lipgloss.NewStyle().Bold(true).Render("Part Details"))
+			detailLines = append(detailLines, "")
+
+			visibleLines := m.height - 10
+			if visibleLines < 5 {
+				visibleLines = 5
+			}
+
+			end := m.detailScroll + visibleLines
+			if end > len(m.detailHeaders) {
+				end = len(m.detailHeaders)
+			}
+
+			for i := m.detailScroll; i < end; i++ {
+				label := lipgloss.NewStyle().Width(20).Align(lipgloss.Right).Render(m.detailHeaders[i] + ": ")
+				val := ""
+				if i < len(m.detailValues) {
+					val = m.detailValues[i]
+				}
+				detailLines = append(detailLines, label+val)
+			}
+
+			detailLines = append(detailLines, "")
+			detailLines = append(detailLines, helpStyle.Render("↑/↓: scroll • Esc: close"))
+			overlay := lipgloss.NewStyle().
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("33")).
+				Padding(1, 2).
+				Render(strings.Join(detailLines, "\n"))
 			components = append(components, overlay)
 		}
 
