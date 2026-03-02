@@ -17,6 +17,8 @@ For more details or to discuss releases, please visit the
 - TUI: add a new part with auto-generated next IPN via `a` key.
 - TUI: copy a row to create a new part via `c` key.
 - TUI: delete a part with confirmation via `d` key.
+- TUI: view all part fields in a detail popup with `Enter` key.
+- TUI: open a part's datasheet URL in the browser with `o` key.
 - TUI: dynamic help bar shows available actions for the current mode.
 - TUI: editing is disabled in the combined "All Parts" view.
 
