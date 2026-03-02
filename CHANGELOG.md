@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [[0.8.5] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.5)
+
 - TUI: search parts across all columns with `/` key.
 - TUI: parametric search with per-column filters via `p` key.
 - TUI: edit a part in-place with `e` key.
