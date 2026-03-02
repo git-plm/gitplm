@@ -22,21 +22,32 @@ GitPLM is a single-package (`package main`) Go CLI tool for managing hardware
 product lifecycle data using CSV files in Git (no database). All source files
 are in the repository root.
 
-### CLI Modes (entry point: `main.go`)
+### CLI Subcommands (entry point: `main.go`)
 
-- **Release** (`-release CCC-NNN-VVVV`): Core workflow in `release.go`. Finds
-  source BOM CSV and YAML release script, applies BOM modifications, runs hooks,
-  copies files, merges partmaster data, and outputs a versioned release BOM. For
-  assemblies (PCA/ASY), recursively expands sub-assembly BOMs and creates a
-  combined `-all.csv`.
-- **TUI** (no args): Interactive Bubbletea terminal UI (`tui.go`) for browsing
-  and editing partmaster CSV data. Split-pane: file list + data table. Supports
-  search, parametric search, edit, add, copy, delete, detail view, and datasheet
-  opening. Mode-based key dispatch (`modeNormal`, `modeSearch`, `modeEdit`,
-  `modeConfirmDelete`, `modeParametricSearch`, `modeDetail`).
-- **HTTP** (`-http`): KiCad HTTP Library API server (`kicad_api.go`) exposing
-  partmaster data as REST JSON.
-- **Simplify/Combine** (`-simplify`/`-combine`): BOM consolidation utilities.
+```
+gitplm                        Launch interactive TUI
+gitplm release <IPN>          Process release for IPN
+gitplm simplify <file> -out <file>  Simplify a BOM file
+gitplm combine <file> -out <file>   Combine BOM into output
+gitplm http                   Start KiCad HTTP Library API server
+gitplm update                 Update gitplm to latest version
+gitplm version                Display version
+```
+
+- **release**: Core workflow in `release.go`. Finds source BOM CSV and YAML
+  release script, applies BOM modifications, runs hooks, copies files, merges
+  partmaster data, and outputs a versioned release BOM. For assemblies (PCA/ASY),
+  recursively expands sub-assembly BOMs and creates a combined `-all.csv`.
+  Flags: `-pmDir`.
+- **TUI** (default, no subcommand): Interactive Bubbletea terminal UI (`tui.go`)
+  for browsing and editing partmaster CSV data. Split-pane: file list + data
+  table. Supports search, parametric search, edit, add, copy, delete, detail
+  view, and datasheet opening. Mode-based key dispatch (`modeNormal`,
+  `modeSearch`, `modeEdit`, `modeConfirmDelete`, `modeParametricSearch`,
+  `modeDetail`).
+- **http**: KiCad HTTP Library API server (`kicad_api.go`) exposing partmaster
+  data as REST JSON. Flags: `-pmDir`, `-port`, `-token`.
+- **simplify/combine**: BOM consolidation utilities. Flag: `-out`.
 
 ### Key Types
 

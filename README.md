@@ -83,16 +83,17 @@ or
 
 ## 🚀 Usage
 
-Type `gitplm` from a shell to see command line options:
-
 ```
-Usage of gitplm:
-  -release string
-	      Process release for IPN (ex: PCB-056-0005, ASY-002-0023)
-  -update
-        update gitplm to the latest version
-  -version
-        display version of this application
+Usage: gitplm COMMAND [OPTIONS]
+
+Commands:
+  (no command)                    Launch interactive TUI
+  release <IPN>                   Process release for IPN
+  simplify <file> -out <file>     Simplify a BOM file
+  combine <file> -out <file>      Combine BOM into output
+  http                            Start KiCad HTTP Library API server
+  update                          Update gitplm to latest version
+  version                         Display version
 ```
 
 ## ⚙️ Configuration
@@ -301,17 +302,17 @@ GitPLM can serve a parts database to KiCad using the
 
 ### Starting the HTTP Server
 
-Start the server using the `-http` flag:
+Start the server using the `http` subcommand:
 
 ```bash
 # Start with default settings (port 7654)
-gitplm -http -pmDir /path/to/partmaster
+gitplm http -pmDir /path/to/partmaster
 
 # Start with custom port
-gitplm -http -port 8080 -pmDir /path/to/partmaster
+gitplm http -port 8080 -pmDir /path/to/partmaster
 
 # Start with authentication token
-gitplm -http -token mysecrettoken -pmDir /path/to/partmaster
+gitplm http -token mysecrettoken -pmDir /path/to/partmaster
 ```
 
 Alternatively, configure the server in `gitplm.yml`:
@@ -320,12 +321,11 @@ Alternatively, configure the server in `gitplm.yml`:
 pmDir: /path/to/partmaster/directory
 
 http:
-  enabled: true
   port: 7654
   token: "" # Optional authentication token
 ```
 
-Then simply run `gitplm` to start the server with configured settings.
+Then run `gitplm http` to start the server with configured settings.
 
 ### Configuring what fields are visible
 
@@ -369,8 +369,8 @@ GitPLM automatically:
 
 See the examples folder. You can run commands like to exercise GitPLM:
 
-- `go run . -release ASY-001-0000`
-- `go run . -release PCB-019-0001`
+- `go run . release ASY-001-0000`
+- `go run . release PCB-019-0001`
 
 `go run .` is used when working in the source directory. You can replace this
 with `gitplm` if you have it installed.
@@ -436,7 +436,7 @@ Releases are automated via GitHub Actions and
 The release workflow will automatically build binaries for all platforms and
 create a GitHub release with notes extracted from `CHANGELOG.md`.
 
-Users can update to the latest release by running: `gitplm -update`
+Users can update to the latest release by running: `gitplm update`
 
 ## 📚 Reference Information
 

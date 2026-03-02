@@ -11,6 +11,9 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Refactor CLI from flags to subcommands (e.g., `gitplm release <IPN>` instead
+  of `gitplm -release <IPN>`)
+
 ## [[0.8.5] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.5)
 
 - TUI: search parts across all columns with `/` key.
