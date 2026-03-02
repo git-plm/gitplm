@@ -11,8 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
-- TUI: add confirmation prompt before running a release (y/n). Show
-  "Releasing ..." immediately while the release runs asynchronously.
+## [[0.8.11] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.11)
+
+- TUI: add confirmation prompt before running a release (y/n). Show "Releasing
+  ..." immediately while the release runs asynchronously.
 
 ## [[0.8.10] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.10)
 
