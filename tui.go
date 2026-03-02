@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	"io"
@@ -932,6 +934,43 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 					return m, nil
+				case "o":
+					if !m.listFocused {
+						var headers []string
+						var row []string
+						csvFile := m.getSelectedCSVFile()
+						cursor := m.table.Cursor()
+						dataIdx := cursor
+						if m.rowToDataIdx != nil && cursor < len(m.rowToDataIdx) {
+							dataIdx = m.rowToDataIdx[cursor]
+						}
+						if csvFile != nil {
+							if dataIdx >= 0 && dataIdx < len(csvFile.Rows) {
+								headers = csvFile.Headers
+								row = csvFile.Rows[dataIdx]
+							}
+						} else if m.selectedFile == allFilesOption {
+							if dataIdx >= 0 && dataIdx < len(m.allRows) {
+								headers = []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
+								row = m.allRows[dataIdx]
+							}
+						}
+						if row != nil {
+							for i, h := range headers {
+								if strings.EqualFold(h, "Datasheet") && i < len(row) {
+									url := strings.TrimSpace(row[i])
+									if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+										if err := openURL(url); err != nil {
+											m.error = fmt.Sprintf("Failed to open URL: %v", err)
+										}
+										return m, nil
+									}
+								}
+							}
+							m.error = "No valid datasheet URL found"
+						}
+					}
+					return m, nil
 				}
 
 			case modeDetail:
@@ -954,6 +993,20 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if m.detailScroll < maxScroll {
 						m.detailScroll++
 					}
+					return m, nil
+				case "o":
+					for i, h := range m.detailHeaders {
+						if strings.EqualFold(h, "Datasheet") && i < len(m.detailValues) {
+							url := strings.TrimSpace(m.detailValues[i])
+							if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+								if err := openURL(url); err != nil {
+									m.error = fmt.Sprintf("Failed to open URL: %v", err)
+								}
+								return m, nil
+							}
+						}
+					}
+					m.error = "No valid datasheet URL found"
 					return m, nil
 				}
 
@@ -1223,7 +1276,7 @@ func (m modelNew) View() string {
 		case modeConfirmDelete:
 			helpText = "y/Enter: confirm delete • n/Esc: cancel"
 		case modeDetail:
-			helpText = "↑/↓: scroll • Esc: close"
+			helpText = "↑/↓: scroll • o: open datasheet • Esc: close"
 		default:
 			hasFilter := m.searchInput.Value() != ""
 			if !hasFilter {
@@ -1234,7 +1287,7 @@ func (m modelNew) View() string {
 					}
 				}
 			}
-			parts := []string{"Enter details", "/ search", "p parametric"}
+			parts := []string{"Enter details", "/ search", "p parametric", "o datasheet"}
 			if hasFilter {
 				parts = append(parts, "Esc clear filter")
 			}
@@ -1336,7 +1389,7 @@ func (m modelNew) View() string {
 			}
 
 			detailLines = append(detailLines, "")
-			detailLines = append(detailLines, helpStyle.Render("↑/↓: scroll • Esc: close"))
+			detailLines = append(detailLines, helpStyle.Render("↑/↓: scroll • o: open datasheet • Esc: close"))
 			overlay := lipgloss.NewStyle().
 				BorderStyle(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("33")).
@@ -1349,6 +1402,19 @@ func (m modelNew) View() string {
 		content := lipgloss.JoinVertical(lipgloss.Top, components...)
 
 		return content
+	}
+}
+
+func openURL(url string) error {
+	switch runtime.GOOS {
+	case "linux":
+		return exec.Command("xdg-open", url).Start()
+	case "darwin":
+		return exec.Command("open", url).Start()
+	case "windows":
+		return exec.Command("cmd", "/c", "start", url).Start()
+	default:
+		return fmt.Errorf("unsupported platform")
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ type CSVFile struct {
 	Path    string
 	Headers []string
 	Rows    [][]string
+	UseCRLF bool
 }
 
 // CSVFileCollection represents all CSV files loaded from a directory
@@ -30,6 +32,17 @@ func loadCSVRaw(filePath string) (*CSVFile, error) {
 		return nil, fmt.Errorf("error opening file %s: %v", filePath, err)
 	}
 	defer file.Close()
+
+	// Detect CRLF line endings by reading the first chunk
+	useCRLF := false
+	buf := make([]byte, 4096)
+	n, _ := file.Read(buf)
+	if n > 0 {
+		useCRLF = bytes.Contains(buf[:n], []byte("\r\n"))
+	}
+	if _, err := file.Seek(0, 0); err != nil {
+		return nil, fmt.Errorf("error seeking file %s: %v", filePath, err)
+	}
 
 	reader := csv.NewReader(file)
 	reader.Comma = ','
@@ -70,6 +83,7 @@ func loadCSVRaw(filePath string) (*CSVFile, error) {
 		Path:    filePath,
 		Headers: headers,
 		Rows:    rows,
+		UseCRLF: useCRLF,
 	}, nil
 }
 
@@ -220,6 +234,7 @@ func saveCSVRaw(csvFile *CSVFile) error {
 	defer f.Close()
 
 	w := csv.NewWriter(f)
+	w.UseCRLF = csvFile.UseCRLF
 	if err := w.Write(csvFile.Headers); err != nil {
 		return fmt.Errorf("error writing headers: %v", err)
 	}
