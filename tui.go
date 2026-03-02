@@ -790,10 +790,35 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 								dataIdx = m.rowToDataIdx[cursor]
 							}
 							if dataIdx >= 0 && dataIdx < len(m.allRows) {
-								m.detailHeaders = []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
-								m.detailValues = m.allRows[dataIdx]
-								m.detailScroll = 0
-								m.mode = modeDetail
+								ipnVal := m.allRows[dataIdx][0]
+								// Navigate into the CSV file containing this IPN
+								for _, file := range m.csvCollection.Files {
+									ipnIdx := findHeaderIndex(file.Headers, "IPN")
+									if ipnIdx < 0 {
+										continue
+									}
+									found := false
+									for rowIdx, row := range file.Rows {
+										if ipnIdx < len(row) && row[ipnIdx] == ipnVal {
+											m.selectedFile = file.Name
+											m.updateTableForSelectedFile()
+											m.table.SetCursor(rowIdx)
+											for i, item := range m.fileList.Items() {
+												if fi, ok := item.(fileItem); ok && fi.name == file.Name {
+													m.fileList.Select(i)
+													break
+												}
+											}
+											m.listFocused = false
+											m.table.Focus()
+											found = true
+											break
+										}
+									}
+									if found {
+										break
+									}
+								}
 							}
 						}
 					}
@@ -941,7 +966,7 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					return m, nil
 				case "o":
-					if !m.listFocused {
+					if !m.listFocused && m.selectedFile != allFilesOption {
 						var headers []string
 						var row []string
 						csvFile := m.getSelectedCSVFile()
@@ -954,11 +979,6 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							if dataIdx >= 0 && dataIdx < len(csvFile.Rows) {
 								headers = csvFile.Headers
 								row = csvFile.Rows[dataIdx]
-							}
-						} else if m.selectedFile == allFilesOption {
-							if dataIdx >= 0 && dataIdx < len(m.allRows) {
-								headers = []string{"IPN", "Description", "Manufacturer", "MPN", "Value"}
-								row = m.allRows[dataIdx]
 							}
 						}
 						if row != nil {
@@ -1355,7 +1375,15 @@ func (m modelNew) View() string {
 					}
 				}
 			}
-			parts := []string{"Enter details", "/ search", "p parametric", "o datasheet", "r release"}
+			enterLabel := "Enter details"
+			if m.selectedFile == allFilesOption {
+				enterLabel = "Enter open file"
+			}
+			parts := []string{enterLabel, "/ search", "p parametric"}
+			if m.selectedFile != allFilesOption {
+				parts = append(parts, "o datasheet")
+			}
+			parts = append(parts, "r release")
 			if hasFilter {
 				parts = append(parts, "Esc clear filter")
 			}

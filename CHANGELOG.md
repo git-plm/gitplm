@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- TUI: pressing Enter in All Parts view navigates into the part's CSV file
+  instead of showing a limited detail popup. A second Enter shows full details.
+- TUI: disabled datasheet shortcut (`o`) in All Parts view since the column is
+  not available.
+
 ## [[0.8.7] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.7)
 
 - TUI: trigger release from within the TUI by pressing `r` on a manufactured
