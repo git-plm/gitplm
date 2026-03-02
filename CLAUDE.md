@@ -36,9 +36,9 @@ gitplm version                Display version
 
 - **release**: Core workflow in `release.go`. Finds source BOM CSV and YAML
   release script, applies BOM modifications, runs hooks, copies files, merges
-  partmaster data, and outputs a versioned release BOM. For assemblies (PCA/ASY),
-  recursively expands sub-assembly BOMs and creates a combined `-all.csv`.
-  Flags: `-pmDir`.
+  partmaster data, and outputs a versioned release BOM. For assemblies
+  (PCA/ASY), recursively expands sub-assembly BOMs and creates a combined
+  `-all.csv`. Flags: `-pmDir`.
 - **TUI** (default, no subcommand): Interactive Bubbletea terminal UI (`tui.go`)
   for browsing and editing partmaster CSV data. Split-pane: file list + data
   table. Supports search, parametric search, edit, add, copy, delete, detail
