@@ -47,6 +47,18 @@ operations that need to made over and over. You want to do something once, and
 then your tools do it for you from then on. This is the problem that GitPLM
 solves.**
 
+Without a shared system, hardware, firmware, and mechanical work drift into
+scattered files, untracked changes, and version numbers no one can trust. Does
+your workflow resemble this?
+
+![ChaosPLM workflow](ChaosPLM-workflow.jpg)
+
+GitPLM brings hardware, software, and mechanical design together under one
+Git-based workflow, so every part, BOM, and revision has a single source of
+truth with full history and traceability:
+
+![GitPLM workflow](gitplm-workflow.jpg)
+
 GitPLM does several things:
 
 - Combines source BOMs with the partmaster to generate BOMs with manufacturing

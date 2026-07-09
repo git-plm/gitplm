@@ -1,11 +1,16 @@
 # Future Ideas
 
 - Git status/operations in TUI
-- Release TUI
-  - ensure/add a CL entry
+- Release CL management
+  - Verify a CL entry exists for a new release, or provide UI to create one
+  - Recursively add CL entries for all sub parts based on what changed from the
+    last release.
+- Automatic tagging of repo where release is run.
 - Hierarchical BOM browser
 - Create BOM
-  - search to add line items
+  - Interactive search to add line items
 - collect changelog from all subassemblies
 
 ## Done
+
+- Release TUI
