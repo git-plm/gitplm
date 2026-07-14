@@ -19,9 +19,18 @@ gitplm_vet() {
 	(cd "${GITPLM_BASE}" && go vet ./...) || return 1
 }
 
+# Run the version of prettier pinned in .prettier-version, so formatting
+# locally reaches the same verdict as CI. A prettier release can add a rule and
+# start failing a file that was passing.
+gitplm_prettier() {
+	local version
+	version=$(cat "${GITPLM_BASE}/.prettier-version") || return 1
+	(cd "${GITPLM_BASE}" && npx --yes "prettier@${version}" "$@") || return 1
+}
+
 gitplm_format() {
 	(cd "${GITPLM_BASE}" && gofmt -s -w .) || return 1
-	(cd "${GITPLM_BASE}" && prettier --write "**/*.md") || return 1
+	gitplm_prettier --write "**/*.md" || return 1
 }
 
 gitplm_format_check() {
@@ -32,7 +41,7 @@ gitplm_format_check() {
 		echo "${unformatted}"
 		return 1
 	fi
-	(cd "${GITPLM_BASE}" && prettier --check "**/*.md") || return 1
+	gitplm_prettier --check "**/*.md" || return 1
 }
 
 # Everything CI runs. Use this before pushing.

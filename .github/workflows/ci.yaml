@@ -88,8 +88,11 @@ jobs:
         with:
           node-version: "20"
 
+      # Pinned so a prettier release cannot start failing files that were
+      # passing. envsetup.sh reads the same file, so gitplm_check locally
+      # reaches the same verdict as CI.
       - name: Install prettier
-        run: npm install -g prettier
+        run: npm install -g "prettier@$(cat .prettier-version)"
 
       - name: Check Markdown formatting
         run: prettier --check "**/*.md"

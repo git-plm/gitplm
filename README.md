@@ -29,6 +29,7 @@
 - [📝 Additional notes](#📝-additional-notes)
 - [📦 Releasing](#📦-releasing)
 - [📚 Reference Information](#📚-reference-information)
+
 <!--toc:end-->
 
 ## 🏭 Product Life cycle Management (PLM) in Git.
