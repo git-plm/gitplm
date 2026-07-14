@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-14
+
 - KiCad HTTP API: the server now watches the partmaster directory and reloads
   the CSV files when one of them changes, printing a message to the console.
   Edits reach KiCad without restarting the server.
