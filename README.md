@@ -2,29 +2,30 @@
 
 <!--toc:start-->
 
-- [🏭 Product Life cycle Management (PLM) in Git.](#🏭-product-life-cycle-management-plm-in-git)
-- [🎬 Video overview](#🎬-video-overview)
-- [📦 Installation](#📦-installation)
-- [🚀 Usage](#🚀-usage)
-- [⚙️ Configuration](#️-configuration)
+- [🏭 Product Life cycle Management (PLM) in Git.](#-product-life-cycle-management-plm-in-git)
+- [🎬 Video overview](#-video-overview)
+- [📦 Installation](#-installation)
+- [🚀 Usage](#-usage)
+- [⚙ Configuration](#-configuration)
 - [Terminal User Interface (TUI)](#terminal-user-interface-tui)
-- [🔢 Part Numbers](#🔢-part-numbers)
-- [📋 Partmaster](#📋-partmaster)
-- [🔧 Components you manufacture](#🔧-components-you-manufacture)
-- [📁 Source and Release directories](#📁-source-and-release-directories)
-- [📄 Special Files](#📄-special-files)
-- [🛠️ Release configuration](#🛠️-release-configuration)
-- [🔌 KiCad HTTP Libraries support](#🔌-kicad-http-libraries-support)
+- [🔢 Part Numbers](#-part-numbers)
+- [📋 Partmaster](#-partmaster)
+- [🔧 Components you manufacture](#-components-you-manufacture)
+- [📁 Source and Release directories](#-source-and-release-directories)
+- [📄 Special Files](#-special-files)
+- [🛠 Release configuration](#-release-configuration)
+- [🔌 KiCad HTTP Libraries support](#-kicad-http-libraries-support)
   - [Starting the HTTP Server](#starting-the-http-server)
   - [Configuring what fields are visible](#configuring-what-fields-are-visible)
   - [Configuring KiCad](#configuring-kicad)
   - [API Endpoints](#api-endpoints)
   - [How It Works](#how-it-works)
-- [💡 Examples](#💡-examples)
-- [🎯 Principles](#🎯-principles)
-- [📝 Additional notes](#📝-additional-notes)
-- [📦 Releasing](#📦-releasing)
-- [📚 Reference Information](#📚-reference-information)
+  - [Reloading on changes](#reloading-on-changes)
+- [💡 Examples](#-examples)
+- [🎯 Principles](#-principles)
+- [📝 Additional notes](#-additional-notes)
+- [📦 Releasing](#-releasing)
+- [📚 Reference Information](#-reference-information)
 
 <!--toc:end-->
 
@@ -105,7 +106,7 @@ Commands:
   version                         Display version
 ```
 
-## ⚙️ Configuration
+## ⚙ Configuration
 
 GitPLM supports configuration via YAML files. The tool will look for
 configuration files in the following order:
@@ -255,7 +256,7 @@ project directory:
   [keep a changelog](https://keepachangelog.com) for ideas on how to structure
   this file. Every source directory should have a `CHANGELOG.md`.
 
-## 🛠️ Release configuration
+## 🛠 Release configuration
 
 A release configuration file (`CCC-NNN.yml`) in the source directory can be used
 to customize the release process.
