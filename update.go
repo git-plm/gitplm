@@ -57,7 +57,7 @@ func CheckForUpdate(currentVersion string) string {
 
 	latest := strings.TrimPrefix(latestVersion, "v")
 	if latest != current {
-		return fmt.Sprintf("A new version of gitplm is available (v%s). Run 'gitplm -update' to upgrade.", latest)
+		return fmt.Sprintf("A new version of gitplm is available (v%s). Run 'gitplm update' to upgrade.", latest)
 	}
 
 	return ""
@@ -178,28 +178,42 @@ func downloadAndInstall(version string) error {
 }
 
 func getBinaryName(version string) string {
-	goos := runtime.GOOS
-	goarch := runtime.GOARCH
+	goarm := ""
+	if runtime.GOARCH == "arm" {
+		goarm = "7"
+		if v := os.Getenv("GOARM"); v != "" {
+			goarm = v
+		}
+	}
 
+	return binaryName(version, runtime.GOOS, runtime.GOARCH, goarm)
+}
+
+// binaryName builds the name of the release asset for a platform. It must agree
+// with the archives name_template in .goreleaser.yml, which is what names the
+// files attached to the GitHub release.
+func binaryName(version, goos, goarch, goarm string) string {
 	osName := goos
 	if goos == "darwin" {
 		osName = "macos"
 	}
 
 	archName := goarch
-	if goarch == "amd64" {
+	switch goarch {
+	case "amd64":
 		archName = "x86_64"
-	} else if goarch == "386" {
+	case "386":
 		archName = "i386"
+	case "arm":
+		archName = "arm" + goarm
 	}
 
-	armVersion := ""
-	if goarch == "arm" {
-		armVersion = "7"
-		if v := os.Getenv("GOARM"); v != "" {
-			armVersion = v
-		}
+	// GoReleaser appends the binary extension on Windows, so the published
+	// asset is gitplm-v1.2.3-windows-x86_64.exe.
+	ext := ""
+	if goos == "windows" {
+		ext = ".exe"
 	}
 
-	return fmt.Sprintf("gitplm-%s-%s-%s%s", version, osName, archName, armVersion)
+	return fmt.Sprintf("gitplm-%s-%s-%s%s", version, osName, archName, ext)
 }

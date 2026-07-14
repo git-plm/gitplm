@@ -7,7 +7,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 var version = "Development"
@@ -236,8 +239,15 @@ func cmdHTTP(args []string) {
 	} else {
 		log.Printf("No authentication token specified - server will be open")
 	}
+	if len(config.HTTP.Fields) > 0 {
+		categories := lo.Keys(config.HTTP.Fields)
+		sort.Strings(categories)
+		log.Printf("Field mappings configured for: %s", strings.Join(categories, ", "))
+	} else {
+		log.Printf("No field mappings configured - all CSV columns served hidden")
+	}
 
-	err = StartKiCadServer(*flagPMDir, *flagToken, *flagPort)
+	err = StartKiCadServer(*flagPMDir, *flagToken, *flagPort, config.HTTP)
 	if err != nil {
 		log.Fatal("Error starting HTTP server: ", err)
 	}

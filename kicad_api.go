@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/samber/lo"
 )
 
@@ -51,16 +55,29 @@ type KiCadRootResponse struct {
 
 // KiCadServer represents the KiCad HTTP API server
 type KiCadServer struct {
-	pmDir         string
+	pmDir      string
+	token      string
+	httpConfig HTTPConfig
+
+	// csvCollection is replaced wholesale when the CSV files change, so
+	// requests in flight keep reading the collection they started with
+	mu            sync.RWMutex
 	csvCollection *CSVFileCollection
-	token         string
+}
+
+// collection returns the CSV data currently being served
+func (s *KiCadServer) collection() *CSVFileCollection {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.csvCollection
 }
 
 // NewKiCadServer creates a new KiCad HTTP API server
-func NewKiCadServer(pmDir, token string) (*KiCadServer, error) {
+func NewKiCadServer(pmDir, token string, httpConfig HTTPConfig) (*KiCadServer, error) {
 	server := &KiCadServer{
-		pmDir: pmDir,
-		token: token,
+		pmDir:      pmDir,
+		token:      token,
+		httpConfig: httpConfig,
 	}
 
 	// Load CSV collection data
@@ -82,7 +99,86 @@ func (s *KiCadServer) loadCSVCollection() error {
 		return fmt.Errorf("failed to load CSV files from %s: %w", s.pmDir, err)
 	}
 
+	s.mu.Lock()
 	s.csvCollection = collection
+	s.mu.Unlock()
+
+	return nil
+}
+
+// watchCSVFiles reloads the CSV data whenever a file in the partmaster
+// directory changes, so edits reach KiCad without restarting the server.
+// Editors and Git tend to emit several events for one logical change, and
+// write the new contents through a temporary file, so events are coalesced and
+// the whole directory is reloaded rather than the single file that changed.
+func (s *KiCadServer) watchCSVFiles() error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("failed to create file watcher: %w", err)
+	}
+
+	if err := watcher.Add(s.pmDir); err != nil {
+		watcher.Close()
+		return fmt.Errorf("failed to watch %s: %w", s.pmDir, err)
+	}
+
+	go func() {
+		defer watcher.Close()
+
+		var (
+			pending  = make(<-chan time.Time) // nil until a change arrives
+			timer    *time.Timer
+			changed  string
+			settling = 200 * time.Millisecond
+		)
+
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if !strings.EqualFold(filepath.Ext(event.Name), ".csv") {
+					continue
+				}
+				if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Rename|fsnotify.Remove) == 0 {
+					continue
+				}
+
+				changed = filepath.Base(event.Name)
+				if timer == nil {
+					timer = time.NewTimer(settling)
+				} else {
+					timer.Reset(settling)
+				}
+				pending = timer.C
+
+			case <-pending:
+				pending = make(<-chan time.Time)
+
+				if err := s.loadCSVCollection(); err != nil {
+					log.Printf("Change detected in %s, but reloading failed: %v", changed, err)
+					log.Printf("Continuing to serve the previously loaded data")
+					continue
+				}
+
+				collection := s.collection()
+				parts := 0
+				for _, file := range collection.Files {
+					parts += len(file.Rows)
+				}
+				log.Printf("Change detected in %s - reloaded %d CSV files, %d parts",
+					changed, len(collection.Files), parts)
+
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Printf("File watcher error: %v", err)
+			}
+		}
+	}()
+
 	return nil
 }
 
@@ -102,7 +198,7 @@ func (s *KiCadServer) getCategories() []KiCadCategory {
 	categoryMap := make(map[string]bool)
 
 	// Extract categories from CSV files - use IPNs from each file
-	for _, file := range s.csvCollection.Files {
+	for _, file := range s.collection().Files {
 		// Extract from IPNs if they exist
 		if ipnIdx := s.findColumnIndex(file, "IPN"); ipnIdx >= 0 {
 			for _, row := range file.Rows {
@@ -265,7 +361,7 @@ func (s *KiCadServer) getCategoryDescription(category string) string {
 func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 	var parts []KiCadPartSummary
 
-	for _, file := range s.csvCollection.Files {
+	for _, file := range s.collection().Files {
 		// Check if this file belongs to the category
 		fileName := strings.TrimSuffix(strings.ToUpper(file.Name), ".CSV")
 		fileCategory := ""
@@ -321,9 +417,68 @@ func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 	return parts
 }
 
+// kicadBool renders a bool the way the KiCad HTTP library API expects it: a
+// string, since the API carries all values as strings.
+func kicadBool(b bool) string {
+	if b {
+		return "True"
+	}
+	return "False"
+}
+
+// buildFields converts a part's CSV columns into KiCad fields, following the
+// field configuration for the part's category.
+//
+// Every column is served hidden under its own name, since KiCad displays any
+// field whose visibility is unspecified and a schematic covered in IPNs and
+// datasheet URLs is rarely what is wanted. A category's configuration then
+// names the columns KiCad displays, the column that populates the built-in
+// Value field, and any column served under a different KiCad field name.
+func (s *KiCadServer) buildFields(category string, headers []string, values map[string]string) map[string]KiCadPartField {
+	config := s.httpConfig.FieldsForCategory(category)
+
+	visible := make(map[string]bool, len(config.Visible))
+	for _, column := range config.Visible {
+		visible[column] = true
+	}
+
+	fields := make(map[string]KiCadPartField)
+
+	for _, header := range headers {
+		// Symbol is served as symbolIdStr rather than as a field
+		if header == "Symbol" {
+			continue
+		}
+		value, exists := values[header]
+		if !exists {
+			continue
+		}
+
+		name := header
+		if renamed, ok := config.Rename[header]; ok {
+			name = renamed
+		}
+
+		fields[name] = KiCadPartField{
+			Value:   value,
+			Visible: kicadBool(visible[header]),
+		}
+	}
+
+	// KiCad's built-in Value field, populated from the configured column
+	if value, exists := values[config.Value]; exists && config.Value != "" {
+		fields["Value"] = KiCadPartField{
+			Value:   value,
+			Visible: kicadBool(visible["Value"]),
+		}
+	}
+
+	return fields
+}
+
 // getPartDetail returns detailed information for a specific part
 func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
-	for _, file := range s.csvCollection.Files {
+	for _, file := range s.collection().Files {
 		ipnIdx := s.findColumnIndex(file, "IPN")
 
 		for _, row := range file.Rows {
@@ -338,28 +493,19 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 			}
 
 			if rowPartID == partID {
-				fields := make(map[string]KiCadPartField)
-				partName := ""
-				symbolID := ""
 				category := s.extractCategory(partID)
 
-				// Add all fields from the CSV dynamically
+				// Collect the row's non-empty columns by header name
+				values := make(map[string]string)
 				for i, header := range file.Headers {
 					if i < len(row) && row[i] != "" && header != "" {
-						// Set name from Description field
-						if header == "Description" {
-							partName = row[i]
-						}
-
-						// Set symbol from Symbol field
-						if header == "Symbol" {
-							symbolID = row[i]
-						} else {
-							// Add field to fields map (exclude Symbol as it goes in symbolIdStr)
-							fields[header] = KiCadPartField{Value: row[i]}
-						}
+						values[header] = row[i]
 					}
 				}
+
+				partName := values["Description"]
+				symbolID := values["Symbol"]
+				fields := s.buildFields(category, file.Headers, values)
 
 				// Error if no Symbol field found
 				if symbolID == "" {
@@ -503,10 +649,19 @@ func getScheme(r *http.Request) string {
 }
 
 // StartKiCadServer starts the KiCad HTTP API server
-func StartKiCadServer(pmDir, token string, port int) error {
-	server, err := NewKiCadServer(pmDir, token)
+func StartKiCadServer(pmDir, token string, port int, httpConfig HTTPConfig) error {
+	server, err := NewKiCadServer(pmDir, token, httpConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create KiCad server: %w", err)
+	}
+
+	// Serving stale data is worse than not watching at all, so a watcher that
+	// cannot start is reported rather than ignored, and the server carries on
+	if err := server.watchCSVFiles(); err != nil {
+		log.Printf("Warning: not watching for CSV changes: %v", err)
+		log.Printf("Restart the server to pick up edits to the partmaster")
+	} else {
+		log.Printf("Watching %s for CSV changes", pmDir)
 	}
 
 	// Set up routes

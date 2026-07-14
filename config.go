@@ -3,14 +3,73 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
+
+// FieldConfig says how the CSV columns of one IPN category are presented to
+// KiCad. Every column is served hidden under its own name, so a category only
+// states its exceptions:
+//
+//	Value   the column that populates KiCad's built-in Value field
+//	Visible the columns KiCad displays on the schematic; all others are hidden
+//	Rename  columns served under a different KiCad field name
+//
+// Visible and Rename are keyed by CSV column name, not by KiCad field name.
+type FieldConfig struct {
+	Value   string            `yaml:"value"`
+	Visible []string          `yaml:"visible"`
+	Rename  map[string]string `yaml:"rename"`
+}
 
 type HTTPConfig struct {
 	Enabled bool   `yaml:"enabled"`
 	Port    int    `yaml:"port"`
 	Token   string `yaml:"token"`
+	// Fields configures the fields served for each IPN category (RES, CAP,
+	// ...). The "default" key applies to every category, and a category's own
+	// settings are applied on top of it.
+	Fields map[string]FieldConfig `yaml:"fields"`
+}
+
+// FieldsForCategory returns the field configuration for a category: the
+// "default" settings with the category's own applied on top. A category
+// replaces the default's value column and visible list outright, and adds to
+// its renames.
+func (h HTTPConfig) FieldsForCategory(category string) FieldConfig {
+	merged := h.Fields["default"]
+
+	fields, ok := h.Fields[strings.ToUpper(category)]
+	if !ok {
+		fields, ok = h.Fields[strings.ToLower(category)]
+	}
+	if !ok {
+		return merged
+	}
+
+	if fields.Value != "" {
+		merged.Value = fields.Value
+	}
+
+	// A category that lists no visible columns of its own inherits the
+	// default's. `visible: []` is a category that displays nothing.
+	if fields.Visible != nil {
+		merged.Visible = fields.Visible
+	}
+
+	if len(fields.Rename) > 0 {
+		renames := make(map[string]string, len(merged.Rename)+len(fields.Rename))
+		for column, name := range merged.Rename {
+			renames[column] = name
+		}
+		for column, name := range fields.Rename {
+			renames[column] = name
+		}
+		merged.Rename = renames
+	}
+
+	return merged
 }
 
 type Config struct {

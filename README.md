@@ -1,9 +1,5 @@
 ![gitplm logo](gitplm-logo.png)
 
-[![Go](https://github.com/git-plm/gitplm/workflows/Go/badge.svg?branch=main)](https://github.com/git-plm/gitplm/actions)
-![code stats](https://tokei.rs/b1/github/git-plm/gitplm?category=code)
-[![Go Report Card](https://goreportcard.com/badge/github.com/git-plm/gitplm)](https://goreportcard.com/report/github.com/git-plm/gitplm)
-
 <!--toc:start-->
 
 - [🏭 Product Life cycle Management (PLM) in Git.](#🏭-product-life-cycle-management-plm-in-git)
@@ -29,6 +25,7 @@
 - [📝 Additional notes](#📝-additional-notes)
 - [📦 Releasing](#📦-releasing)
 - [📚 Reference Information](#📚-reference-information)
+
 <!--toc:end-->
 
 ## 🏭 Product Life cycle Management (PLM) in Git.
@@ -341,14 +338,91 @@ Then run `gitplm http` to start the server with configured settings.
 
 ### Configuring what fields are visible
 
+Every column in a part's CSV row is served to KiCad as a hidden field. KiCad
+displays a field on the schematic unless it is told otherwise, so hiding by
+default keeps a placed symbol from being surrounded by its IPN, MPN, datasheet
+URL, and every parametric value.
+
+The `http.fields` section of `gitplm.yml` states the exceptions for each IPN
+category:
+
+```yaml
+pmDir: database
+
+http:
+  port: 7654
+  fields:
+    # `default` applies to every category
+    default:
+      value: MPN # KiCad's built-in Value field comes from the MPN column
+      visible: [MPN] # the MPN is displayed on the schematic
+      rename: # served under a different KiCad field name
+        Sim_Library: Sim.Library
+        Sim_Name: Sim.Name
+
+    # a category's settings are applied on top of the default
+    RES:
+      value: Resistance
+      visible: [Resistance, Tolerance, Power]
+
+    CAP:
+      value: Capacitance
+      visible: [Capacitance, Voltage, Material, Tolerance]
+```
+
+- `value` names the column that populates KiCad's built-in `Value` field.
+- `visible` lists the columns KiCad displays when the symbol is placed. Every
+  other column is served hidden, so a category that displays its parametric
+  columns does not have to hide the MPN the default displays: naming its own
+  list replaces the default's. `visible: []` displays nothing.
+- `rename` serves a column under a different KiCad field name. Renames add to
+  the default's rather than replacing them.
+- `visible` and `rename` are keyed by CSV column name, not by KiCad field name.
+- `Symbol` is always served as the symbol ID rather than as a field.
+- Categories that need nothing beyond the default can be left out entirely.
+
+If you also maintain a KiCad database library (`.kicad_dbl`), these settings say
+the same thing as its `fields` definitions: `value` is the column mapped to the
+`Value` field, `visible` the columns with `visible_on_add`, and `rename` those
+whose `name` differs from their `column`.
+
+The [`gitplm.yml`](https://github.com/git-plm/parts/blob/main/gitplm.yml) in the
+[parts](https://github.com/git-plm/parts) repository is a complete working
+example: a `default` section covering most categories, with resistors,
+capacitors, inductors, and the rest displaying their parametric columns instead.
+
 ### Configuring KiCad
 
-To use GitPLM as a parts library in KiCad:
+KiCad finds the server through a `.kicad_httplib` file that points at it. There
+is one in this repository ([`gitplm.kicad_httplib`](gitplm.kicad_httplib)), and
+another alongside the parts database it serves:
+[`gplm.kicad_httplib`](https://github.com/git-plm/parts/blob/main/database/gplm.kicad_httplib).
 
-1. Open KiCad and go to **Preferences → Configure Paths**
-2. Add a new HTTP library with the URL: `http://localhost:7654/v1/`
-3. If you configured an authentication token, add it in the library settings
-4. The parts will now be available in the Symbol Chooser
+```json
+{
+  "meta": { "version": 1.0 },
+  "name": "GitPLM Parts",
+  "description": "Parts database served over the KiCad HTTP Library API",
+  "source": {
+    "type": "REST_API",
+    "api_version": "v1",
+    "root_url": "http://localhost:7654",
+    "token": "",
+    "timeout_parts_seconds": 60,
+    "timeout_categories_seconds": 60
+  }
+}
+```
+
+`root_url` leaves off the `/v1` suffix, which KiCad appends from `api_version`.
+Set `token` to match the server's `-token` when one is configured.
+
+To use the library:
+
+1. Start the server with `gitplm http`
+2. In KiCad, open **Preferences → Manage Symbol Libraries**
+3. Add the `.kicad_httplib` file as a library
+4. The parts are now available in the Symbol Chooser
 
 ### API Endpoints
 
@@ -376,6 +450,21 @@ GitPLM automatically:
 - Extracts categories from filenames and IPNs
 - Maps parts to appropriate KiCad symbols
 - Serves part data with all fields from the CSV (Description, Value, MPN, etc.)
+
+### Reloading on changes
+
+The server watches the partmaster directory and reloads the CSV files whenever
+one of them changes, so edits made in the TUI, in an editor, or by a Git
+checkout reach KiCad without restarting the server. Each reload prints a line to
+the console:
+
+```
+2026/07/14 16:04:26 Change detected in g-res.csv - reloaded 23 CSV files, 1697 parts
+```
+
+Refresh the library in KiCad to pick the new data up. If a reload fails, for
+instance while a file is partially written, the server reports the error and
+keeps serving the data it already had.
 
 ## 💡 Examples
 
