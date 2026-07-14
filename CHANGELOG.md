@@ -11,6 +11,27 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- `gitplm update` now works on Windows. It was requesting a download URL without
+  the `.exe` suffix the released Windows binaries carry, so the update failed.
+
+## [[0.8.12] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.12)
+
+- Release process now requires a CHANGELOG.md entry for the IPN version being
+  released. If the entry is missing, the TUI opens `$EDITOR` so the user can add
+  it before proceeding. The CLI release command also checks and fails with a
+  clear error.
+
+## [[0.8.11] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.11)
+
+- TUI: add confirmation prompt before running a release (y/n). Show "Releasing
+  ..." immediately while the release runs asynchronously.
+
+## [[0.8.10] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.10)
+
+- TUI: release overlay captures log output properly instead of writing to
+  stderr, constrains width to the terminal, removes timestamps, and truncates
+  long lines.
+
 ## [[0.8.9] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.9)
 
 - TUI: entering search mode with `/` now immediately reapplies the current
