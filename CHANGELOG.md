@@ -11,6 +11,17 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- KiCad HTTP API: the server now watches the partmaster directory and reloads
+  the CSV files when one of them changes, printing a message to the console.
+  Edits reach KiCad without restarting the server.
+- KiCad HTTP API: fields are now served hidden unless configured otherwise.
+  KiCad displays any field whose visibility is unspecified, so every CSV column
+  appeared on the schematic when a symbol was placed.
+- KiCad HTTP API: added an `http.fields` section to `gitplm.yml` that says, per
+  IPN category, which column populates KiCad's `Value` field (`value`), which
+  columns KiCad displays (`visible`), and which are served under a different
+  field name (`rename`). A category's settings are applied on top of a `default`
+  section shared by all categories.
 - `gitplm update` now works on Windows. It was requesting a download URL without
   the `.exe` suffix the released Windows binaries carry, so the update failed.
 
