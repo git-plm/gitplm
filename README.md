@@ -386,14 +386,43 @@ the same thing as its `fields` definitions: `value` is the column mapped to the
 `Value` field, `visible` the columns with `visible_on_add`, and `rename` those
 whose `name` differs from their `column`.
 
+The [`gitplm.yml`](https://github.com/git-plm/parts/blob/main/gitplm.yml) in the
+[parts](https://github.com/git-plm/parts) repository is a complete working
+example: a `default` section covering most categories, with resistors,
+capacitors, inductors, and the rest displaying their parametric columns instead.
+
 ### Configuring KiCad
 
-To use GitPLM as a parts library in KiCad:
+KiCad finds the server through a `.kicad_httplib` file that points at it. There
+is one in this repository ([`gitplm.kicad_httplib`](gitplm.kicad_httplib)), and
+another alongside the parts database it serves:
+[`gplm.kicad_httplib`](https://github.com/git-plm/parts/blob/main/database/gplm.kicad_httplib).
 
-1. Open KiCad and go to **Preferences → Configure Paths**
-2. Add a new HTTP library with the URL: `http://localhost:7654/v1/`
-3. If you configured an authentication token, add it in the library settings
-4. The parts will now be available in the Symbol Chooser
+```json
+{
+  "meta": { "version": 1.0 },
+  "name": "GitPLM Parts",
+  "description": "Parts database served over the KiCad HTTP Library API",
+  "source": {
+    "type": "REST_API",
+    "api_version": "v1",
+    "root_url": "http://localhost:7654",
+    "token": "",
+    "timeout_parts_seconds": 60,
+    "timeout_categories_seconds": 60
+  }
+}
+```
+
+`root_url` leaves off the `/v1` suffix, which KiCad appends from `api_version`.
+Set `token` to match the server's `-token` when one is configured.
+
+To use the library:
+
+1. Start the server with `gitplm http`
+2. In KiCad, open **Preferences → Manage Symbol Libraries**
+3. Add the `.kicad_httplib` file as a library
+4. The parts are now available in the Symbol Chooser
 
 ### API Endpoints
 
