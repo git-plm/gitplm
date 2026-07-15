@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-07-15
+
 - KiCad HTTP API: parts are now named by their IPN, so a placed symbol's library
   link reads like `gplm:REG-0000-0005` instead of the part description.
 
