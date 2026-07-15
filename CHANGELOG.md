@@ -11,6 +11,9 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- KiCad HTTP API: parts are now named by their IPN, so a placed symbol's library
+  link reads like `gplm:REG-0000-0005` instead of the part description.
+
 ## [0.9.2] - 2026-07-15
 
 - TUI: an active search or parametric filter now stays applied after copying,
