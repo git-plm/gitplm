@@ -11,6 +11,9 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- TUI: the parts list now scrolls a full page at a time with Ctrl-F (forward)
+  and Ctrl-B (back), matching the less and vim convention.
+
 ## [0.9.0] - 2026-07-14
 
 - KiCad HTTP API: the server now watches the partmaster directory and reloads
