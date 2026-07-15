@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- TUI: an active search or parametric filter now stays applied after copying,
+  deleting, adding, or editing a part. The list previously reverted to showing
+  every row until the filter was re-entered.
+
 ## [0.9.1] - 2026-07-15
 
 - TUI: the parts list now scrolls a full page at a time with Ctrl-F (forward)
