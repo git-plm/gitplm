@@ -399,9 +399,12 @@ func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 					partID = fmt.Sprintf("%s-unknown-%d", categoryID, len(parts))
 				}
 
+				// KiCad displays the name as the schematic library link, so use
+				// the IPN rather than the description
+				partName = partID
+
 				// Get description
 				if descIdx >= 0 && len(row) > descIdx {
-					partName = row[descIdx]
 					partDesc = row[descIdx]
 				}
 
@@ -503,7 +506,9 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 					}
 				}
 
-				partName := values["Description"]
+				// KiCad displays the name as the schematic library link, so use
+				// the IPN rather than the description
+				partName := partID
 				symbolID := values["Symbol"]
 				fields := s.buildFields(category, file.Headers, values)
 
