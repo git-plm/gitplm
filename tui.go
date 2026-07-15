@@ -187,6 +187,13 @@ func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
 		table.WithFocused(false),
 	)
 
+	// Add ctrl+f/ctrl+b as full-page scroll aliases, matching the
+	// less/vim convention, alongside the table's default f/b and pgup/pgdown.
+	km := table.DefaultKeyMap()
+	km.PageDown.SetKeys(append(km.PageDown.Keys(), "ctrl+f")...)
+	km.PageUp.SetKeys(append(km.PageUp.Keys(), "ctrl+b")...)
+	t.KeyMap = km
+
 	s := table.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -1380,7 +1387,7 @@ func (m modelNew) View() string {
 			if m.selectedFile == allFilesOption {
 				enterLabel = "Enter open file"
 			}
-			parts := []string{enterLabel, "/ search", "p parametric"}
+			parts := []string{enterLabel, "^F/^B page", "/ search", "p parametric"}
 			if m.selectedFile != allFilesOption {
 				parts = append(parts, "o datasheet")
 			}
