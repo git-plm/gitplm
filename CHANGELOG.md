@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-07-15
+
 - TUI: an active search or parametric filter now stays applied after copying,
   deleting, adding, or editing a part. The list previously reverted to showing
   every row until the filter was re-entered.
