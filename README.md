@@ -45,6 +45,9 @@ operations that need to made over and over. You want to do something once, and
 then your tools do it for you from then on. This is the problem that GitPLM
 solves.**
 
+Since we store our designs in Git, we think it makes sense to store the
+meta-data (BOMs, part-numbers, etc.) around our designs in Git too.
+
 Without a shared system, hardware, firmware, and mechanical work drift into
 scattered files, untracked changes, and version numbers no one can trust. Does
 your workflow resemble this?
@@ -59,14 +62,20 @@ truth with full history and traceability:
 
 GitPLM does several things:
 
+- Serves the partmaster to KiCad as an HTTP library, so schematics are drawn
+  with parts that already carry your IPNs, and reloads whenever the CSV files
+  change.
+- Searches and edits the partmaster in a terminal UI, with quick search across
+  every column, parametric search per column, datasheet links, and release
+  processing.
 - Combines source BOMs with the partmaster to generate BOMs with manufacturing
   information.
-- Automate the generation of release/manufacturing information
-- Create combined BOMs that include parts from all sub-assemblies
+- Automates the generation of release/manufacturing information.
+- Creates combined BOMs that include parts from all sub-assemblies.
 - Gathers release data for all custom components in the design into one
   directory for release to manufacturing.
 
-An example output is shown below:
+An example release output is shown below:
 
 <img src="assets/image-20230104145925988.png" alt="image-20230104145925988" style="zoom:50%;" />
 
@@ -75,7 +84,7 @@ changes and use simple file formats like CSV to store BOMs, partmaster, etc.
 
 ## 🎬 Video overview
 
-[GitPLM overview](https://youtu.be/rSGHQXkrZmc)
+[GitPLM video playlist](https://www.youtube.com/playlist?list=PLUc0MSAo-4o0)
 
 ## 📦 Installation
 
