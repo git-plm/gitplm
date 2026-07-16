@@ -123,7 +123,11 @@ and ASY have recursive BOMs.
 
 Purchased: `RES`, `CAP`, `DIO`, `LED`, etc.
 
-Format: `CCC-NNN-VVVV` where N is 3-4 digits, V is always 4 digits.
+Format: `CCC-NNN-VVVV` where N is 3-4 digits, and V is 4 alphanumeric
+characters. V often codes a value rather than a plain number, such as `02V5` for
+2.5 V or `047n` for 47 nH, so its case is significant. `reIpn` in `ipn.go` is
+the single definition of this format -- parse IPNs through the `ipn` type rather
+than matching the format again elsewhere.
 
 ### Data Flow for Release Processing
 
