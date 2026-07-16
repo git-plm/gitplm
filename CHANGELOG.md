@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Parts whose variation codes a value rather than a plain number, such as
+  `ICS-0047-02V5` for 2.5 V or `RES-0008-8R3m` for 8.3 mOhm, are now accepted
+  everywhere an IPN is read. Releases of these parts previously failed, the
+  KiCad HTTP API served them without a category, and the TUI could suggest a
+  next available IPN that collided with one of them.
+
 ## [0.9.3] - 2026-07-15
 
 - KiCad HTTP API: parts are now named by their IPN, so a placed symbol's library

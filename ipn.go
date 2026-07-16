@@ -11,60 +11,38 @@ import (
 
 type ipn string
 
-var reIpn = regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d{3,4})-(\d\d\d\d)$`)
-var reC = regexp.MustCompile(`^[A-Z][A-Z][A-Z]$`)
+// reIpn is the single definition of the IPN format: CCC-NNNN-VVVV, and
+// CCC-NNN-VVVV for legacy 3-digit N.
+//
+// VVVV codes a variation and is alphanumeric rather than digits only, because
+// it often encodes a value: 02V5 denotes 2.5 V, and 047n denotes 47 nH. Case is
+// significant, since SI prefixes such as the m in 8R3m (8.3 mOhm) rely on it.
+var reIpn = regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d{3,4})-([0-9A-Za-z]{4})$`)
 
 func newIpn(s string) (ipn, error) {
 	_, _, _, err := ipn(s).parse()
 	return ipn(s), err
 }
 
-func newIpnParts(c string, n, v int) (ipn, error) {
-	if n < 0 || n > 9999 {
-		return "", errors.New("N out of range")
-	}
-
-	if v < 0 || v > 9999 {
-		return "", errors.New("V out of range")
-	}
-
-	if len(c) != 3 {
-		return "", errors.New("C must be 3 chars")
-	}
-
-	if reC.FindString(c) == "" {
-		return "", errors.New("C must be in format CCC")
-	}
-
-	nFmt := "%03v"
-	if n > 999 {
-		nFmt = "%04v"
-	}
-	return ipn(fmt.Sprintf("%v-"+nFmt+"-%04v", c, n, v)), nil
-}
-
 func (i ipn) String() string {
 	return string(i)
 }
 
-// parse() returns C (category), N (number), V (variation)
-func (i ipn) parse() (string, int, int, error) {
+// parse() returns C (category), N (number), V (variation). V is returned as a
+// string because it is not always a number.
+func (i ipn) parse() (string, int, string, error) {
 	groups := reIpn.FindStringSubmatch(string(i))
 	if len(groups) < 4 {
-		return "", 0, 0, errors.New("Error parsing ipn")
+		return "", 0, "", errors.New("Error parsing ipn")
 	}
 
 	c := groups[1]
 	n, err := strconv.Atoi(groups[2])
 	if err != nil {
-		return "", 0, 0, fmt.Errorf("Error parsing N: %v", err)
-	}
-	v, err := strconv.Atoi(groups[3])
-	if err != nil {
-		return "", 0, 0, fmt.Errorf("Error parsing V: %v", err)
+		return "", 0, "", fmt.Errorf("Error parsing N: %v", err)
 	}
 
-	return c, n, v, nil
+	return c, n, groups[3], nil
 }
 
 // nWidth returns the number of digits in the N segment of the IPN
@@ -93,11 +71,6 @@ func (i ipn) c() (string, error) {
 func (i ipn) n() (int, error) {
 	_, n, _, err := i.parse()
 	return n, err
-}
-
-func (i ipn) v() (int, error) {
-	_, _, v, err := i.parse()
-	return v, err
 }
 
 var ourIPNs = []string{"PCA", "PCB", "ASY", "DOC", "DFW", "DSW", "DCL", "FIX"}

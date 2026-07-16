@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -238,15 +237,14 @@ func (s *KiCadServer) findColumnIndex(file *CSVFile, columnName string) int {
 	return -1
 }
 
-// extractCategory extracts the CCC component from an IPN
+// extractCategory extracts the CCC component from an IPN, or returns an empty
+// string if the IPN is not in the format described on the ipn type.
 func (s *KiCadServer) extractCategory(ipnStr string) string {
-	// IPN format: CCC-NNNN-VVVV (also supports CCC-NNN-VVVV for legacy)
-	re := regexp.MustCompile(`^([A-Z][A-Z][A-Z])-(\d{3,4})-(\d{4})$`)
-	matches := re.FindStringSubmatch(ipnStr)
-	if len(matches) >= 2 {
-		return matches[1]
+	c, err := ipn(ipnStr).c()
+	if err != nil {
+		return ""
 	}
-	return ""
+	return c
 }
 
 // getCategoryDisplayName returns a human-readable name for a category
