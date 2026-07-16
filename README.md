@@ -3,11 +3,13 @@
 <!--toc:start-->
 
 - [🏭 Product Life cycle Management (PLM) in Git.](#-product-life-cycle-management-plm-in-git)
+- [⚖ Chaos or Control?](#-chaos-or-control)
+- [✨ Features](#-features)
 - [🎬 Video overview](#-video-overview)
 - [📦 Installation](#-installation)
 - [🚀 Usage](#-usage)
 - [⚙ Configuration](#-configuration)
-- [Terminal User Interface (TUI)](#terminal-user-interface-tui)
+- [🖥 Terminal User Interface (TUI)](#-terminal-user-interface-tui)
 - [🔢 Part Numbers](#-part-numbers)
 - [📋 Partmaster](#-partmaster)
 - [🔧 Components you manufacture](#-components-you-manufacture)
@@ -48,6 +50,8 @@ solves.**
 Since we store our designs in Git, we think it makes sense to store the
 meta-data (BOMs, part-numbers, etc.) around our designs in Git too.
 
+## ⚖ Chaos or Control?
+
 Without a shared system, hardware, firmware, and mechanical work drift into
 scattered files, untracked changes, and version numbers no one can trust. Does
 your workflow resemble this?
@@ -59,6 +63,8 @@ Git-based workflow, so every part, BOM, and revision has a single source of
 truth with full history and traceability:
 
 ![GitPLM workflow](gitplm-workflow.jpg)
+
+## ✨ Features
 
 GitPLM does several things:
 
@@ -133,7 +139,7 @@ Available configuration options:
 
 - `pmDir`: Specifies the directory containing parts database of CSV files
 
-## Terminal User Interface (TUI)
+## 🖥 Terminal User Interface (TUI)
 
 GitPLM has a terminal user interface that will be displayed if you start GitPLM
 without any command line arguments.
