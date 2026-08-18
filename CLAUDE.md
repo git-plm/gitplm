@@ -147,3 +147,6 @@ than matching the format again elsewhere.
 - File search uses `fs.WalkDir` from `./` and does NOT follow symlinks
 - Hooks use `/bin/sh -c` (Linux/macOS only)
 - `gocsv` library handles CSV marshal/unmarshal via struct tags
+- `scripts/gen-logo.py` regenerates `gitplm-logo.svg` and
+  `gitplm-logo-square.svg` from Fira Code glyph outlines (fontTools); its
+  docstring has the `rsvg-convert` commands for the PNG derivatives
