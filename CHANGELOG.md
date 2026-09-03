@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-09-03
+
 - Release configurations: `add` and `remove` accept several references in one
   `ref` field, separated by spaces or commas. Depopulating a board variant no
   longer needs a separate `remove` line per part, and added references are
