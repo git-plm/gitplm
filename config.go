@@ -27,6 +27,12 @@ type HTTPConfig struct {
 	Enabled bool   `yaml:"enabled"`
 	Port    int    `yaml:"port"`
 	Token   string `yaml:"token"`
+	// CategoryPrefixedNames serves each part under the name
+	// <lowercase category>/<IPN> rather than the IPN alone, so KiCad writes
+	// lib_ids like `#gplm:res/RES-0000-1002`. This is the form a KiCad
+	// database library wrote, so a project moving from `.kicad_dbl` to the
+	// HTTP library keeps resolving its existing symbols.
+	CategoryPrefixedNames bool `yaml:"categoryPrefixedNames"`
 	// Fields configures the fields served for each IPN category (RES, CAP,
 	// ...). The "default" key applies to every category, and a category's own
 	// settings are applied on top of it.

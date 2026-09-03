@@ -247,6 +247,17 @@ func (s *KiCadServer) extractCategory(ipnStr string) string {
 	return c
 }
 
+// partName returns the name a part is served under, which is the name KiCad
+// writes into a schematic's lib_id. It is the IPN, or <category>/<IPN> when
+// categoryPrefixedNames is set, matching the lib_ids a KiCad database library
+// wrote.
+func (s *KiCadServer) partName(category, partID string) string {
+	if !s.httpConfig.CategoryPrefixedNames || category == "" {
+		return partID
+	}
+	return strings.ToLower(category) + "/" + partID
+}
+
 // getCategoryDisplayName returns a human-readable name for a category
 func (s *KiCadServer) getCategoryDisplayName(category string) string {
 	displayNames := map[string]string{
@@ -399,7 +410,7 @@ func (s *KiCadServer) getPartsByCategory(categoryID string) []KiCadPartSummary {
 
 				// KiCad displays the name as the schematic library link, so use
 				// the IPN rather than the description
-				partName = partID
+				partName = s.partName(partCategory, partID)
 
 				// Get description
 				if descIdx >= 0 && len(row) > descIdx {
@@ -506,7 +517,7 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 
 				// KiCad displays the name as the schematic library link, so use
 				// the IPN rather than the description
-				partName := partID
+				partName := s.partName(category, partID)
 				symbolID := values["Symbol"]
 				fields := s.buildFields(category, file.Headers, values)
 

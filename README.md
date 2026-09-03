@@ -407,6 +407,27 @@ The [`gitplm.yml`](https://github.com/git-plm/parts/blob/main/gitplm.yml) in the
 example: a `default` section covering most categories, with resistors,
 capacitors, inductors, and the rest displaying their parametric columns instead.
 
+### Migrating from a KiCad database library
+
+KiCad names a placed symbol after the `name` the API serves, and writes that
+name into the schematic as the symbol's `lib_id`. GitPLM serves the IPN, so a
+resistor is saved as `#gplm:RES-0000-1002`.
+
+A KiCad database library named the same part `#gplm:res/RES-0000-1002`, after
+the table it came from. A project moving from `.kicad_dbl` to the HTTP library
+therefore finds `*** symbol not found ***` on every part it had already placed.
+Setting `categoryPrefixedNames` serves the names in that form instead, so the
+existing schematics keep resolving:
+
+```yaml
+http:
+  categoryPrefixedNames: true
+```
+
+The alternative is to rewrite the `lib_id` of every symbol in every schematic
+that uses the library. New projects can leave the setting off and use the
+shorter names.
+
 ### Configuring KiCad
 
 KiCad finds the server through a `.kicad_httplib` file that points at it. There
