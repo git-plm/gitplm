@@ -2,6 +2,8 @@
 
 version: 2
 
+project_name: gitplm
+
 before:
   hooks:
     - go mod tidy
@@ -55,4 +57,6 @@ release:
 
     ---
 
-    To update, run: `gitplm -update`
+    To update, run: `gitplm update`
+
+    Or download the binary for your platform below and place it in your PATH.

@@ -6,19 +6,26 @@ type ipnTest struct {
 	ipn   string
 	c     string
 	n     int
-	v     int
+	v     string
 	valid bool
 }
 
 func TestIpn(t *testing.T) {
 	tests := []ipnTest{
-		{"PCB-001-0500", "PCB", 1, 500, true},
-		{"ASY-200-1000", "ASY", 200, 1000, true},
-		{"SY-200-1000", "", 0, 0, false},
-		{"ASY-0001-0001", "ASY", 1, 1, true},     // 4-digit N
-		{"PCB-0123-0500", "PCB", 123, 500, true}, // 4-digit N
-		{"ASY-20-1000", "", 0, 0, false},
-		{"ASY-200-100", "", 0, 0, false},
+		{"PCB-001-0500", "PCB", 1, "0500", true},
+		{"ASY-200-1000", "ASY", 200, "1000", true},
+		{"SY-200-1000", "", 0, "", false},
+		{"ASY-0001-0001", "ASY", 1, "0001", true},   // 4-digit N
+		{"PCB-0123-0500", "PCB", 123, "0500", true}, // 4-digit N
+		{"ICS-0047-02V5", "ICS", 47, "02V5", true},  // V codes 2.5 V
+		{"CAP-0006-04R7", "CAP", 6, "04R7", true},   // R as a decimal point
+		{"IND-0005-047n", "IND", 5, "047n", true},   // n codes nH
+		{"RES-0008-8R3m", "RES", 8, "8R3m", true},   // 8.3 mOhm
+		{"ASY-20-1000", "", 0, "", false},           // N too short
+		{"ASY-200-100", "", 0, "", false},           // V too short
+		{"ASY-200-10000", "", 0, "", false},         // V too long
+		{"ics-0047-0000", "", 0, "", false},         // C must be upper case
+		{"ICS-0047-02_5", "", 0, "", false},         // V is alphanumeric only
 	}
 
 	for _, test := range tests {

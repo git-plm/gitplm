@@ -23,7 +23,7 @@ func findIPNSourceDir(relPn string) (string, error) {
 	}
 
 	relPnBase := relIpn.base()
-	relPnBaseWithVar := fmt.Sprintf("%v-%02v", relPnBase, v/100)
+	relPnBaseWithVar := fmt.Sprintf("%v-%v", relPnBase, v[:2]) // First two characters of variation
 
 	for _, name := range []string{
 		relPnBase + ".csv",
@@ -68,7 +68,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 	}
 
 	relPnBase := relIpn.base()
-	relPnBaseWithVar := fmt.Sprintf("%v-%02v", relPnBase, v/100) // First two digits of variation
+	relPnBaseWithVar := fmt.Sprintf("%v-%v", relPnBase, v[:2]) // First two characters of variation
 
 	bomFile := relPnBase + ".csv"
 	bomFileWithVar := relPnBaseWithVar + ".csv"

@@ -11,7 +11,55 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
-## [[0.8.12] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.l2)
+## [0.9.5] - 2026-09-03
+
+- KiCad HTTP API: `categoryPrefixedNames: true` in `gitplm.yml` serves parts as
+  `res/RES-0000-1002` rather than `RES-0000-1002`, matching the names a KiCad
+  database library used. A project moving from a `.kicad_dbl` library to the
+  HTTP library can now keep the symbols it has already placed, which previously
+  had to be found again by hand or rewritten in every schematic.
+
+## [0.9.4] - 2026-07-16
+
+- Parts whose variation codes a value rather than a plain number, such as
+  `ICS-0047-02V5` for 2.5 V or `RES-0008-8R3m` for 8.3 mOhm, are now accepted
+  everywhere an IPN is read. Releases of these parts previously failed, the
+  KiCad HTTP API served them without a category, and the TUI could suggest a
+  next available IPN that collided with one of them.
+
+## [0.9.3] - 2026-07-15
+
+- KiCad HTTP API: parts are now named by their IPN, so a placed symbol's library
+  link reads like `gplm:REG-0000-0005` instead of the part description.
+
+## [0.9.2] - 2026-07-15
+
+- TUI: an active search or parametric filter now stays applied after copying,
+  deleting, adding, or editing a part. The list previously reverted to showing
+  every row until the filter was re-entered.
+
+## [0.9.1] - 2026-07-15
+
+- TUI: the parts list now scrolls a full page at a time with Ctrl-F (forward)
+  and Ctrl-B (back), matching the less and vim convention.
+
+## [0.9.0] - 2026-07-14
+
+- KiCad HTTP API: the server now watches the partmaster directory and reloads
+  the CSV files when one of them changes, printing a message to the console.
+  Edits reach KiCad without restarting the server.
+- KiCad HTTP API: fields are now served hidden unless configured otherwise.
+  KiCad displays any field whose visibility is unspecified, so every CSV column
+  appeared on the schematic when a symbol was placed.
+- KiCad HTTP API: added an `http.fields` section to `gitplm.yml` that says, per
+  IPN category, which column populates KiCad's `Value` field (`value`), which
+  columns KiCad displays (`visible`), and which are served under a different
+  field name (`rename`). A category's settings are applied on top of a `default`
+  section shared by all categories.
+- `gitplm update` now works on Windows. It was requesting a download URL without
+  the `.exe` suffix the released Windows binaries carry, so the update failed.
+
+## [[0.8.12] - 2026-03-02](https://github.com/git-plm/gitplm/releases/tag/v0.8.12)
 
 - Release process now requires a CHANGELOG.md entry for the IPN version being
   released. If the entry is missing, the TUI opens `$EDITOR` so the user can add

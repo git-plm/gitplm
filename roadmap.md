@@ -1,0 +1,2 @@
+- Select symbols and footprints from KiCad libraries
+- Show error if symbol/footprint cannot be found

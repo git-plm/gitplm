@@ -199,6 +199,13 @@ func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
 		table.WithFocused(false),
 	)
 
+	// Add ctrl+f/ctrl+b as full-page scroll aliases, matching the
+	// less/vim convention, alongside the table's default f/b and pgup/pgdown.
+	km := table.DefaultKeyMap()
+	km.PageDown.SetKeys(append(km.PageDown.Keys(), "ctrl+f")...)
+	km.PageUp.SetKeys(append(km.PageUp.Keys(), "ctrl+b")...)
+	t.KeyMap = km
+
 	s := table.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -436,10 +443,29 @@ func (m *modelNew) updateTableForSelectedFile() {
 		m.isEditable = true
 	}
 
-	m.filteredRows = m.allRows
-	m.rowToDataIdx = nil
 	m.mode = modeNormal
 	m.error = ""
+	m.reapplyActiveFilter()
+}
+
+// reapplyActiveFilter re-runs whichever filter (search or parametric) is
+// currently active against the freshly rebuilt allRows. It keeps the active
+// filter in effect after edits, copies, and deletes, which rebuild the table.
+// With no active filter, the full row set is shown.
+func (m *modelNew) reapplyActiveFilter() {
+	if m.searchInput.Value() != "" {
+		m.applySearchFilter(m.searchInput.Value())
+		return
+	}
+	for _, pi := range m.paramInputs {
+		if pi.Value() != "" {
+			m.applyParametricFilter()
+			return
+		}
+	}
+	m.filteredRows = m.allRows
+	m.rowToDataIdx = nil
+	m.table.SetRows(m.allRows)
 }
 
 // getSelectedCSVFile returns the CSVFile for the currently selected file, or nil.
@@ -1479,7 +1505,7 @@ func (m modelNew) View() string {
 			if m.selectedFile == allFilesOption {
 				enterLabel = "Enter open file"
 			}
-			parts := []string{enterLabel, "/ search", "p parametric"}
+			parts := []string{enterLabel, "^F/^B page", "/ search", "p parametric"}
 			if m.selectedFile != allFilesOption {
 				parts = append(parts, "o datasheet")
 			}

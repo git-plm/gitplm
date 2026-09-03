@@ -12,9 +12,56 @@ go test ./...       # Run all tests
 go test -run TestFunctionName ./...  # Run a single test
 ```
 
-No Makefile or linter is configured. CI runs `go test ./...` on every push.
+Source `envsetup.sh` for helper functions that mirror what CI does:
 
-Cross-platform releases use GoReleaser (see `envsetup.sh` for helper functions).
+```bash
+. envsetup.sh
+gitplm_build          # build with the version stamped in via ldflags
+gitplm_test           # go test ./...
+gitplm_format         # gofmt -s -w . and prettier --write on Markdown
+gitplm_check          # everything CI runs; use this before pushing
+```
+
+## CI
+
+`.github/workflows/ci.yaml` runs on every push to `main` and every pull request:
+tests, a version-stamped build, `gofmt -s` and `go vet`, and a Prettier check of
+all Markdown. `gitplm_check` runs the same set locally.
+
+## Releasing
+
+Pushing a `v*` tag triggers `.github/workflows/release.yaml`, which runs
+GoReleaser to build every platform in `.goreleaser.yml` and publish the binaries
+to a GitHub release. The release notes are not generated from commits: they are
+the `CHANGELOG.md` section for the version being released, extracted by
+`scripts/extract-changelog.sh`. If that section is missing, the release fails
+rather than publishing empty notes.
+
+To cut a release:
+
+```bash
+. envsetup.sh
+gitplm_prepare_release 0.8.13   # promotes [Unreleased], commits, tags
+git push origin main && git push origin v0.8.13
+```
+
+`scripts/prepare-release.sh` refuses to run on a dirty tree, on an existing tag,
+or with an empty `[Unreleased]` section, and it runs the tests before tagging.
+
+Notes on keeping the release path working:
+
+- **Every user-visible change needs a `CHANGELOG.md` entry under
+  `[Unreleased]`.** That entry becomes the release notes, so write it for the
+  user of `gitplm`, not the engineer changing it: one or two sentences leading
+  with what they can now do or what was broken and is now fixed. Do not list
+  file paths or function names. Entries sit directly under each other with no
+  blank line between them; the blank line separates one version section from the
+  next.
+- **The published asset names are a contract with `gitplm update`.** The
+  `archives` `name_template` in `.goreleaser.yml` names the files attached to
+  the release, and `binaryName` in `update.go` reconstructs those names to build
+  the download URL. `TestBinaryName` pins the two together against the names
+  actually published. Change one and you must change the other.
 
 ## Architecture
 
@@ -76,7 +123,11 @@ and ASY have recursive BOMs.
 
 Purchased: `RES`, `CAP`, `DIO`, `LED`, etc.
 
-Format: `CCC-NNN-VVVV` where N is 3-4 digits, V is always 4 digits.
+Format: `CCC-NNN-VVVV` where N is 3-4 digits, and V is 4 alphanumeric
+characters. V often codes a value rather than a plain number, such as `02V5` for
+2.5 V or `047n` for 47 nH, so its case is significant. `reIpn` in `ipn.go` is
+the single definition of this format -- parse IPNs through the `ipn` type rather
+than matching the format again elsewhere.
 
 ### Data Flow for Release Processing
 
@@ -96,3 +147,7 @@ Format: `CCC-NNN-VVVV` where N is 3-4 digits, V is always 4 digits.
 - File search uses `fs.WalkDir` from `./` and does NOT follow symlinks
 - Hooks use `/bin/sh -c` (Linux/macOS only)
 - `gocsv` library handles CSV marshal/unmarshal via struct tags
+- `scripts/gen-logo.py` regenerates `gitplm-logo.svg`, `gitplm-logo-square.svg`,
+  and the `[g]` favicon source `gitplm-icon.svg` from Fira Code glyph outlines
+  (fontTools); its docstring has the `rsvg-convert` commands for the PNG
+  derivatives, including `favicon.png`

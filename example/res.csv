@@ -1,2 +1,2 @@
 IPN,Description,Footprint,Value,Manufacturer,MPN,Datasheet,Priority,Checked
-RES-008-220K,220k Resistor,Resistor_SMD:R_2010_5025Metric,220k_500mW,KOA SPEER Electronics,HV732HTTE2203F,https://www.koaspeer.com/pdfs/HV73.pdf,
+RES-0000-2215,221K 0603,Resistor_SMD:R_0603_1608Metric,221K,Yageo,RC0603FR-07221KL,https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf,,
