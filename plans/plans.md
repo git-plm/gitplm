@@ -4,3 +4,4 @@
 | -------------------------------------- | --------------- | ------------- |
 | 2026-02-27-tui-interactive-features.md | **Implemented** | ef015b5       |
 | 2026-03-02-detail-popup-datasheet.md   | **Implemented** | 338e9ea       |
+| 2026-08-31-check-command.md            | Draft           | efe5a1a       |
