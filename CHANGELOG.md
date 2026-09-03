@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- KiCad HTTP API: `categoryPrefixedNames: true` in `gitplm.yml` serves parts as
+  `res/RES-0000-1002` rather than `RES-0000-1002`, matching the names a KiCad
+  database library used. A project moving from a `.kicad_dbl` library to the
+  HTTP library can now keep the symbols it has already placed, which previously
+  had to be found again by hand or rewritten in every schematic.
+
 ## [0.9.4] - 2026-07-16
 
 - Parts whose variation codes a value rather than a plain number, such as

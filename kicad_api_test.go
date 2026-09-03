@@ -40,3 +40,44 @@ func TestExtractCategory(t *testing.T) {
 		}
 	}
 }
+
+type partNameTest struct {
+	category string
+	partID   string
+	name     string
+}
+
+func TestPartName(t *testing.T) {
+	tests := []partNameTest{
+		{"RES", "RES-0000-1002", "RES-0000-1002"},
+		{"", "RES-0000-1002", "RES-0000-1002"},
+	}
+
+	s := &KiCadServer{}
+
+	for _, test := range tests {
+		got := s.partName(test.category, test.partID)
+		if got != test.name {
+			t.Errorf("partName(%q, %q) = %q, want %q", test.category, test.partID, got, test.name)
+		}
+	}
+}
+
+func TestPartNameCategoryPrefixed(t *testing.T) {
+	tests := []partNameTest{
+		{"RES", "RES-0000-1002", "res/RES-0000-1002"},
+		{"ASY", "ASY-0001-0001", "asy/ASY-0001-0001"},
+		// A part whose IPN has no category is served under its IPN alone,
+		// since there is no prefix to add
+		{"", "not-an-ipn", "not-an-ipn"},
+	}
+
+	s := &KiCadServer{httpConfig: HTTPConfig{CategoryPrefixedNames: true}}
+
+	for _, test := range tests {
+		got := s.partName(test.category, test.partID)
+		if got != test.name {
+			t.Errorf("partName(%q, %q) = %q, want %q", test.category, test.partID, got, test.name)
+		}
+	}
+}
