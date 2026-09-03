@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 type bomLine struct {
@@ -40,15 +41,30 @@ func (bl *bomLine) String() string {
 		bl.Checked)
 }
 
-func (bl *bomLine) removeRef(ref string) {
-	refs := strings.Split(bl.Ref, " ")
+// splitRefs breaks a reference designator field into individual references.
+// References may be separated by spaces or commas, so that a BOM and a release
+// configuration can both be written in whichever style reads best.
+func splitRefs(refs string) []string {
+	return strings.FieldsFunc(refs, func(r rune) bool {
+		return r == ',' || unicode.IsSpace(r)
+	})
+}
+
+// removeRefs removes one or more references from a BOM line and updates the
+// quantity to match.
+func (bl *bomLine) removeRefs(remove []string) {
+	rm := make(map[string]bool, len(remove))
+	for _, r := range remove {
+		rm[r] = true
+	}
+
 	refsOut := []string{}
-	for _, r := range refs {
-		r = strings.Trim(r, " ")
-		if r != ref && r != "" {
+	for _, r := range splitRefs(bl.Ref) {
+		if !rm[r] {
 			refsOut = append(refsOut, r)
 		}
 	}
+
 	bl.Ref = strings.Join(refsOut, " ")
 	bl.Qty = float64(len(refsOut))
 }

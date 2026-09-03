@@ -36,10 +36,10 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 			ret = retM
 		}
 
-		if r.Ref != "" {
+		if refs := splitRefs(r.Ref); len(refs) > 0 {
 			retM := bom{}
 			for _, l := range ret {
-				l.removeRef(r.Ref)
+				l.removeRefs(refs)
 				if l.Qty > 0 {
 					retM = append(retM, l)
 				}
@@ -49,9 +49,14 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 	}
 
 	for _, a := range rs.Add {
-		refs := strings.Split(a.Ref, ",")
-		a.Qty = float64(len(refs))
-		if a.Qty < 0 {
+		refs := splitRefs(a.Ref)
+		if len(refs) > 0 {
+			a.Ref = strings.Join(refs, " ")
+			a.Qty = float64(len(refs))
+			a.sortRefs()
+		} else {
+			// a part with no reference, such as a sub assembly
+			a.Ref = ""
 			a.Qty = 1.0
 		}
 		// for some reason we need to make a copy or it

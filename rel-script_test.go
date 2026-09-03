@@ -14,12 +14,20 @@ var modFile = `
 description: modify bom
 remove:
  - cmpName: Test point 2
- - ref: D13
  - ref: R11
+ - ref: D13 D14
+ - ref: R1,R2
 add:
  - cmpName: "screw #4 2"
    ref: S3
    ipn: SCR-002-0002
+ - cmpName: "led green"
+   ref: D22 D20 D21
+   ipn: DIO-033-000G
+ - cmpName: "led blue"
+   ref: D32,D30,D31
+   ipn: DIO-033-000B
+ - ipn: PCB-009-0013
 `
 
 var bomIn = `
@@ -32,8 +40,10 @@ D1 D2 D13 D14,4,,diode,,,,DIO-023-0023,
 
 var bomExp = `
 Ref,Qty,Value,Cmp name,Footprint,Description,Vendor,IPN,Datasheet
-D1 D2 D14,3,,diode,,,,DIO-023-0023,
-R1 R2,2,,100K_100mw,,,,RES-006-0232,
+D1 D2,2,,diode,,,,DIO-023-0023,
+D30 D31 D32,3,,led blue,,,,DIO-033-000B,
+D20 D21 D22,3,,led green,,,,DIO-033-000G,
+,1,,,,,,PCB-009-0013,
 S3,1,,screw #4 2,,,,SCR-002-0002,
 `
 

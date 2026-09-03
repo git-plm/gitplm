@@ -283,10 +283,14 @@ remove:
   - cmpName: Test point
   - cmpName: Test point 2
   - ref: D12
+  - ref: D20 D21 D22
 add:
   - cmpName: "screw #4,2"
     ref: S3
     ipn: SCR-002-0002
+  - cmpName: "led green"
+    ref: D20 D21 D22
+    ipn: DIO-033-000G
 hooks:
   - date -Iseconds > {{ .RelDir }}/timestamp.txt
   - |
@@ -308,8 +312,14 @@ The following template variables are available:
 
 Supported operations:
 
-- `remove`: remove a part from a BOM
+- `remove`: remove a part from a BOM, matched by `cmpName` or `ref`
 - `add`: add a part to a BOM
+
+Both operations accept several references in one `ref` field, separated by
+spaces or commas. On `add`, the quantity is taken from the number of references
+and the references are sorted; omit `ref` for a part with no reference
+designator, such as a sub assembly, and the quantity is 1. A BOM line is dropped
+once all of its references have been removed.
 - `copy`: copy a file or directory to the release directory
 - `hooks`: run shell scripts (currently Linux and MacOS only). Can be used to
   build software, generate PDFs, etc.
