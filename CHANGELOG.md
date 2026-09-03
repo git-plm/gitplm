@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Release configurations: `add` and `remove` accept several references in one
+  `ref` field, separated by spaces or commas. Depopulating a board variant no
+  longer needs a separate `remove` line per part, and added references are
+  stored space-separated and sorted so they match the rest of the BOM. Single
+  and comma-separated references keep working as before.
+
 ## [0.9.5] - 2026-09-03
 
 - KiCad HTTP API: `categoryPrefixedNames: true` in `gitplm.yml` serves parts as
