@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-09-03
+
 - KiCad HTTP API: `categoryPrefixedNames: true` in `gitplm.yml` serves parts as
   `res/RES-0000-1002` rather than `RES-0000-1002`, matching the names a KiCad
   database library used. A project moving from a `.kicad_dbl` library to the
