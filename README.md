@@ -320,6 +320,7 @@ spaces or commas. On `add`, the quantity is taken from the number of references
 and the references are sorted; omit `ref` for a part with no reference
 designator, such as a sub assembly, and the quantity is 1. A BOM line is dropped
 once all of its references have been removed.
+
 - `copy`: copy a file or directory to the release directory
 - `hooks`: run shell scripts (currently Linux and MacOS only). Can be used to
   build software, generate PDFs, etc.
