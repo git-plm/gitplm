@@ -81,3 +81,48 @@ func TestPartNameCategoryPrefixed(t *testing.T) {
 		}
 	}
 }
+
+// TestPartDetailDescription checks that a part's description is served both as
+// a field and at the top level of the part detail, which is where KiCad
+// versions through 10.0.6 read it last.
+func TestPartDetailDescription(t *testing.T) {
+	s := &KiCadServer{
+		csvCollection: &CSVFileCollection{
+			Files: []*CSVFile{
+				{
+					Name:    "ics.csv",
+					Headers: []string{"IPN", "MPN", "Description", "Symbol"},
+					Rows: [][]string{
+						{"ICS-0008-0001", "SN74LVC1G07DBVR", "IC BUF NON-INVERT 5.5V SOT23-5", "g-ics:IC_74LVC1G07"},
+						{"ICS-0009-0001", "SN74LVC1G08DBVR", "", "g-ics:IC_74LVC1G08"},
+					},
+				},
+			},
+		},
+	}
+
+	part := s.getPartDetail("ICS-0008-0001")
+	if part == nil {
+		t.Fatal("getPartDetail returned no part")
+	}
+
+	want := "IC BUF NON-INVERT 5.5V SOT23-5"
+	if part.Description != want {
+		t.Errorf("part description = %q, want %q", part.Description, want)
+	}
+
+	if got := part.Fields["Description"].Value; got != want {
+		t.Errorf("Description field = %q, want %q", got, want)
+	}
+
+	// A part with no description is served without one rather than with an
+	// empty string, since the field is omitted when empty
+	part = s.getPartDetail("ICS-0009-0001")
+	if part == nil {
+		t.Fatal("getPartDetail returned no part")
+	}
+
+	if part.Description != "" {
+		t.Errorf("part description = %q, want empty", part.Description)
+	}
+}

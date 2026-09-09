@@ -11,6 +11,14 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-09-09
+
+- KiCad HTTP API: part descriptions appear again in the KiCad symbol chooser.
+  KiCad 9.0 and 10.0.6 read a part's description from the part detail last, so a
+  description supplied only through the fields and the category listing was
+  cleared before the chooser displayed it. The description is now sent there as
+  well. KiCad 10.0.7 carries a fix of its own, and this change works with it.
+
 ## [0.9.6] - 2026-09-03
 
 - Release configurations: `add` and `remove` accept several references in one

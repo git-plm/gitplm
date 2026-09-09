@@ -33,9 +33,15 @@ type KiCadPartSummary struct {
 
 // KiCadPartDetail represents a detailed part in the KiCad HTTP API
 type KiCadPartDetail struct {
-	ID             string                    `json:"id"`
-	Name           string                    `json:"name,omitempty"`
-	SymbolIDStr    string                    `json:"symbolIdStr,omitempty"`
+	ID          string `json:"id"`
+	Name        string `json:"name,omitempty"`
+	SymbolIDStr string `json:"symbolIdStr,omitempty"`
+	// Description repeats the Description field at the top level. KiCad reads
+	// the description from several places, and versions through 10.0.6 apply
+	// this one last, so a part detail that leaves it out clears the
+	// description the fields and the category listing supplied. Sending it
+	// keeps the description in the symbol chooser on those versions.
+	Description    string                    `json:"description,omitempty"`
 	ExcludeFromBOM string                    `json:"exclude_from_bom,omitempty"`
 	Fields         map[string]KiCadPartField `json:"fields,omitempty"`
 }
@@ -536,6 +542,7 @@ func (s *KiCadServer) getPartDetail(partID string) *KiCadPartDetail {
 					ID:             formattedID,
 					Name:           partName,
 					SymbolIDStr:    symbolID,
+					Description:    values["Description"],
 					ExcludeFromBOM: "false", // Default to include in BOM
 					Fields:         fields,
 				}
