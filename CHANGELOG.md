@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Releases now cover 64-bit platforms only: Linux, macOS, and Windows on x86_64
+  and arm64. The 32-bit `i386`, `arm6`, and `arm7` binaries are no longer
+  published, so `gitplm update` on one of those platforms will not find a newer
+  build. Building from source with `go build` still works there.
+
 ## [0.9.7] - 2026-09-09
 
 - KiCad HTTP API: part descriptions appear again in the KiCad symbol chooser.
