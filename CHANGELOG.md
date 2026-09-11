@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-09-11
+
 - TUI: saving a part whose IPN is already used by another part is refused. The
   edit form stays open with a message naming the file that holds the existing
   part, so a copied part cannot be saved until its IPN is changed. Every loaded
