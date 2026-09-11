@@ -274,6 +274,31 @@ func sortRowsByIPN(rows [][]string, ipnColIdx int) {
 	})
 }
 
+// findDuplicateIPN reports the file that already holds ipnStr in its IPN
+// column. The row at skipRow in skipFile is ignored so that a row can be
+// checked against every other row while it is being edited. It returns nil
+// when the IPN is unused.
+func findDuplicateIPN(files []*CSVFile, ipnStr string, skipFile *CSVFile, skipRow int) *CSVFile {
+	if ipnStr == "" {
+		return nil
+	}
+	for _, f := range files {
+		ipnIdx := findHeaderIndex(f.Headers, "IPN")
+		if ipnIdx < 0 {
+			continue
+		}
+		for i, row := range f.Rows {
+			if f == skipFile && i == skipRow {
+				continue
+			}
+			if ipnIdx < len(row) && row[ipnIdx] == ipnStr {
+				return f
+			}
+		}
+	}
+	return nil
+}
+
 // nextAvailableIPN scans rows to determine the category (CCC) and the maximum
 // NNN value, then returns CCC-(NNN+1)-0001 as the next available IPN string.
 func nextAvailableIPN(rows [][]string, ipnColIdx int) (string, error) {

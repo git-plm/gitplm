@@ -58,3 +58,52 @@ func TestNextAvailableIPN(t *testing.T) {
 		})
 	}
 }
+
+func TestFindDuplicateIPN(t *testing.T) {
+	a := &CSVFile{
+		Name:    "ics.csv",
+		Headers: []string{"IPN", "Description"},
+		Rows: [][]string{
+			{"ICS-0045-0001", "regulator"},
+			{"ICS-0046-0001", "opamp"},
+		},
+	}
+	b := &CSVFile{
+		Name:    "res.csv",
+		Headers: []string{"Description", "IPN"},
+		Rows: [][]string{
+			{"10k", "RES-0001-0001"},
+		},
+	}
+	noIPN := &CSVFile{
+		Name:    "notes.csv",
+		Headers: []string{"Description"},
+		Rows:    [][]string{{"ICS-0045-0001"}},
+	}
+	files := []*CSVFile{a, b, noIPN}
+
+	tests := []struct {
+		name     string
+		ipn      string
+		skipFile *CSVFile
+		skipRow  int
+		want     *CSVFile
+	}{
+		{"unused IPN", "ICS-0047-0001", a, 0, nil},
+		{"empty IPN is never a duplicate", "", a, 0, nil},
+		{"row being edited keeps its own IPN", "ICS-0045-0001", a, 0, nil},
+		{"duplicate in the same file", "ICS-0046-0001", a, 0, a},
+		{"duplicate in another file", "RES-0001-0001", a, 0, b},
+		{"IPN column is found by header, not position", "RES-0001-0001", b, 0, nil},
+		{"files without an IPN column are ignored", "ICS-0045-0001", a, 0, nil},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := findDuplicateIPN(files, test.ipn, test.skipFile, test.skipRow)
+			if got != test.want {
+				t.Errorf("findDuplicateIPN(%q) = %v, want %v", test.ipn, got, test.want)
+			}
+		})
+	}
+}
