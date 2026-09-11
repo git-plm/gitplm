@@ -559,12 +559,24 @@ func (m *modelNew) enterEditMode(dataRowIdx int, isNew bool) {
 }
 
 // saveEdit writes the edit form values back to the CSV file, sorts, saves,
-// and refreshes the table.
-func (m *modelNew) saveEdit() {
+// and refreshes the table. It returns false, leaving the row untouched, when
+// the IPN in the form is already used by another part in any loaded file.
+func (m *modelNew) saveEdit() bool {
 	csvFile := m.getSelectedCSVFile()
 	if csvFile == nil || m.editRowIdx < 0 || m.editRowIdx >= len(csvFile.Rows) {
-		return
+		return false
 	}
+
+	// Refuse an IPN that another part already uses
+	ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
+	if ipnIdx >= 0 && ipnIdx < len(m.editInputs) && m.csvCollection != nil {
+		newIPN := m.editInputs[ipnIdx].Value()
+		if dup := findDuplicateIPN(m.csvCollection.Files, newIPN, csvFile, m.editRowIdx); dup != nil {
+			m.error = fmt.Sprintf("IPN %s already exists in %s", newIPN, dup.Name)
+			return false
+		}
+	}
+	m.error = ""
 
 	// Write values back
 	for i, input := range m.editInputs {
@@ -574,7 +586,6 @@ func (m *modelNew) saveEdit() {
 	}
 
 	// Remember the IPN so we can restore cursor after sort/refresh
-	ipnIdx := findHeaderIndex(csvFile.Headers, "IPN")
 	savedIPN := ""
 	if ipnIdx >= 0 && ipnIdx < len(csvFile.Rows[m.editRowIdx]) {
 		savedIPN = csvFile.Rows[m.editRowIdx][ipnIdx]
@@ -590,6 +601,7 @@ func (m *modelNew) saveEdit() {
 
 	m.updateTableForSelectedFile()
 	m.restoreCursorToIPN(savedIPN, ipnIdx)
+	return true
 }
 
 // restoreCursorToIPN sets the table cursor to the row matching the given IPN.
@@ -1268,8 +1280,9 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.mode = modeNormal
 					return m, nil
 				case "enter":
-					m.saveEdit()
-					m.mode = modeNormal
+					if m.saveEdit() {
+						m.mode = modeNormal
+					}
 					return m, nil
 				case "tab", "down":
 					m.editInputs[m.editFocusIdx].Blur()
@@ -1587,6 +1600,10 @@ func (m modelNew) View() string {
 				editLines = append(editLines, label+m.editInputs[i].View())
 			}
 			editLines = append(editLines, "")
+			if m.error != "" {
+				editLines = append(editLines, errorStyle.Render(m.error))
+				editLines = append(editLines, "")
+			}
 			editLines = append(editLines, helpStyle.Render("Tab/Shift+Tab: cycle fields • Enter: save • Esc: cancel"))
 			overlay := lipgloss.NewStyle().
 				BorderStyle(lipgloss.RoundedBorder()).

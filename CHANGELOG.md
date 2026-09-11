@@ -11,6 +11,10 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- TUI: saving a part whose IPN is already used by another part is refused. The
+  edit form stays open with a message naming the file that holds the existing
+  part, so a copied part cannot be saved until its IPN is changed. Every loaded
+  partmaster file is checked, not only the one being edited.
 - Releases now cover 64-bit platforms only: Linux, macOS, and Windows on x86_64
   and arm64. The 32-bit `i386`, `arm6`, and `arm7` binaries are no longer
   published, so `gitplm update` on one of those platforms will not find a newer
