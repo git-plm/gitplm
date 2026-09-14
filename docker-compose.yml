@@ -10,5 +10,6 @@ services:
     working_dir: /workspace
     command: ["http"]
     volumes:
-      - /home/jj/Documents/Kicad/libraries/parts/database:/data/partmaster:ro
+      # Replace /path/to/parts with the actual path to your local plm-parts repo 
+      - /path/to/parts/database:/data/partmaster:ro
       - ./gitplm.docker.yml:/workspace/gitplm.yml:ro
