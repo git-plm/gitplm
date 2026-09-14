@@ -20,7 +20,10 @@ type relScript struct {
 	Add         []bomLine
 	Copy        []string
 	Hooks       []string
-	Required    []string
+	// PostHooks run after the release BOM and the combined BOM have been
+	// written, so they can read the generated CSVs in the release directory.
+	PostHooks []string `yaml:"postHooks"`
+	Required  []string
 }
 
 func (rs *relScript) processBom(b bom) (bom, error) {
@@ -93,7 +96,21 @@ func (rs *relScript) copy(srcDir, destDir string) error {
 	return nil
 }
 
+// hooks runs the hooks list. It runs before the BOM is merged and written, so
+// a hook can generate the source BOM.
 func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
+	return runHooks(rs.Hooks, pn, srcDir, destDir)
+}
+
+// postHooks runs the postHooks list. It runs after the release BOM and the
+// combined BOM have been written.
+func (rs *relScript) postHooks(pn string, srcDir, destDir string) error {
+	return runHooks(rs.PostHooks, pn, srcDir, destDir)
+}
+
+// runHooks expands each hook as a Go template and runs it with /bin/sh. The
+// first hook that fails stops the run.
+func runHooks(hooks []string, pn string, srcDir, destDir string) error {
 	data := struct {
 		SrcDir string
 		RelDir string
@@ -104,7 +121,7 @@ func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
 		IPN:    pn,
 	}
 
-	for _, h := range rs.Hooks {
+	for _, h := range hooks {
 		t, err := template.New("hook").Parse(h)
 		if err != nil {
 			return fmt.Errorf("Error parsing hook: %v: %v", h, err)

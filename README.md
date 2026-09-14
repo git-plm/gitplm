@@ -301,14 +301,18 @@ copy:
   - gerber
   - mfg
   - pcb.schematic
+postHooks:
+  - csv2md {{ .RelDir }}/{{ .IPN }}.csv > {{ .RelDir }}/{{ .IPN }}-bom.md
 required:
   - PCA-019-0002_ibom.html
+  - PCA-019-0002-bom.md
 ```
 
 The following template variables are available:
 
 - `RelDir`: the release directory that GitPLM is generating
 - `SrcDir`: the source directory GitPLM is pulling information from
+- `IPN`: the release IPN, such as `PCA-019-0002`
 
 Supported operations:
 
@@ -323,10 +327,15 @@ once all of its references have been removed.
 
 - `copy`: copy a file or directory to the release directory
 - `hooks`: run shell scripts (currently Linux and MacOS only). Can be used to
-  build software, generate PDFs, etc.
+  build software, generate PDFs, etc. Hooks run before the release BOM is
+  written, so a hook can also generate the source BOM.
+- `postHooks`: run shell scripts after the release BOM and the combined
+  `-all.csv` have been written to the release directory. Use this to generate
+  files derived from the final BOM, such as a Markdown or PDF view of it.
 - `required`: looks for required files in the release directory and stops with
   an error if they are not found. This is used to check that manually generated
-  files have been populated.
+  files have been populated. The check runs after `postHooks`, so a file a post
+  hook generates can be listed here.
 
 The release process should be automated as much as possible to process the
 source files and generate the release information with no manual steps.

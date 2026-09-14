@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/gocarina/gocsv"
@@ -77,5 +80,108 @@ func TestRelScript(t *testing.T) {
 		fmt.Printf("bExp: %v", bExp)
 		fmt.Printf("bModified: %v", bModified)
 		t.Error("bExp not the same as bModified")
+	}
+}
+
+// setupReleaseTree writes a minimal PCA source tree into a fresh directory
+// and makes it the working directory for the rest of the test. It returns
+// the partmaster directory.
+func setupReleaseTree(t *testing.T, relScript string) string {
+	t.Helper()
+	initCSV()
+
+	root := t.TempDir()
+	orig, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(orig) })
+	if err := os.Chdir(root); err != nil {
+		t.Fatal(err)
+	}
+
+	pmDir := filepath.Join(root, "partmaster")
+	if err := os.Mkdir(pmDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	files := map[string]string{
+		"partmaster/res.csv": "IPN,Description,Footprint,Value,Manufacturer,MPN,Datasheet,Priority,Checked\n" +
+			"RES-0000-1002,10K 0603,R_0603,10K,Yageo,RC0603FR-0710KL,,,\n",
+		"PCA-001.csv": "Ref,Qty,Value,Cmp name,Footprint,Description,Vendor,IPN,Datasheet\n" +
+			"R1 R2,2,10K,res,,,,RES-0000-1002,\n",
+		"PCA-001.yml":  relScript,
+		"CHANGELOG.md": "## [PCA-001-0001]\n\n- first release\n",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(name, []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	return pmDir
+}
+
+// TestPostHooksSeeReleaseBOM checks that a post hook runs after the release
+// BOM is written, so it can read the merged partmaster data, and that a
+// file it generates satisfies a required entry.
+func TestPostHooksSeeReleaseBOM(t *testing.T) {
+	script := `
+hooks:
+  - test ! -e {{ .RelDir }}/{{ .IPN }}.csv
+postHooks:
+  - cp {{ .RelDir }}/{{ .IPN }}.csv {{ .RelDir }}/{{ .IPN }}-bom.txt
+required:
+  - PCA-001-0001-bom.txt
+`
+	pmDir := setupReleaseTree(t, script)
+
+	var relLog strings.Builder
+	_, err := processRelease("PCA-001-0001", &relLog, pmDir)
+	if err != nil {
+		t.Fatalf("processRelease: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join("PCA-001-0001", "PCA-001-0001-bom.txt"))
+	if err != nil {
+		t.Fatalf("post hook output missing: %v", err)
+	}
+
+	if !strings.Contains(string(data), "RC0603FR-0710KL") {
+		t.Errorf("post hook did not see the merged release BOM:\n%s", data)
+	}
+}
+
+// TestRequiredCheckedAfterPostHooks checks that a required file missing
+// after the post hooks fails the release.
+func TestRequiredCheckedAfterPostHooks(t *testing.T) {
+	script := `
+postHooks:
+  - "true"
+required:
+  - never-generated.txt
+`
+	pmDir := setupReleaseTree(t, script)
+
+	var relLog strings.Builder
+	_, err := processRelease("PCA-001-0001", &relLog, pmDir)
+	if err == nil || !strings.Contains(err.Error(), "never-generated.txt") {
+		t.Fatalf("expected missing required file error, got: %v", err)
+	}
+}
+
+// TestPostHookFailureStopsRelease checks that a failing post hook is
+// reported as an error.
+func TestPostHookFailureStopsRelease(t *testing.T) {
+	script := `
+postHooks:
+  - exit 3
+`
+	pmDir := setupReleaseTree(t, script)
+
+	var relLog strings.Builder
+	_, err := processRelease("PCA-001-0001", &relLog, pmDir)
+	if err == nil || !strings.Contains(err.Error(), "postHooks") {
+		t.Fatalf("expected postHooks error, got: %v", err)
 	}
 }

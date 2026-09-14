@@ -11,6 +11,12 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- Release scripts accept a `postHooks` list that runs after the release BOM and
+  the combined `-all.csv` are written, so a hook can generate files from the
+  final BOM, such as a Markdown or PDF view. The same template variables as
+  `hooks` are available. Files a post hook generates can be listed under
+  `required`, which is now checked after the post hooks run.
+
 ## [0.9.8] - 2026-09-11
 
 - TUI: saving a part whose IPN is already used by another part is refused. The

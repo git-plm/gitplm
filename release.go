@@ -181,13 +181,27 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 		}
 	}
 
+	// rs stays empty when there is no release script, so the post hooks and
+	// required checks at the end of the release are no-ops.
+	rs := relScript{}
+
+	// finish runs the post hooks, which see the written release BOM, and
+	// then checks for required files so a post hook can generate one.
+	finish := func() error {
+		err := rs.postHooks(relPn, sourceDir, releaseDir)
+		if err != nil {
+			return fmt.Errorf("Error running postHooks specified in YML: %v", err)
+		}
+
+		return rs.required(releaseDir)
+	}
+
 	if ymlExists {
 		ymlBytes, err := os.ReadFile(ymlFilePath)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error loading yml file: %v", err)
 		}
 
-		rs := relScript{}
 		err = yaml.Unmarshal(ymlBytes, &rs)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error parsing yml: %v", err)
@@ -228,17 +242,11 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error copying files specified in YML: %v", err)
 		}
-
-		// check if required files are present in release
-		err = rs.required(releaseDir)
-		if err != nil {
-			return sourceDir, err
-		}
 	}
 
 	if !bomExists {
 		// nothing else to do
-		return sourceDir, nil
+		return sourceDir, finish()
 	}
 
 	// always sort BOM for good measure
@@ -326,5 +334,5 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 		}
 	}
 
-	return sourceDir, nil
+	return sourceDir, finish()
 }
