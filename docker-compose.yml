@@ -1,0 +1,14 @@
+services:
+  gitplm:
+    build:
+      context: .
+      args:
+        VERSION: docker-compose
+    image: gitplm:local
+    ports:
+      - "7654:7654"
+    working_dir: /workspace
+    command: ["http"]
+    volumes:
+      - /home/jj/Documents/Kicad/libraries/parts/database:/data/partmaster:ro
+      - ./gitplm.docker.yml:/workspace/gitplm.yml:ro
