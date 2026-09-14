@@ -1,0 +1,15 @@
+services:
+  gitplm:
+    build:
+      context: .
+      args:
+        VERSION: docker-compose
+    image: gitplm:local
+    ports:
+      - "7654:7654"
+    working_dir: /workspace
+    command: ["http"]
+    volumes:
+      # Replace /path/to/parts with the actual path to your local plm-parts repo 
+      - /path/to/parts/database:/data/partmaster:ro
+      - ./gitplm.docker.yml:/workspace/gitplm.yml:ro

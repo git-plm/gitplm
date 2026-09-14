@@ -1,0 +1,4 @@
+pmDir: /data/partmaster
+http:
+  enabled: true
+  port: 7654
