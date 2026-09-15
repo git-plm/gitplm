@@ -247,23 +247,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 		}
 	}
 
-	if !bomExists {
-		// nothing else to do
-		return sourceDir, finish()
-	}
-
-	// always sort BOM for good measure
-	sort.Sort(b)
-
-	// merge in partmaster info into BOM
-	b.mergePartmaster(p, logErr)
-
-	err = saveCSV(bomFileWritePath, b)
-	if err != nil {
-		return sourceDir, fmt.Errorf("Error writing BOM: %v", err)
-	}
-
-	// copy MFG.md and CHANGELOG.md if they exist
+	// copy MFG.md and CHANGELOG.md if they exist, whether or not there is a BOM
 	assetsToCopy := []string{"MFG.md", "CHANGELOG.md"}
 	for _, a := range assetsToCopy {
 		aPath := path.Join(sourceDir, a)
@@ -283,6 +267,22 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 				return sourceDir, fmt.Errorf("Error writing %v: %v", aDest, err)
 			}
 		}
+	}
+
+	if !bomExists {
+		// nothing else to do
+		return sourceDir, finish()
+	}
+
+	// always sort BOM for good measure
+	sort.Sort(b)
+
+	// merge in partmaster info into BOM
+	b.mergePartmaster(p, logErr)
+
+	err = saveCSV(bomFileWritePath, b)
+	if err != nil {
+		return sourceDir, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
 	// create combined BOM with all sub assemblies if we have any PCB or ASY line items

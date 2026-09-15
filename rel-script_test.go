@@ -186,3 +186,33 @@ postHooks:
 		t.Fatalf("expected postHooks error, got: %v", err)
 	}
 }
+
+// TestReleaseWithoutBOMCopiesAssets checks that a part with no BOM, such as a
+// PCB, gets MFG.md and CHANGELOG.md in its release directory, in time to
+// satisfy a required entry.
+func TestReleaseWithoutBOMCopiesAssets(t *testing.T) {
+	pmDir := setupReleaseTree(t, "")
+
+	files := map[string]string{
+		"PCB-001.yml":  "required:\n  - MFG.md\n  - CHANGELOG.md\n",
+		"MFG.md":       "manufacturing notes\n",
+		"CHANGELOG.md": "## [PCB-001-0001]\n\n- first release\n",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(name, []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	var relLog strings.Builder
+	_, err := processRelease("PCB-001-0001", &relLog, pmDir, io.Discard)
+	if err != nil {
+		t.Fatalf("processRelease: %v", err)
+	}
+
+	for _, name := range []string{"MFG.md", "CHANGELOG.md"} {
+		if _, err := os.Stat(filepath.Join("PCB-001-0001", name)); err != nil {
+			t.Errorf("%v not copied into the release directory: %v", name, err)
+		}
+	}
+}
