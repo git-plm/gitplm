@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.vscode
+plans
+*.log
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.svg
+flow*.png
+ChaosPLM-workflow.jpg
+gitplm-workflow.jpg
+assets/
