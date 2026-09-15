@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-09-15
+
 - **`MFG.md` and `CHANGELOG.md` are copied for every release.** Parts released
   without a BOM, such as PCBs, previously left them out of the release
   directory, and listing either file under `required` failed.
