@@ -9,3 +9,15 @@ add:
     ipn: SCR-002-0002
   - cmpName: "Design XYZ PCB"
     ipn: PCB-019-0001
+# generate an interactive HTML BOM from the KiCad board. Requires the
+# InteractiveHtmlBom plugin installed from the KiCad Plugin and Content Manager.
+hooks:
+  - |
+    IBOM=~/.local/share/kicad/10.0/3rdparty/plugins/org_openscopeproject_InteractiveHtmlBom/generate_interactive_bom.py
+    python3 "$IBOM" --no-browser \
+      --dest-dir {{ .IPN }} \
+      --name-format {{ .IPN }}_ibom \
+      --extra-fields IPN \
+      {{ .SrcDir }}/pcb.kicad_pcb
+required:
+  - PCA-019-0000_ibom.html

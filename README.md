@@ -16,6 +16,7 @@
 - [📁 Source and Release directories](#-source-and-release-directories)
 - [📄 Special Files](#-special-files)
 - [🛠 Release configuration](#-release-configuration)
+  - [Generating an interactive HTML BOM](#generating-an-interactive-html-bom)
 - [🔌 KiCad HTTP Libraries support](#-kicad-http-libraries-support)
   - [Starting the HTTP Server](#starting-the-http-server)
   - [Configuring what fields are visible](#configuring-what-fields-are-visible)
@@ -109,17 +110,21 @@ or
 ## 🚀 Usage
 
 ```
-Usage: gitplm COMMAND [OPTIONS]
+Usage: gitplm COMMAND [OPTIONS] [ARGS]
 
 Commands:
-  (no command)                    Launch interactive TUI
-  release <IPN>                   Process release for IPN
-  simplify <file> -out <file>     Simplify a BOM file
-  combine <file> -out <file>      Combine BOM into output
-  http                            Start KiCad HTTP Library API server
-  update                          Update gitplm to latest version
-  version                         Display version
+  (no command)                     Launch interactive TUI
+  release [-pmDir <dir>] <IPN>     Process release for IPN
+  simplify -out <file> <file>      Simplify a BOM file
+  combine -out <file> <file>       Combine BOM into output
+  http [-pmDir <dir>] [-port <n>]  Start KiCad HTTP Library API server
+  update                           Update gitplm to latest version
+  version                          Display version
 ```
+
+Options go after the command and before its arguments, for example
+`gitplm release -pmDir database PCA-019-0002`. An option placed after the
+arguments is ignored.
 
 ## ⚙ Configuration
 
@@ -172,10 +177,10 @@ The convention used by GitPLM is: `CCC-NNN-VVVV`
 
 ## 📋 Partmaster
 
-A single [`partmaster.csv`](example/partmaster.csv) file or multiple CSV files
-can be used to specify the internal part numbers (IPN) for all assets used to
-build a product. For externally sourced parts, purchasing information such as
-manufacturer part number (MPN) is also included.
+A single `partmaster.csv` file or [multiple CSV files](example) can be used to
+specify the internal part numbers (IPN) for all assets used to build a product.
+For externally sourced parts, purchasing information such as manufacturer part
+number (MPN) is also included.
 
 If multiple sources are available for a part, these can be entered on additional
 lines with the same IPN, and different Manufacturer/MPN specified. GitPLM will
@@ -297,6 +302,13 @@ hooks:
     echo "processing {{ .SrcDir }}"
     echo "hi #1"
     echo "hi #2"
+  - |
+    IBOM=~/.local/share/kicad/10.0/3rdparty/plugins/org_openscopeproject_InteractiveHtmlBom/generate_interactive_bom.py
+    python3 "$IBOM" --no-browser \
+      --dest-dir {{ .IPN }} \
+      --name-format {{ .IPN }}_ibom \
+      --extra-fields IPN,MPN \
+      {{ .SrcDir }}/pcb.kicad_pcb
 copy:
   - gerber
   - mfg
@@ -339,6 +351,41 @@ once all of its references have been removed.
 
 The release process should be automated as much as possible to process the
 source files and generate the release information with no manual steps.
+
+### Generating an interactive HTML BOM
+
+[InteractiveHtmlBom](https://github.com/openscopeproject/InteractiveHtmlBom)
+renders a KiCad board as a single HTML file with a BOM that highlights each
+part's location, which is useful for hand assembly and inspection. Install it
+from the KiCad Plugin and Content Manager, then run it from a hook so every
+release includes the file. The example above does this with:
+
+```yaml
+hooks:
+  - |
+    IBOM=~/.local/share/kicad/10.0/3rdparty/plugins/org_openscopeproject_InteractiveHtmlBom/generate_interactive_bom.py
+    python3 "$IBOM" --no-browser \
+      --dest-dir {{ .IPN }} \
+      --name-format {{ .IPN }}_ibom \
+      --extra-fields IPN,MPN \
+      {{ .SrcDir }}/pcb.kicad_pcb
+required:
+  - PCA-019-0002_ibom.html
+```
+
+Notes:
+
+- `--dest-dir` is relative to the board file, and the release directory is
+  created inside the source directory, so `{{ .IPN }}` is the release directory.
+- `--extra-fields` adds columns from the footprint fields. KiCad stores symbol
+  fields such as `IPN` and `MPN` on the footprints, so no netlist file is
+  needed.
+- The plugin path shown is the Linux location for KiCad 10. On macOS the plugins
+  live under `~/Documents/KiCad/10.0/3rdparty/plugins`. The script imports the
+  `pcbnew` module, so if `python3` cannot find it, run the script with the
+  Python interpreter that ships with KiCad.
+- Listing the file under `required` makes the release fail if the plugin did not
+  produce it.
 
 ## 🔌 KiCad HTTP Libraries support
 
@@ -525,13 +572,22 @@ keeps serving the data it already had.
 
 ## 💡 Examples
 
-See the examples folder. You can run commands like to exercise GitPLM:
+The `example` directory is a small PLM repository with its own `gitplm.yml`
+pointing at the partmaster CSV files, so run the commands from inside it:
 
-- `go run . release ASY-001-0000`
-- `go run . release PCB-019-0001`
+```
+cd example
+gitplm release ASY-001-0000
+gitplm release PCB-019-0001
+gitplm release PCA-019-0000
+```
 
-`go run .` is used when working in the source directory. You can replace this
-with `gitplm` if you have it installed.
+The `PCA-019-0000` release runs the hook from
+[Generating an interactive HTML BOM](#generating-an-interactive-html-bom) on the
+KiCad board in `example/electrical/pcb-design`, so it needs KiCad and the
+InteractiveHtmlBom plugin installed.
+
+When working in the source tree, replace `gitplm` with `go run ..`.
 
 ## 🎯 Principles
 

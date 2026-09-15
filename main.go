@@ -47,15 +47,16 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS]\n\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS] [ARGS]\n\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Options go before the command arguments.\n\n")
 	fmt.Fprintf(os.Stderr, "Commands:\n")
-	fmt.Fprintf(os.Stderr, "  (no command)                    Launch interactive TUI\n")
-	fmt.Fprintf(os.Stderr, "  release <IPN>                   Process release for IPN\n")
-	fmt.Fprintf(os.Stderr, "  simplify <file> -out <file>     Simplify a BOM file\n")
-	fmt.Fprintf(os.Stderr, "  combine <file> -out <file>      Combine BOM into output\n")
-	fmt.Fprintf(os.Stderr, "  http                            Start KiCad HTTP Library API server\n")
-	fmt.Fprintf(os.Stderr, "  update                          Update gitplm to latest version\n")
-	fmt.Fprintf(os.Stderr, "  version                         Display version\n")
+	fmt.Fprintf(os.Stderr, "  (no command)                     Launch interactive TUI\n")
+	fmt.Fprintf(os.Stderr, "  release [-pmDir <dir>] <IPN>     Process release for IPN\n")
+	fmt.Fprintf(os.Stderr, "  simplify -out <file> <file>      Simplify a BOM file\n")
+	fmt.Fprintf(os.Stderr, "  combine -out <file> <file>       Combine BOM into output\n")
+	fmt.Fprintf(os.Stderr, "  http [-pmDir <dir>] [-port <n>]  Start KiCad HTTP Library API server\n")
+	fmt.Fprintf(os.Stderr, "  update                           Update gitplm to latest version\n")
+	fmt.Fprintf(os.Stderr, "  version                          Display version\n")
 }
 
 func cmdRelease(args []string) {
@@ -70,7 +71,7 @@ func cmdRelease(args []string) {
 	fs.Parse(args)
 
 	if fs.NArg() < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s release <IPN> [-pmDir <dir>]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s release [-pmDir <dir>] <IPN>\n", os.Args[0])
 		os.Exit(1)
 	}
 
@@ -90,7 +91,7 @@ func cmdRelease(args []string) {
 		log.Println(s)
 	}
 
-	relPath, err := processRelease(releaseIPN, &gLog, *flagPMDir)
+	relPath, err := processRelease(releaseIPN, &gLog, *flagPMDir, os.Stdout)
 	if err != nil {
 		logMsg(fmt.Sprintf("release error: %v\n", err))
 	} else {
@@ -160,7 +161,7 @@ func cmdCombine(args []string) {
 	fs.Parse(args)
 
 	if fs.NArg() < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s combine <file> -out <file>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s combine -out <file> <file>\n", os.Args[0])
 		os.Exit(1)
 	}
 

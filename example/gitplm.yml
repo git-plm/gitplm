@@ -1,0 +1,4 @@
+# GitPLM configuration for the example project. A relative pmDir is resolved
+# against the directory containing this file, so the partmaster CSV files in
+# this directory are found from any subdirectory of the example.
+pmDir: .

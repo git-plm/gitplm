@@ -16,9 +16,21 @@ For more details or to discuss releases, please visit the
   final BOM, such as a Markdown or PDF view. The same template variables as
   `hooks` are available. Files a post hook generates can be listed under
   `required`, which is now checked after the post hooks run.
+- The command help and README now show options before the command arguments,
+  such as `gitplm release -pmDir <dir> <IPN>`. That is the order the parser has
+  always required; an option placed after the arguments was silently ignored,
+  and the previous help text suggested that order.
 - **Release output in the TUI is shown in a popover** with word wrapping, page
   scrolling, and a line counter. Output from release script hooks is captured
   into that window instead of being printed over the screen.
+- The README has an example of generating an
+  [InteractiveHtmlBom](https://github.com/openscopeproject/InteractiveHtmlBom)
+  page from a release hook, and the example project includes a KiCad board with
+  a release script that generates one.
+- The example project runs again with the current release. Its BOMs and
+  partmaster files now use comma delimiters with every column present, each
+  source directory has a `CHANGELOG.md`, and a `gitplm.yml` in the example
+  points at its partmaster so no `-pmDir` flag is needed.
 
 ## [0.9.8] - 2026-09-11
 
