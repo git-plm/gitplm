@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -137,7 +138,7 @@ required:
 	pmDir := setupReleaseTree(t, script)
 
 	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir)
+	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
 	if err != nil {
 		t.Fatalf("processRelease: %v", err)
 	}
@@ -164,7 +165,7 @@ required:
 	pmDir := setupReleaseTree(t, script)
 
 	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir)
+	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
 	if err == nil || !strings.Contains(err.Error(), "never-generated.txt") {
 		t.Fatalf("expected missing required file error, got: %v", err)
 	}
@@ -180,7 +181,7 @@ postHooks:
 	pmDir := setupReleaseTree(t, script)
 
 	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir)
+	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
 	if err == nil || !strings.Contains(err.Error(), "postHooks") {
 		t.Fatalf("expected postHooks error, got: %v", err)
 	}

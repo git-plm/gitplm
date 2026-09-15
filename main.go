@@ -118,7 +118,7 @@ func cmdSimplify(args []string) {
 	fs.Parse(args)
 
 	if fs.NArg() < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s simplify <file> -out <file>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s simplify -out <file> <file>\n", os.Args[0])
 		os.Exit(1)
 	}
 

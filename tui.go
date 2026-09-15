@@ -15,6 +15,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 const (
@@ -489,12 +490,16 @@ func (m *modelNew) startRelease() tea.Cmd {
 	ipnVal := m.releaseIPN
 	pmDir := m.pmDir
 	return func() tea.Msg {
-		var logBuilder strings.Builder
+		// Everything the release prints, including hook output, goes into
+		// one buffer so the terminal stays untouched while the TUI runs.
+		// processRelease also logs each relLog line, so relLog is discarded
+		// to avoid showing every message twice.
+		var logBuilder, relLog strings.Builder
 		origWriter := log.Writer()
 		origFlags := log.Flags()
 		log.SetOutput(&logBuilder)
 		log.SetFlags(0)
-		_, err := processRelease(ipnVal, &logBuilder, pmDir)
+		_, err := processRelease(ipnVal, &relLog, pmDir, &logBuilder)
 		log.SetOutput(origWriter)
 		log.SetFlags(origFlags)
 		return releaseResultMsg{log: logBuilder.String(), err: err}
@@ -713,7 +718,7 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			m.releaseLog += "\nError: " + msg.err.Error()
 		}
-		m.releaseScroll = 0
+		m.releaseScroll = m.releaseMaxScroll()
 		return m, nil
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -1172,23 +1177,26 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch msg.String() {
 				case "ctrl+c":
 					return m, tea.Quit
-				case "esc", "enter":
+				case "esc", "enter", "q":
 					m.mode = modeNormal
 					return m, nil
 				case "up", "k":
-					if m.releaseScroll > 0 {
-						m.releaseScroll--
-					}
+					m.scrollRelease(-1)
 					return m, nil
 				case "down", "j":
-					lines := strings.Split(m.releaseLog, "\n")
-					maxScroll := len(lines) - 1
-					if maxScroll < 0 {
-						maxScroll = 0
-					}
-					if m.releaseScroll < maxScroll {
-						m.releaseScroll++
-					}
+					m.scrollRelease(1)
+					return m, nil
+				case "pgup", "ctrl+u":
+					m.scrollRelease(-m.releaseVisibleLines())
+					return m, nil
+				case "pgdown", "ctrl+d", " ":
+					m.scrollRelease(m.releaseVisibleLines())
+					return m, nil
+				case "home", "g":
+					m.releaseScroll = 0
+					return m, nil
+				case "end", "G":
+					m.releaseScroll = m.releaseMaxScroll()
 					return m, nil
 				}
 
@@ -1503,7 +1511,7 @@ func (m modelNew) View() string {
 		case modeDetail:
 			helpText = "↑/↓: scroll • o: open datasheet • Esc: close"
 		case modeRelease:
-			helpText = "↑/↓: scroll • Esc: close"
+			helpText = "↑/↓ PgUp/PgDn: scroll • g/G: top/bottom • Esc: close"
 		default:
 			hasFilter := m.searchInput.Value() != ""
 			if !hasFilter {
@@ -1648,59 +1656,168 @@ func (m modelNew) View() string {
 			components = append(components, overlay)
 		}
 
-		// Release overlay
-		if m.mode == modeRelease && m.releaseLog != "" {
-			var releaseLines []string
-			releaseLines = append(releaseLines, lipgloss.NewStyle().Bold(true).Render("Release Output"))
-			releaseLines = append(releaseLines, "")
-
-			overlayWidth := m.width - 8
-			if overlayWidth < 40 {
-				overlayWidth = 40
-			}
-			// Content width inside padding and border
-			contentWidth := overlayWidth - 6
-
-			logLines := strings.Split(m.releaseLog, "\n")
-			visibleLines := m.height - 10
-			if visibleLines < 5 {
-				visibleLines = 5
-			}
-
-			end := m.releaseScroll + visibleLines
-			if end > len(logLines) {
-				end = len(logLines)
-			}
-
-			for i := m.releaseScroll; i < end; i++ {
-				line := logLines[i]
-				if len(line) > contentWidth {
-					line = line[:contentWidth]
-				}
-				releaseLines = append(releaseLines, line)
-			}
-
-			releaseLines = append(releaseLines, "")
-			releaseLines = append(releaseLines, helpStyle.Render("↑/↓: scroll • Esc: close"))
-
-			borderColor := lipgloss.Color("34") // green
-			if m.releaseError {
-				borderColor = lipgloss.Color("196") // red
-			}
-			overlay := lipgloss.NewStyle().
-				BorderStyle(lipgloss.RoundedBorder()).
-				BorderForeground(borderColor).
-				Padding(1, 2).
-				Width(overlayWidth).
-				Render(strings.Join(releaseLines, "\n"))
-			components = append(components, overlay)
-		}
-
 		components = append(components, help)
 		content := lipgloss.JoinVertical(lipgloss.Top, components...)
 
+		if m.mode == modeRelease && m.releaseLog != "" {
+			content = overlayCenter(content, m.renderReleasePopover(), m.width, m.height)
+		}
+
 		return content
 	}
+}
+
+// Release popover geometry. The popover is bordered and padded, so the
+// text inside it is narrower and shorter than the popover itself.
+const (
+	popoverFrameWidth  = 6 // border (2) + horizontal padding (4)
+	popoverFrameHeight = 4 // border (2) + vertical padding (2)
+	popoverChromeLines = 4 // title, blank, blank, help
+)
+
+// releasePopoverSize returns the outer width and height of the release
+// popover for the current terminal size.
+func (m *modelNew) releasePopoverSize() (int, int) {
+	width, height := m.width, m.height
+	if width <= 0 {
+		width = 80
+	}
+	if height <= 0 {
+		height = 24
+	}
+	w := width - 8
+	if w < 40 {
+		w = 40
+	}
+	h := height - 4
+	if h < 10 {
+		h = 10
+	}
+	return w, h
+}
+
+// releaseVisibleLines is the number of log lines the popover can show.
+func (m *modelNew) releaseVisibleLines() int {
+	_, h := m.releasePopoverSize()
+	n := h - popoverFrameHeight - popoverChromeLines
+	if n < 1 {
+		n = 1
+	}
+	return n
+}
+
+// releaseLines returns the release log word wrapped to the popover width.
+func (m *modelNew) releaseLines() []string {
+	w, _ := m.releasePopoverSize()
+	contentWidth := w - popoverFrameWidth
+	var lines []string
+	for _, line := range strings.Split(m.releaseLog, "\n") {
+		lines = append(lines, strings.Split(ansi.Wrap(line, contentWidth, ""), "\n")...)
+	}
+	return lines
+}
+
+// releaseMaxScroll is the largest scroll offset that still fills the popover.
+func (m *modelNew) releaseMaxScroll() int {
+	max := len(m.releaseLines()) - m.releaseVisibleLines()
+	if max < 0 {
+		max = 0
+	}
+	return max
+}
+
+// scrollRelease moves the release log by delta lines, staying in range.
+func (m *modelNew) scrollRelease(delta int) {
+	m.releaseScroll += delta
+	if m.releaseScroll > m.releaseMaxScroll() {
+		m.releaseScroll = m.releaseMaxScroll()
+	}
+	if m.releaseScroll < 0 {
+		m.releaseScroll = 0
+	}
+}
+
+// renderReleasePopover draws the release log in a bordered box with the
+// current scroll window and a line counter.
+func (m *modelNew) renderReleasePopover() string {
+	w, _ := m.releasePopoverSize()
+	lines := m.releaseLines()
+	visible := m.releaseVisibleLines()
+
+	if m.releaseScroll > m.releaseMaxScroll() {
+		m.releaseScroll = m.releaseMaxScroll()
+	}
+	end := m.releaseScroll + visible
+	if end > len(lines) {
+		end = len(lines)
+	}
+
+	var out []string
+	out = append(out, lipgloss.NewStyle().Bold(true).Render("Release Output"))
+	out = append(out, "")
+	out = append(out, lines[m.releaseScroll:end]...)
+	for i := end - m.releaseScroll; i < visible; i++ {
+		out = append(out, "")
+	}
+	out = append(out, "")
+
+	position := fmt.Sprintf("lines %d-%d of %d", m.releaseScroll+1, end, len(lines))
+	if len(lines) == 0 {
+		position = "no output"
+	}
+	out = append(out, helpStyle.Render("↑/↓ PgUp/PgDn: scroll • g/G: top/bottom • Esc: close • "+position))
+
+	borderColor := lipgloss.Color("34") // green
+	if m.releaseError {
+		borderColor = lipgloss.Color("196") // red
+	}
+	return lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(borderColor).
+		Padding(1, 2).
+		Width(w - 2).
+		Render(strings.Join(out, "\n"))
+}
+
+// overlayCenter draws box centered on top of base, which is treated as a
+// width by height screen. Rows of base outside the box are left as they are;
+// rows behind the box keep whatever is left and right of it.
+func overlayCenter(base, box string, width, height int) string {
+	baseLines := strings.Split(base, "\n")
+	for len(baseLines) < height {
+		baseLines = append(baseLines, "")
+	}
+
+	boxLines := strings.Split(box, "\n")
+	boxWidth := lipgloss.Width(box)
+	top := (height - len(boxLines)) / 2
+	if top < 0 {
+		top = 0
+	}
+	left := (width - boxWidth) / 2
+	if left < 0 {
+		left = 0
+	}
+
+	const reset = "\x1b[0m"
+	for i, boxLine := range boxLines {
+		row := top + i
+		if row >= len(baseLines) {
+			break
+		}
+		line := baseLines[row]
+		leftPart := ansi.Truncate(line, left, "")
+		if pad := left - lipgloss.Width(leftPart); pad > 0 {
+			leftPart += strings.Repeat(" ", pad)
+		}
+		rightPart := ""
+		if lipgloss.Width(line) > left+boxWidth {
+			rightPart = ansi.Cut(line, left+boxWidth, lipgloss.Width(line))
+		}
+		boxLine += strings.Repeat(" ", boxWidth-lipgloss.Width(boxLine))
+		baseLines[row] = leftPart + reset + boxLine + reset + rightPart
+	}
+	return strings.Join(baseLines, "\n")
 }
 
 func openURL(url string) error {

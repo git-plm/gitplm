@@ -16,6 +16,9 @@ For more details or to discuss releases, please visit the
   final BOM, such as a Markdown or PDF view. The same template variables as
   `hooks` are available. Files a post hook generates can be listed under
   `required`, which is now checked after the post hooks run.
+- **Release output in the TUI is shown in a popover** with word wrapping, page
+  scrolling, and a line counter. Output from release script hooks is captured
+  into that window instead of being printed over the screen.
 
 ## [0.9.8] - 2026-09-11
 

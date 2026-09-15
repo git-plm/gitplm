@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -60,7 +61,9 @@ func checkIPNChangelog(sourceDir, relPn string) (changelogPath string, hasEntry 
 	return changelogPath, strings.Contains(string(data), relPn), nil
 }
 
-func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string, error) {
+// processRelease generates the release for relPn. Log messages are appended
+// to relLog and anything the release script hooks print is written to hookOut.
+func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut io.Writer) (string, error) {
 	relIpn := ipn(relPn)
 	_, _, v, err := relIpn.parse()
 	if err != nil {
@@ -188,7 +191,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 	// finish runs the post hooks, which see the written release BOM, and
 	// then checks for required files so a post hook can generate one.
 	finish := func() error {
-		err := rs.postHooks(relPn, sourceDir, releaseDir)
+		err := rs.postHooks(relPn, sourceDir, releaseDir, hookOut)
 		if err != nil {
 			return fmt.Errorf("Error running postHooks specified in YML: %v", err)
 		}
@@ -215,7 +218,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string) (string
 		}
 
 		// run hooks
-		err = rs.hooks(relPn, sourceDir, releaseDir)
+		err = rs.hooks(relPn, sourceDir, releaseDir, hookOut)
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
 		}

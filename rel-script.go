@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"os/exec"
 	"path"
 	"sort"
@@ -98,19 +97,20 @@ func (rs *relScript) copy(srcDir, destDir string) error {
 
 // hooks runs the hooks list. It runs before the BOM is merged and written, so
 // a hook can generate the source BOM.
-func (rs *relScript) hooks(pn string, srcDir, destDir string) error {
-	return runHooks(rs.Hooks, pn, srcDir, destDir)
+func (rs *relScript) hooks(pn string, srcDir, destDir string, out io.Writer) error {
+	return runHooks(rs.Hooks, pn, srcDir, destDir, out)
 }
 
 // postHooks runs the postHooks list. It runs after the release BOM and the
 // combined BOM have been written.
-func (rs *relScript) postHooks(pn string, srcDir, destDir string) error {
-	return runHooks(rs.PostHooks, pn, srcDir, destDir)
+func (rs *relScript) postHooks(pn string, srcDir, destDir string, out io.Writer) error {
+	return runHooks(rs.PostHooks, pn, srcDir, destDir, out)
 }
 
 // runHooks expands each hook as a Go template and runs it with /bin/sh. The
-// first hook that fails stops the run.
-func runHooks(hooks []string, pn string, srcDir, destDir string) error {
+// first hook that fails stops the run. Anything the hooks print goes to out,
+// so the caller decides where hook output is shown.
+func runHooks(hooks []string, pn string, srcDir, destDir string, out io.Writer) error {
 	data := struct {
 		SrcDir string
 		RelDir string
@@ -127,43 +127,21 @@ func runHooks(hooks []string, pn string, srcDir, destDir string) error {
 			return fmt.Errorf("Error parsing hook: %v: %v", h, err)
 		}
 
-		var out strings.Builder
+		var script strings.Builder
 
-		err = t.Execute(&out, data)
+		err = t.Execute(&script, data)
 		if err != nil {
 			return fmt.Errorf("Error parsing hook: %v: %v", h, err)
 		}
 
-		cmd := exec.Command("/bin/sh", "-c", out.String())
+		cmd := exec.Command("/bin/sh", "-c", script.String())
+		cmd.Stdout = out
+		cmd.Stderr = out
 
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			log.Fatal(err)
-		}
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Start the command
-		if err := cmd.Start(); err != nil {
-			log.Fatal(err)
-		}
-
-		// Copy the command's stdout and stderr to the Go program's stdout
-		go func() {
-			_, _ = io.Copy(os.Stdout, stdout)
-		}()
-
-		go func() {
-			_, _ = io.Copy(os.Stderr, stderr)
-		}()
-
-		// Wait for the command to exit
-		if err := cmd.Wait(); err != nil {
+		if err := cmd.Run(); err != nil {
 			log.Println("Error running hook: ", err)
 			log.Println("Hook contents: ")
-			fmt.Print(out.String())
+			fmt.Fprintln(out, script.String())
 			return err
 		}
 	}
