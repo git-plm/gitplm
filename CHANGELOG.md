@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-15
+
 - Release scripts accept a `postHooks` list that runs after the release BOM and
   the combined `-all.csv` are written, so a hook can generate files from the
   final BOM, such as a Markdown or PDF view. The same template variables as
