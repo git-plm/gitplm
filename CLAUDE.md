@@ -86,7 +86,8 @@ gitplm version                Display version
   release script, applies BOM modifications, runs hooks, copies files, merges
   partmaster data, and outputs a versioned release BOM. For assemblies
   (PCA/ASY), recursively expands sub-assembly BOMs and creates a combined
-  `-all.csv`. Flags: `-pmDir`.
+  `-all.csv`. Asks before writing into an existing release directory. Flags:
+  `-pmDir`, `-force`.
 - **TUI** (default, no subcommand): Interactive Bubbletea terminal UI (`tui.go`)
   for browsing and editing partmaster CSV data. Split-pane: file list + data
   table. Supports search, parametric search, edit, add, copy, delete, detail
@@ -96,10 +97,10 @@ gitplm version                Display version
 - **http**: KiCad HTTP Library API server (`kicad_api.go`) exposing partmaster
   data as REST JSON. Flags: `-pmDir`, `-port`, `-token`.
 - **simplify/combine**: BOM consolidation utilities. Flag: `-out`.
-- **format**: Rewrites CSV files through the same reader and writer the TUI
-  uses (`format.go`), so a file edited elsewhere ends up with gitplm's quoting
-  and rows sorted by IPN. Directories are searched recursively, line endings are
-  kept, and only changed files are written.
+- **format**: Rewrites CSV files through the same reader and writer the TUI uses
+  (`format.go`), so a file edited elsewhere ends up with gitplm's quoting.
+  Directories are searched recursively, row order and line endings are kept, and
+  only changed files are written.
 
 ### Key Types
 
@@ -112,8 +113,10 @@ gitplm version                Display version
   from CSV files. Can load a directory of CSVs (`-pmDir`). Priority field
   controls which entry wins for duplicate IPNs (lower = higher priority).
 - **`relScript`** (`rel-script.go`): Release script parsed from YAML. Defines
-  BOM add/remove rules, file copies, shell hooks (Go template vars:
+  BOM add/remove rules, file copies and moves, shell hooks (Go template vars:
   `{{ .SrcDir }}`, `{{ .RelDir }}`, `{{ .IPN }}`), and required file checks.
+  Copy, move, and required entries accept glob patterns. Copied Markdown files
+  bring along the local files they link to (`markdown.go`).
 - **`Config`** (`config.go`): YAML config loaded from `gitplm.yml`/`.gitplm.yml`
   (cwd) or `~/.gitplm.yml`.
 - **`CSVFileCollection`** (`csv_data.go`): Schema-flexible raw CSV loading used

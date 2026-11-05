@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
+	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
@@ -17,8 +20,12 @@ type relScript struct {
 	Description string
 	Remove      []bomLine
 	Add         []bomLine
-	Copy        []string
-	Hooks       []string
+	// Copy, Move, and Required entries are paths or glob patterns.
+	Copy []string
+	// Move lists files that are moved rather than copied into the release
+	// directory, so a later release cannot pick up a stale copy of them.
+	Move  []string
+	Hooks []string
 	// PostHooks run after the release BOM and the combined BOM have been
 	// written, so they can read the generated CSVs in the release directory.
 	PostHooks []string `yaml:"postHooks"`
@@ -72,24 +79,137 @@ func (rs *relScript) processBom(b bom) (bom, error) {
 	return ret, nil
 }
 
+// copyOptions follows symlinks and replaces a directory that already exists
+// in the release directory.
+var copyOptions = copy.Options{
+	OnSymlink: func(src string) copy.SymlinkAction {
+		return copy.Deep
+	},
+	OnDirExists: func(src, dest string) copy.DirExistsAction {
+		return copy.Replace
+	},
+}
+
+// matchPattern returns the paths under dir that pattern names, relative to
+// dir. A pattern without glob characters (*, ?, [) names one path, which is
+// returned whether or not it exists. A glob pattern returns its matches, which
+// may be none.
+func matchPattern(dir, pattern string) ([]string, error) {
+	if !strings.ContainsAny(pattern, "*?[") {
+		return []string{pattern}, nil
+	}
+
+	matches, err := fs.Glob(os.DirFS(dir), path.Clean(pattern))
+	if err != nil {
+		return nil, fmt.Errorf("invalid pattern %v: %v", pattern, err)
+	}
+
+	return matches, nil
+}
+
+// containsPath reports whether child is parent or lies inside it.
+func containsPath(parent, child string) bool {
+	rel, err := filepath.Rel(parent, child)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+// escapesDir reports whether the relative path rel leads out of the directory
+// it is relative to.
+func escapesDir(rel string) bool {
+	rel = path.Clean(rel)
+	return rel == ".." || strings.HasPrefix(rel, "../")
+}
+
+// copy copies each entry into the same relative location in the release
+// directory. A Markdown file brings along the local files it links to.
 func (rs *relScript) copy(srcDir, destDir string) error {
-	for _, c := range rs.Copy {
-		opts := copy.Options{
-			OnSymlink: func(src string) copy.SymlinkAction {
-				return copy.Deep
-			},
-			OnDirExists: func(src, dest string) copy.DirExistsAction {
-				return copy.Replace
-			},
-		}
-		srcPath := path.Join(srcDir, c)
-		destPath := path.Join(destDir, c)
-		err := copy.Copy(srcPath, destPath, opts)
+	for _, pattern := range rs.Copy {
+		names, err := matchPattern(srcDir, pattern)
 		if err != nil {
 			return err
 		}
+		if len(names) == 0 {
+			return fmt.Errorf("no files match %v in %v", pattern, srcDir)
+		}
 
-		log.Printf("%v copied to release dir\n", c)
+		for _, name := range names {
+			srcPath := path.Join(srcDir, name)
+			// a pattern such as * also matches the release directory
+			if containsPath(srcPath, destDir) {
+				continue
+			}
+
+			err := copy.Copy(srcPath, path.Join(destDir, name), copyOptions)
+			if err != nil {
+				return err
+			}
+
+			log.Printf("%v copied to release dir\n", name)
+
+			if strings.EqualFold(path.Ext(name), ".md") {
+				err = copyMarkdownAssets(srcDir, destDir, name)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// move moves each entry into the same relative location in the release
+// directory, replacing anything already there. The entry must exist, so a file
+// that was not generated again for this release stops it.
+func (rs *relScript) move(srcDir, destDir string) error {
+	for _, pattern := range rs.Move {
+		names, err := matchPattern(srcDir, pattern)
+		if err != nil {
+			return err
+		}
+		if len(names) == 0 {
+			return fmt.Errorf("no files match %v in %v, please generate them", pattern, srcDir)
+		}
+
+		for _, name := range names {
+			// the destination is removed before the move, so it must stay
+			// inside the release directory
+			if escapesDir(name) {
+				return fmt.Errorf("%v is outside the source directory", name)
+			}
+
+			srcPath := path.Join(srcDir, name)
+			// a pattern such as * also matches the release directory
+			if containsPath(srcPath, destDir) {
+				continue
+			}
+
+			_, err := os.Lstat(srcPath)
+			if os.IsNotExist(err) {
+				return fmt.Errorf("%v not found in %v, please generate it", name, srcDir)
+			}
+			if err != nil {
+				return err
+			}
+
+			destPath := path.Join(destDir, name)
+			err = os.RemoveAll(destPath)
+			if err != nil {
+				return err
+			}
+
+			err = os.MkdirAll(path.Dir(destPath), 0755)
+			if err != nil {
+				return err
+			}
+
+			err = os.Rename(srcPath, destPath)
+			if err != nil {
+				return err
+			}
+
+			log.Printf("%v moved to release dir\n", name)
+		}
 	}
 
 	return nil
@@ -148,16 +268,30 @@ func runHooks(hooks []string, pn string, srcDir, destDir string, out io.Writer) 
 	return nil
 }
 
+// required checks that each entry names at least one file in the release
+// directory.
 func (rs *relScript) required(destDir string) error {
 	for _, r := range rs.Required {
-		p := path.Join(destDir, r)
-		e, err := exists(p)
+		names, err := matchPattern(destDir, r)
 		if err != nil {
-			return fmt.Errorf("Error looking for required file: %v: %v", p, err)
+			return err
 		}
 
-		if !e {
-			return fmt.Errorf("Required file does not exist, please generate it: %v", p)
+		found := false
+		for _, name := range names {
+			p := path.Join(destDir, name)
+			e, err := exists(p)
+			if err != nil {
+				return fmt.Errorf("Error looking for required file: %v: %v", p, err)
+			}
+			if e {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("Required file does not exist, please generate it: %v", path.Join(destDir, r))
 		}
 	}
 

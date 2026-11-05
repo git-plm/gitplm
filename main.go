@@ -1,15 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/mattn/go-isatty"
 	"github.com/samber/lo"
 )
 
@@ -52,14 +55,30 @@ func printUsage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s COMMAND [OPTIONS] [ARGS]\n\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "Options go before the command arguments.\n\n")
 	fmt.Fprintf(os.Stderr, "Commands:\n")
-	fmt.Fprintf(os.Stderr, "  (no command)                     Launch interactive TUI\n")
-	fmt.Fprintf(os.Stderr, "  release [-pmDir <dir>] <IPN>     Process release for IPN\n")
-	fmt.Fprintf(os.Stderr, "  simplify -out <file> <file>      Simplify a BOM file\n")
-	fmt.Fprintf(os.Stderr, "  combine -out <file> <file>       Combine BOM into output\n")
-	fmt.Fprintf(os.Stderr, "  format <file|dir>...             Rewrite CSV files in gitplm's format\n")
-	fmt.Fprintf(os.Stderr, "  http [-pmDir <dir>] [-port <n>]  Start KiCad HTTP Library API server\n")
-	fmt.Fprintf(os.Stderr, "  update                           Update gitplm to latest version\n")
-	fmt.Fprintf(os.Stderr, "  version                          Display version\n")
+	fmt.Fprintf(os.Stderr, "  (no command)                           Launch interactive TUI\n")
+	fmt.Fprintf(os.Stderr, "  release [-pmDir <dir>] [-force] <IPN>  Process release for IPN\n")
+	fmt.Fprintf(os.Stderr, "  simplify -out <file> <file>            Simplify a BOM file\n")
+	fmt.Fprintf(os.Stderr, "  combine -out <file> <file>             Combine BOM into output\n")
+	fmt.Fprintf(os.Stderr, "  format <file|dir>...                   Rewrite CSV files in gitplm's format\n")
+	fmt.Fprintf(os.Stderr, "  http [-pmDir <dir>] [-port <n>]        Start KiCad HTTP Library API server\n")
+	fmt.Fprintf(os.Stderr, "  update                                 Update gitplm to latest version\n")
+	fmt.Fprintf(os.Stderr, "  version                                Display version\n")
+}
+
+// stdinIsTerminal reports whether standard input is a terminal someone can
+// answer a question from.
+func stdinIsTerminal() bool {
+	fd := os.Stdin.Fd()
+	return isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd)
+}
+
+// askOverwrite asks whether to release into the existing directory dir and
+// reports whether the answer was yes. Any other answer declines.
+func askOverwrite(dir string, in io.Reader, out io.Writer) bool {
+	fmt.Fprintf(out, "Release directory %v already exists. Files in it will be overwritten. Continue? [y/N] ", dir)
+	answer, _ := bufio.NewReader(in).ReadString('\n')
+	answer = strings.ToLower(strings.TrimSpace(answer))
+	return answer == "y" || answer == "yes"
 }
 
 func cmdRelease(args []string) {
@@ -71,10 +90,11 @@ func cmdRelease(args []string) {
 
 	fs := flag.NewFlagSet("release", flag.ExitOnError)
 	flagPMDir := fs.String("pmDir", config.PMDir, "specify location of partmaster CSV files")
+	flagForce := fs.Bool("force", false, "write into an existing release directory without asking")
 	fs.Parse(args)
 
 	if fs.NArg() < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s release [-pmDir <dir>] <IPN>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s release [-pmDir <dir>] [-force] <IPN>\n", os.Args[0])
 		os.Exit(1)
 	}
 
@@ -83,6 +103,20 @@ func cmdRelease(args []string) {
 	updateMsg := CheckForUpdate(version)
 	if updateMsg != "" {
 		fmt.Println(updateMsg)
+	}
+
+	if !*flagForce {
+		dir, err := existingReleaseDir(releaseIPN)
+		if err == nil && dir != "" {
+			if !stdinIsTerminal() {
+				fmt.Fprintf(os.Stderr, "Release directory %v already exists. Run with -force to overwrite it.\n", dir)
+				os.Exit(1)
+			}
+			if !askOverwrite(dir, os.Stdin, os.Stderr) {
+				fmt.Fprintln(os.Stderr, "Release cancelled")
+				os.Exit(1)
+			}
+		}
 	}
 
 	var gLog strings.Builder

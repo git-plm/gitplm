@@ -171,6 +171,9 @@ type modelNew struct {
 	releaseLog    string
 	releaseScroll int
 	releaseError  bool
+	// releaseExistingDir is the directory a confirmed release overwrites, or
+	// "" for a first release
+	releaseExistingDir string
 }
 
 func initialModelNew(needsPMDir bool, pmDir string, updateMsg string) modelNew {
@@ -1129,6 +1132,7 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 								m.error = fmt.Sprintf("%s is not a releasable part", ipnVal)
 							} else {
 								m.releaseIPN = ipnVal
+								m.releaseExistingDir, _ = existingReleaseDir(ipnVal)
 								m.mode = modeConfirmRelease
 							}
 						}
@@ -1205,6 +1209,10 @@ func (m modelNew) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "ctrl+c":
 					return m, tea.Quit
 				case "y", "enter":
+					// Enter alone does not overwrite an existing release
+					if msg.String() == "enter" && m.releaseExistingDir != "" {
+						return m, nil
+					}
 					ipnVal := m.releaseIPN
 					// Check changelog for IPN entry before releasing
 					sourceDir, err := findIPNSourceDir(ipnVal)
@@ -1508,6 +1516,9 @@ func (m modelNew) View() string {
 			helpText = "y/Enter: confirm delete • n/Esc: cancel"
 		case modeConfirmRelease:
 			helpText = "y/Enter: confirm release • n/Esc: cancel"
+			if m.releaseExistingDir != "" {
+				helpText = "y: overwrite and release • n/Esc: cancel"
+			}
 		case modeDetail:
 			helpText = "↑/↓: scroll • o: open datasheet • Esc: close"
 		case modeRelease:
@@ -1586,6 +1597,9 @@ func (m modelNew) View() string {
 		// Release confirmation overlay
 		if m.mode == modeConfirmRelease {
 			prompt := fmt.Sprintf("Release %s? (y/n)", m.releaseIPN)
+			if m.releaseExistingDir != "" {
+				prompt = fmt.Sprintf("%s already exists. Files in it will be overwritten.\n\nRelease %s? (y/n)", m.releaseExistingDir, m.releaseIPN)
+			}
 			overlay := lipgloss.NewStyle().
 				BorderStyle(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("220")).
