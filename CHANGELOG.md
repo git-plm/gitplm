@@ -11,6 +11,11 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+- **New `format` command rewrites CSV files in gitplm's format.** Run
+  `gitplm format <file|dir>...` after editing a CSV file in a spreadsheet or
+  other tool so quoting matches what gitplm writes, rows are sorted by IPN, and
+  the Git diff shows only the data that changed. Line endings are kept.
+
 ## [0.10.1] - 2026-09-15
 
 - **`MFG.md` and `CHANGELOG.md` are copied for every release.** Parts released

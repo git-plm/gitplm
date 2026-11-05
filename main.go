@@ -33,6 +33,8 @@ func main() {
 		cmdSimplify(args)
 	case "combine":
 		cmdCombine(args)
+	case "format":
+		cmdFormat(args)
 	case "http":
 		cmdHTTP(args)
 	case "update":
@@ -54,6 +56,7 @@ func printUsage() {
 	fmt.Fprintf(os.Stderr, "  release [-pmDir <dir>] <IPN>     Process release for IPN\n")
 	fmt.Fprintf(os.Stderr, "  simplify -out <file> <file>      Simplify a BOM file\n")
 	fmt.Fprintf(os.Stderr, "  combine -out <file> <file>       Combine BOM into output\n")
+	fmt.Fprintf(os.Stderr, "  format <file|dir>...             Rewrite CSV files in gitplm's format\n")
 	fmt.Fprintf(os.Stderr, "  http [-pmDir <dir>] [-port <n>]  Start KiCad HTTP Library API server\n")
 	fmt.Fprintf(os.Stderr, "  update                           Update gitplm to latest version\n")
 	fmt.Fprintf(os.Stderr, "  version                          Display version\n")
@@ -201,6 +204,21 @@ func cmdCombine(args []string) {
 	err = saveCSV(*flagOutput, out)
 	if err != nil {
 		log.Printf("Error saving CSV: %v: %v", *flagOutput, err)
+		os.Exit(1)
+	}
+}
+
+func cmdFormat(args []string) {
+	fs := flag.NewFlagSet("format", flag.ExitOnError)
+	fs.Parse(args)
+
+	if fs.NArg() < 1 {
+		fmt.Fprintf(os.Stderr, "Usage: %s format <file|dir>...\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	if err := formatCSVPaths(fs.Args(), os.Stdout); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

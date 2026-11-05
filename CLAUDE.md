@@ -76,6 +76,7 @@ gitplm                        Launch interactive TUI
 gitplm release <IPN>          Process release for IPN
 gitplm simplify <file> -out <file>  Simplify a BOM file
 gitplm combine <file> -out <file>   Combine BOM into output
+gitplm format <file|dir>...         Rewrite CSV files in gitplm's format
 gitplm http                   Start KiCad HTTP Library API server
 gitplm update                 Update gitplm to latest version
 gitplm version                Display version
@@ -95,6 +96,10 @@ gitplm version                Display version
 - **http**: KiCad HTTP Library API server (`kicad_api.go`) exposing partmaster
   data as REST JSON. Flags: `-pmDir`, `-port`, `-token`.
 - **simplify/combine**: BOM consolidation utilities. Flag: `-out`.
+- **format**: Rewrites CSV files through the same reader and writer the TUI
+  uses (`format.go`), so a file edited elsewhere ends up with gitplm's quoting
+  and rows sorted by IPN. Directories are searched recursively, line endings are
+  kept, and only changed files are written.
 
 ### Key Types
 

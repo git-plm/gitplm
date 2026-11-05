@@ -117,6 +117,7 @@ Commands:
   release [-pmDir <dir>] <IPN>     Process release for IPN
   simplify -out <file> <file>      Simplify a BOM file
   combine -out <file> <file>       Combine BOM into output
+  format <file|dir>...             Rewrite CSV files in gitplm's format
   http [-pmDir <dir>] [-port <n>]  Start KiCad HTTP Library API server
   update                           Update gitplm to latest version
   version                          Display version
@@ -125,6 +126,17 @@ Commands:
 Options go after the command and before its arguments, for example
 `gitplm release -pmDir database PCA-019-0002`. An option placed after the
 arguments is ignored.
+
+`format` rewrites CSV files the way gitplm writes them: comma separated, fields
+quoted only when they contain a comma, quote, or line break, rows sorted by IPN,
+and a newline after the last row. Line endings are kept as they are, and a file
+without an IPN column keeps its row order. Use it after editing a file in a
+spreadsheet or other tool so the Git diff shows only the data that changed. A
+directory is searched for CSV files, and the files that changed are listed:
+
+```
+gitplm format partmaster
+```
 
 ## ⚙ Configuration
 
