@@ -61,6 +61,23 @@ func checkIPNChangelog(sourceDir, relPn string) (changelogPath string, hasEntry 
 	return changelogPath, strings.Contains(string(data), relPn), nil
 }
 
+// existingReleaseDir returns the release directory for relPn when an earlier
+// release already created it, or "" when it does not exist yet.
+func existingReleaseDir(relPn string) (string, error) {
+	sourceDir, err := findIPNSourceDir(relPn)
+	if err != nil {
+		return "", err
+	}
+
+	dir := filepath.Join(sourceDir, relPn)
+	dirExists, err := exists(dir)
+	if err != nil || !dirExists {
+		return "", err
+	}
+
+	return dir, nil
+}
+
 // processRelease generates the release for relPn. Log messages are appended
 // to relLog and anything the release script hooks print is written to hookOut.
 func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut io.Writer) (string, error) {
@@ -245,25 +262,15 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 		if err != nil {
 			return sourceDir, fmt.Errorf("Error copying files specified in YML: %v", err)
 		}
+
+		err = rs.move(sourceDir, releaseDir)
+		if err != nil {
+			return sourceDir, fmt.Errorf("Error moving files specified in YML: %v", err)
+		}
 	}
 
-	if !bomExists {
-		// nothing else to do
-		return sourceDir, finish()
-	}
-
-	// always sort BOM for good measure
-	sort.Sort(b)
-
-	// merge in partmaster info into BOM
-	b.mergePartmaster(p, logErr)
-
-	err = saveCSV(bomFileWritePath, b)
-	if err != nil {
-		return sourceDir, fmt.Errorf("Error writing BOM: %v", err)
-	}
-
-	// copy MFG.md and CHANGELOG.md if they exist
+	// copy MFG.md and CHANGELOG.md if they exist, whether or not there is a BOM,
+	// along with the local files they link to
 	assetsToCopy := []string{"MFG.md", "CHANGELOG.md"}
 	for _, a := range assetsToCopy {
 		aPath := path.Join(sourceDir, a)
@@ -282,7 +289,28 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 			if err != nil {
 				return sourceDir, fmt.Errorf("Error writing %v: %v", aDest, err)
 			}
+
+			err = copyMarkdownAssets(sourceDir, releaseDir, a)
+			if err != nil {
+				return sourceDir, fmt.Errorf("Error copying files linked from %v: %v", a, err)
+			}
 		}
+	}
+
+	if !bomExists {
+		// nothing else to do
+		return sourceDir, finish()
+	}
+
+	// always sort BOM for good measure
+	sort.Sort(b)
+
+	// merge in partmaster info into BOM
+	b.mergePartmaster(p, logErr)
+
+	err = saveCSV(bomFileWritePath, b)
+	if err != nil {
+		return sourceDir, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
 	// create combined BOM with all sub assemblies if we have any PCB or ASY line items

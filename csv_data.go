@@ -18,6 +18,8 @@ type CSVFile struct {
 	Headers []string
 	Rows    [][]string
 	UseCRLF bool
+	// SkippedRows counts rows the reader could not parse and left out.
+	SkippedRows int
 }
 
 // CSVFileCollection represents all CSV files loaded from a directory
@@ -62,6 +64,7 @@ func loadCSVRaw(filePath string) (*CSVFile, error) {
 
 	// Read all rows
 	var rows [][]string
+	skipped := 0
 	lineNum := 1 // Start at 1 since headers are line 0
 	for {
 		row, err := reader.Read()
@@ -71,6 +74,7 @@ func loadCSVRaw(filePath string) (*CSVFile, error) {
 		if err != nil {
 			// Skip malformed rows and continue
 			fmt.Printf("Warning: error reading row %d from %s: %v\n", lineNum, filePath, err)
+			skipped++
 			lineNum++
 			continue
 		}
@@ -79,11 +83,12 @@ func loadCSVRaw(filePath string) (*CSVFile, error) {
 	}
 
 	return &CSVFile{
-		Name:    filepath.Base(filePath),
-		Path:    filePath,
-		Headers: headers,
-		Rows:    rows,
-		UseCRLF: useCRLF,
+		Name:        filepath.Base(filePath),
+		Path:        filePath,
+		Headers:     headers,
+		Rows:        rows,
+		UseCRLF:     useCRLF,
+		SkippedRows: skipped,
 	}, nil
 }
 
@@ -233,7 +238,14 @@ func saveCSVRaw(csvFile *CSVFile) error {
 	}
 	defer f.Close()
 
-	w := csv.NewWriter(f)
+	return writeCSVRaw(f, csvFile)
+}
+
+// writeCSVRaw writes headers and rows to out in the form gitplm uses for
+// every CSV file it writes: comma separated, fields quoted only when needed,
+// and the file's original line endings.
+func writeCSVRaw(out io.Writer, csvFile *CSVFile) error {
+	w := csv.NewWriter(out)
 	w.UseCRLF = csvFile.UseCRLF
 	if err := w.Write(csvFile.Headers); err != nil {
 		return fmt.Errorf("error writing headers: %v", err)
