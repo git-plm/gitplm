@@ -676,9 +676,10 @@ When working in the source tree, replace `gitplm` with `go run ..`.
 Releases are automated via GitHub Actions and
 [GoReleaser](https://goreleaser.com/). To create a new release:
 
-1. Update `CHANGELOG.md` with the changes for the new version.
-2. Tag the release: `git tag v0.x.x`
-3. Push the tag: `git push origin v0.x.x`
+1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a
+   `## [0.x.x] - <date>` heading, commit, and push to `main`.
+2. Source `envsetup.sh` and run `gitplm_tag`, which tags `main` with the version
+   at the top of the changelog and pushes the tag.
 
 The release workflow will automatically build binaries for all platforms and
 create a GitHub release with notes extracted from `CHANGELOG.md`.
