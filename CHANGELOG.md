@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-05
+
 - **Release scripts accept glob patterns.** `copy`, `move`, and `required`
   entries can name several files at once, such as `docs/*.pdf`.
 - **Release scripts can `move` files into the release directory.** Use it for
