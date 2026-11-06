@@ -283,6 +283,11 @@ Release directories are identified by a full IPN. Examples:
 - `ASY-012-0002`
 - `DOC-055-0006`
 
+Each release writes a log file named after the IPN into the release directory,
+such as `PCA-019-0012/PCA-019-0012.log`. It records everything printed during
+the run, including hook output and any errors, so the result of a release can be
+reviewed later and stored in Git with the rest of the release.
+
 ## 📄 Special Files
 
 The following files will be copied into the release directory if found in the

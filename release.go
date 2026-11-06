@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -61,6 +62,20 @@ func checkIPNChangelog(sourceDir, relPn string) (changelogPath string, hasEntry 
 	return changelogPath, strings.Contains(string(data), relPn), nil
 }
 
+// releaseLogPath returns the path of the log file written in releaseDir.
+func releaseLogPath(releaseDir, relPn string) string {
+	return filepath.Join(releaseDir, relPn+".log")
+}
+
+// writeReleaseLog writes the release log, recreating the release directory
+// if a hook removed it.
+func writeReleaseLog(logPath, contents string) error {
+	if err := os.MkdirAll(filepath.Dir(logPath), 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(logPath, []byte(contents), 0644)
+}
+
 // existingReleaseDir returns the release directory for relPn when an earlier
 // release already created it, or "" when it does not exist yet.
 func existingReleaseDir(relPn string) (string, error) {
@@ -78,9 +93,12 @@ func existingReleaseDir(relPn string) (string, error) {
 	return dir, nil
 }
 
-// processRelease generates the release for relPn. Log messages are appended
-// to relLog and anything the release script hooks print is written to hookOut.
-func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut io.Writer) (string, error) {
+// processRelease generates the release for relPn. Anything the release script
+// hooks print is written to out. Once the release directory exists, everything
+// logged during the run, the hook output, and the final result are also
+// written to a log file in it, and the path of that file is returned. The path
+// is empty when the release stopped before the directory was created.
+func processRelease(relPn string, pmDir string, out io.Writer) (logPath string, err error) {
 	relIpn := ipn(relPn)
 	_, _, v, err := relIpn.parse()
 	if err != nil {
@@ -143,10 +161,10 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 	// Check that CHANGELOG.md exists and contains an entry for this IPN
 	_, hasEntry, err := checkIPNChangelog(sourceDir, relPn)
 	if err != nil {
-		return sourceDir, err
+		return logPath, err
 	}
 	if !hasEntry {
-		return sourceDir, fmt.Errorf("CHANGELOG.md in %s does not contain an entry for %s", sourceDir, relPn)
+		return logPath, fmt.Errorf("CHANGELOG.md in %s does not contain an entry for %s", sourceDir, relPn)
 	}
 
 	// Create output release dir
@@ -154,41 +172,64 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 
 	dirExists, err := exists(releaseDir)
 	if err != nil {
-		return sourceDir, err
+		return logPath, err
 	}
 
 	if !dirExists {
 		err = os.Mkdir(releaseDir, 0755)
 		if err != nil {
-			return sourceDir, err
+			return logPath, err
 		}
 	}
+
+	// Everything from here on is also collected for the release log. The log
+	// package is redirected for the duration of the release so messages
+	// logged from helpers land in it as well. The log is kept in memory and
+	// written once the run is over, so a hook that empties the release
+	// directory does not take the log with it.
+	logPath = releaseLogPath(releaseDir, relPn)
+	var relLog strings.Builder
+	fmt.Fprintf(&relLog, "gitplm %v release %v started %v\n", version, relPn,
+		time.Now().Format(time.RFC3339))
+
+	origLogOut := log.Writer()
+	log.SetOutput(io.MultiWriter(origLogOut, &relLog))
+	hookOut := io.MultiWriter(out, &relLog)
+
+	defer func() {
+		log.SetOutput(origLogOut)
+		if err != nil {
+			fmt.Fprintf(&relLog, "release error: %v\n", err)
+		} else {
+			fmt.Fprintf(&relLog, "release %v updated\n", relPn)
+		}
+		if writeErr := writeReleaseLog(logPath, relLog.String()); writeErr != nil {
+			log.Printf("Error writing release log: %v", writeErr)
+			logPath = ""
+		}
+	}()
 
 	bomFileWritePath := filepath.Join(releaseDir, bomFileGenerated)
 
 	logErr := func(s string) {
-		_, err := relLog.Write([]byte(s))
-		if err != nil {
-			log.Println("Error writing to relLog: ", err)
-		}
-		log.Println(s)
+		log.Print(s)
 	}
 
 	p := partmaster{}
 	if pmDir != "" {
 		p, err = loadPartmasterFromDir(pmDir)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error loading partmaster from directory %s: %v", pmDir, err)
+			return logPath, fmt.Errorf("Error loading partmaster from directory %s: %v", pmDir, err)
 		}
 	} else {
 		partmasterPath, err := findFile("partmaster.csv")
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error, partmaster.csv not found in any dir")
+			return logPath, fmt.Errorf("Error, partmaster.csv not found in any dir")
 		}
 
 		err = loadCSV(partmasterPath, &p)
 		if err != nil {
-			return sourceDir, err
+			return logPath, err
 		}
 	}
 
@@ -197,7 +238,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 	if bomExists {
 		err = loadCSV(bomFilePath, &b)
 		if err != nil {
-			return sourceDir, err
+			return logPath, err
 		}
 	}
 
@@ -219,25 +260,25 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 	if ymlExists {
 		ymlBytes, err := os.ReadFile(ymlFilePath)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error loading yml file: %v", err)
+			return logPath, fmt.Errorf("Error loading yml file: %v", err)
 		}
 
 		err = yaml.Unmarshal(ymlBytes, &rs)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error parsing yml: %v", err)
+			return logPath, fmt.Errorf("Error parsing yml: %v", err)
 		}
 
 		if bomExists {
 			b, err = rs.processBom(b)
 			if err != nil {
-				return sourceDir, fmt.Errorf("Error processing bom with yml file: %v", err)
+				return logPath, fmt.Errorf("Error processing bom with yml file: %v", err)
 			}
 		}
 
 		// run hooks
 		err = rs.hooks(relPn, sourceDir, releaseDir, hookOut)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error running hooks specified in YML: %v", err)
+			return logPath, fmt.Errorf("Error running hooks specified in YML: %v", err)
 		}
 
 		// look if we generated a BOM
@@ -247,12 +288,12 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 				bomExists = true
 				err = loadCSV(bomFilePath, &b)
 				if err != nil {
-					return sourceDir, err
+					return logPath, err
 				}
 
 				b, err = rs.processBom(b)
 				if err != nil {
-					return sourceDir, fmt.Errorf("Error processing bom with yml file: %v", err)
+					return logPath, fmt.Errorf("Error processing bom with yml file: %v", err)
 				}
 			}
 		}
@@ -260,12 +301,12 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 		// copy stuff to release dir specified in YML file
 		err = rs.copy(sourceDir, releaseDir)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error copying files specified in YML: %v", err)
+			return logPath, fmt.Errorf("Error copying files specified in YML: %v", err)
 		}
 
 		err = rs.move(sourceDir, releaseDir)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error moving files specified in YML: %v", err)
+			return logPath, fmt.Errorf("Error moving files specified in YML: %v", err)
 		}
 	}
 
@@ -276,30 +317,30 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 		aPath := path.Join(sourceDir, a)
 		aPathExists, err := exists(aPath)
 		if err != nil {
-			return sourceDir, err
+			return logPath, err
 		}
 		if aPathExists {
 			aDest := path.Join(releaseDir, a)
 			data, err := os.ReadFile(aPath)
 			if err != nil {
-				return sourceDir, fmt.Errorf("Error reading %v: %v", aPath, err)
+				return logPath, fmt.Errorf("Error reading %v: %v", aPath, err)
 			}
 
 			err = os.WriteFile(aDest, data, 0644)
 			if err != nil {
-				return sourceDir, fmt.Errorf("Error writing %v: %v", aDest, err)
+				return logPath, fmt.Errorf("Error writing %v: %v", aDest, err)
 			}
 
 			err = copyMarkdownAssets(sourceDir, releaseDir, a)
 			if err != nil {
-				return sourceDir, fmt.Errorf("Error copying files linked from %v: %v", a, err)
+				return logPath, fmt.Errorf("Error copying files linked from %v: %v", a, err)
 			}
 		}
 	}
 
 	if !bomExists {
 		// nothing else to do
-		return sourceDir, finish()
+		return logPath, finish()
 	}
 
 	// always sort BOM for good measure
@@ -310,7 +351,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 
 	err = saveCSV(bomFileWritePath, b)
 	if err != nil {
-		return sourceDir, fmt.Errorf("Error writing BOM: %v", err)
+		return logPath, fmt.Errorf("Error writing BOM: %v", err)
 	}
 
 	// create combined BOM with all sub assemblies if we have any PCB or ASY line items
@@ -326,19 +367,19 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 			// look for release package
 			dir, err := findDir(l.IPN.String())
 			if err != nil {
-				return sourceDir, fmt.Errorf("Missing release package: %v", err)
+				return logPath, fmt.Errorf("Missing release package: %v", err)
 			}
 			// soft link to that package
 			dirRel, err := filepath.Rel(releaseDir, dir)
 			if err != nil {
-				return sourceDir, fmt.Errorf("Error creating rel path for %v: %v",
+				return logPath, fmt.Errorf("Error creating rel path for %v: %v",
 					dir, err)
 			}
 			linkPath := path.Join(releaseDir, l.IPN.String())
 			os.Remove(linkPath)
 			err = os.Symlink(dirRel, linkPath)
 			if err != nil {
-				return sourceDir, fmt.Errorf("Error creating symlink %v: %v",
+				return logPath, fmt.Errorf("Error creating symlink %v: %v",
 					dir, err)
 			}
 			hasBOM, _ := l.IPN.hasBOM()
@@ -346,7 +387,7 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 				foundSub = true
 				err = b.processOurIPN(l.IPN, l.Qty)
 				if err != nil {
-					return sourceDir, fmt.Errorf("Error proccessing sub %v: %v", l.IPN, err)
+					return logPath, fmt.Errorf("Error proccessing sub %v: %v", l.IPN, err)
 				}
 			}
 		}
@@ -361,9 +402,9 @@ func processRelease(relPn string, relLog *strings.Builder, pmDir string, hookOut
 		// write out purchase bom
 		err := saveCSV(writePath, b)
 		if err != nil {
-			return sourceDir, fmt.Errorf("Error writing purchase bom %v", err)
+			return logPath, fmt.Errorf("Error writing purchase bom %v", err)
 		}
 	}
 
-	return sourceDir, finish()
+	return logPath, finish()
 }
