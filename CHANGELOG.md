@@ -11,6 +11,20 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-06
+
+- **Each release writes a log into its release directory.** The log, named after
+  the IPN such as `PCA-019-0012.log`, records everything printed during the run,
+  including hook output and any errors, so it can be reviewed later and stored
+  in Git with the release. The release command prints the path of the log when
+  it finishes. The partial `CCC-NNN.log` that was written to the source
+  directory is no longer created.
+- **`gitplm release` exits with an error status when the release fails.**
+  Scripts that run it can now detect a failed release.
+- **A failed hook is easier to read.** The hook's script is now set apart from
+  the output it printed by rule lines and a short heading, so it is clear where
+  the error message ends and the script begins.
+
 ## [0.11.0] - 2026-11-05
 
 - **Release scripts accept glob patterns.** `copy`, `move`, and `required`

@@ -137,8 +137,7 @@ required:
 `
 	pmDir := setupReleaseTree(t, script)
 
-	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
+	_, err := processRelease("PCA-001-0001", pmDir, io.Discard)
 	if err != nil {
 		t.Fatalf("processRelease: %v", err)
 	}
@@ -164,8 +163,7 @@ required:
 `
 	pmDir := setupReleaseTree(t, script)
 
-	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
+	_, err := processRelease("PCA-001-0001", pmDir, io.Discard)
 	if err == nil || !strings.Contains(err.Error(), "never-generated.txt") {
 		t.Fatalf("expected missing required file error, got: %v", err)
 	}
@@ -180,8 +178,7 @@ postHooks:
 `
 	pmDir := setupReleaseTree(t, script)
 
-	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
+	_, err := processRelease("PCA-001-0001", pmDir, io.Discard)
 	if err == nil || !strings.Contains(err.Error(), "postHooks") {
 		t.Fatalf("expected postHooks error, got: %v", err)
 	}
@@ -204,8 +201,7 @@ func TestReleaseWithoutBOMCopiesAssets(t *testing.T) {
 		}
 	}
 
-	var relLog strings.Builder
-	_, err := processRelease("PCB-001-0001", &relLog, pmDir, io.Discard)
+	_, err := processRelease("PCB-001-0001", pmDir, io.Discard)
 	if err != nil {
 		t.Fatalf("processRelease: %v", err)
 	}
@@ -369,8 +365,7 @@ func TestReleaseCopiesMFGAssets(t *testing.T) {
 		"images/panel.png": "png",
 	})
 
-	var relLog strings.Builder
-	_, err := processRelease("PCA-001-0001", &relLog, pmDir, io.Discard)
+	_, err := processRelease("PCA-001-0001", pmDir, io.Discard)
 	if err != nil {
 		t.Fatalf("processRelease: %v", err)
 	}

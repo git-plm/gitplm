@@ -48,6 +48,12 @@ git push origin main && git push origin v0.8.13
 `scripts/prepare-release.sh` refuses to run on a dirty tree, on an existing tag,
 or with an empty `[Unreleased]` section, and it runs the tests before tagging.
 
+Alternatively, move the `[Unreleased]` entries under a `## [X.Y.Z] - <date>`
+heading by hand, commit and push that to `main`, then run `gitplm_tag`. It reads
+the version from the top of `CHANGELOG.md`, refuses to run with entries still
+under `[Unreleased]` or with the tag already present locally or on origin, tags
+`main`, and pushes the tag.
+
 Notes on keeping the release path working:
 
 - **Every user-visible change needs a `CHANGELOG.md` entry under

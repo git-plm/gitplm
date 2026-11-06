@@ -495,16 +495,17 @@ func (m *modelNew) startRelease() tea.Cmd {
 	return func() tea.Msg {
 		// Everything the release prints, including hook output, goes into
 		// one buffer so the terminal stays untouched while the TUI runs.
-		// processRelease also logs each relLog line, so relLog is discarded
-		// to avoid showing every message twice.
-		var logBuilder, relLog strings.Builder
+		var logBuilder strings.Builder
 		origWriter := log.Writer()
 		origFlags := log.Flags()
 		log.SetOutput(&logBuilder)
 		log.SetFlags(0)
-		_, err := processRelease(ipnVal, &relLog, pmDir, &logBuilder)
+		logPath, err := processRelease(ipnVal, pmDir, &logBuilder)
 		log.SetOutput(origWriter)
 		log.SetFlags(origFlags)
+		if logPath != "" {
+			fmt.Fprintf(&logBuilder, "\nRelease log written to %v\n", logPath)
+		}
 		return releaseResultMsg{log: logBuilder.String(), err: err}
 	}
 }

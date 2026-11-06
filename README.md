@@ -283,6 +283,11 @@ Release directories are identified by a full IPN. Examples:
 - `ASY-012-0002`
 - `DOC-055-0006`
 
+Each release writes a log file named after the IPN into the release directory,
+such as `PCA-019-0012/PCA-019-0012.log`. It records everything printed during
+the run, including hook output and any errors, so the result of a release can be
+reviewed later and stored in Git with the rest of the release.
+
 ## 📄 Special Files
 
 The following files will be copied into the release directory if found in the
@@ -676,9 +681,10 @@ When working in the source tree, replace `gitplm` with `go run ..`.
 Releases are automated via GitHub Actions and
 [GoReleaser](https://goreleaser.com/). To create a new release:
 
-1. Update `CHANGELOG.md` with the changes for the new version.
-2. Tag the release: `git tag v0.x.x`
-3. Push the tag: `git push origin v0.x.x`
+1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a
+   `## [0.x.x] - <date>` heading, commit, and push to `main`.
+2. Source `envsetup.sh` and run `gitplm_tag`, which tags `main` with the version
+   at the top of the changelog and pushes the tag.
 
 The release workflow will automatically build binaries for all platforms and
 create a GitHub release with notes extracted from `CHANGELOG.md`.

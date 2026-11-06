@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -119,34 +118,17 @@ func cmdRelease(args []string) {
 		}
 	}
 
-	var gLog strings.Builder
-	logMsg := func(s string) {
-		_, err := gLog.Write([]byte(s))
-		if err != nil {
-			log.Println("Error writing to gLog: ", err)
-		}
-		log.Println(s)
-	}
-
-	relPath, err := processRelease(releaseIPN, &gLog, *flagPMDir, os.Stdout)
+	logPath, err := processRelease(releaseIPN, *flagPMDir, os.Stdout)
 	if err != nil {
-		logMsg(fmt.Sprintf("release error: %v\n", err))
+		log.Printf("release error: %v", err)
 	} else {
-		logMsg(fmt.Sprintf("release %v updated\n", releaseIPN))
+		log.Printf("release %v updated", releaseIPN)
 	}
-
-	if relPath != "" {
-		relIpn := ipn(releaseIPN)
-		_, _, _, err := relIpn.parse()
-		if err != nil {
-			log.Fatal("Error parsing bom IPN: ", err)
-		}
-		fn := relIpn.base() + ".log"
-		logFilePath := filepath.Join(relPath, fn)
-		err = os.WriteFile(logFilePath, []byte(gLog.String()), 0644)
-		if err != nil {
-			log.Println("Error writing log file: ", err)
-		}
+	if logPath != "" {
+		log.Printf("release log written to %v", logPath)
+	}
+	if err != nil {
+		os.Exit(1)
 	}
 }
 

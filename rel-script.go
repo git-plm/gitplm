@@ -227,6 +227,9 @@ func (rs *relScript) postHooks(pn string, srcDir, destDir string, out io.Writer)
 	return runHooks(rs.PostHooks, pn, srcDir, destDir, out)
 }
 
+// hookRule separates a failed hook's script from the output around it.
+const hookRule = "------------------------------------------------------------"
+
 // runHooks expands each hook as a Go template and runs it with /bin/sh. The
 // first hook that fails stops the run. Anything the hooks print goes to out,
 // so the caller decides where hook output is shown.
@@ -259,9 +262,10 @@ func runHooks(hooks []string, pn string, srcDir, destDir string, out io.Writer) 
 		cmd.Stderr = out
 
 		if err := cmd.Run(); err != nil {
-			log.Println("Error running hook: ", err)
-			log.Println("Hook contents: ")
-			fmt.Fprintln(out, script.String())
+			// Frame the script so it stands apart from the output the hook
+			// printed above it.
+			fmt.Fprintf(out, "\n%s\nHook failed (%v). The output above came from this hook:\n\n%s\n%s\n",
+				hookRule, err, strings.TrimSpace(script.String()), hookRule)
 			return err
 		}
 	}
