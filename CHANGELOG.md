@@ -11,6 +11,8 @@ For more details or to discuss releases, please visit the
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-06
+
 - **Each release writes a log into its release directory.** The log, named after
   the IPN such as `PCA-019-0012.log`, records everything printed during the run,
   including hook output and any errors, so it can be reviewed later and stored
